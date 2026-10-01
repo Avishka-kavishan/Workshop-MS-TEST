@@ -1292,7 +1292,7 @@ export default function NewWorkshopPage() {
                     }}
                   >
                     <span style={{ fontSize: '1.1rem' }}>🏠</span>
-                    <span>Internal (Organize at Own Branch)</span>
+                    <span>Internal</span>
                     {selfOrganize && <span style={{ fontSize: '0.85rem', marginLeft: '0.2rem' }}>✓</span>}
                   </button>
 
@@ -1311,7 +1311,7 @@ export default function NewWorkshopPage() {
                     }}
                   >
                     <span style={{ fontSize: '1.1rem' }}>🏢</span>
-                    <span>External (Multi-Level Hierarchy Flow)</span>
+                    <span>External</span>
                     {!selfOrganize && <span style={{ fontSize: '0.85rem', marginLeft: '0.2rem' }}>✓</span>}
                   </button>
                 </div>

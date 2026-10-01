@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import AppShell from '@/components/layout/AppShell';
+import { computeWorkshopStatus } from '@/lib/workshopStatus';
 
 export default function WorkshopDetailPage() {
   const router = useRouter();
@@ -515,36 +516,47 @@ export default function WorkshopDetailPage() {
                 </span>
 
 
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    padding: '0.2rem 0.65rem',
-                    borderRadius: 'var(--radius-full)',
-                    background:
-                      workshop.status === 'Rescheduled'
-                        ? 'rgba(147, 51, 234, 0.12)'
-                        : workshop.status === 'Completed'
-                        ? 'var(--gray-200)'
-                        : 'var(--teal-10)',
-                    color:
-                      workshop.status === 'Rescheduled'
-                        ? '#7E22CE'
-                        : workshop.status === 'Completed'
-                        ? 'var(--text-secondary)'
-                        : 'var(--teal)',
-                    border: `1px solid ${
-                      workshop.status === 'Rescheduled'
-                        ? 'rgba(147, 51, 234, 0.3)'
-                        : 'var(--border-default)'
-                    }`,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  {workshop.status === 'Rescheduled' ? '🔄 Rescheduled' : `● ${workshop.status || 'Scheduled'}`}
-                </span>
+                {(() => {
+                  const statusObj = computeWorkshopStatus(workshop);
+                  const isCompleted = statusObj.status === 'Completed';
+                  const isInProgress = statusObj.status === 'In Progress';
+                  return (
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '0.2rem 0.65rem',
+                        borderRadius: 'var(--radius-full)',
+                        background:
+                          isCompleted
+                            ? 'rgba(0, 83, 78, 0.12)'
+                            : isInProgress
+                            ? 'rgba(235, 116, 0, 0.12)'
+                            : 'rgba(21, 101, 192, 0.12)',
+                        color:
+                          isCompleted
+                            ? '#00534E'
+                            : isInProgress
+                            ? '#EB7400'
+                            : '#1565C0',
+                        border: `1px solid ${
+                          isCompleted
+                            ? 'rgba(0, 83, 78, 0.25)'
+                            : isInProgress
+                            ? 'rgba(235, 116, 0, 0.25)'
+                            : 'rgba(21, 101, 192, 0.25)'
+                        }`,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      {isCompleted && '✓ Completed'}
+                      {isInProgress && '▶ In Progress'}
+                      {!isCompleted && !isInProgress && '⏳ Scheduled'}
+                    </span>
+                  );
+                })()}
 
                 <span
                   style={{

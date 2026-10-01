@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import AppShell from '@/components/layout/AppShell';
 import DashboardCalendar from '@/components/dashboard/DashboardCalendar';
+import { computeWorkshopStatus } from '@/lib/workshopStatus';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -242,10 +243,12 @@ export default function DashboardPage() {
                   <tbody>
                     {workshops.length > 0 ? (
                       workshops.slice(0, 10).map((ws) => {
-                        const status = (ws.status || ws.statusName || 'Scheduled').toLowerCase();
-                        const isRescheduled = status.includes('reschedul');
-                        const isCompleted = status.includes('complete');
-                        const isInProgress = status.includes('progress') || status.includes('ongoing');
+                        const statusObj = computeWorkshopStatus(ws);
+                        const status = statusObj.status;
+                        const isCompleted = status === 'Completed';
+                        const isInProgress = status === 'In Progress';
+                        const isScheduled = status === 'Scheduled';
+                        const isRescheduled = ((ws.status || ws.statusName || '').toLowerCase().includes('reschedul')) || Boolean(ws.lastRescheduledAt);
 
                         return (
                           <tr key={ws.id}>
@@ -264,46 +267,59 @@ export default function DashboardPage() {
                             </td>
 
                             <td>
-                              <span
-                                style={{
-                                  padding: '0.2rem 0.55rem',
-                                  borderRadius: 'var(--radius-sm)',
-                                  fontSize: '0.72rem',
-                                  fontWeight: 700,
-                                  whiteSpace: 'nowrap',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '3px',
-                                  background: isRescheduled
-                                    ? 'rgba(147, 51, 234, 0.12)'
-                                    : isCompleted
-                                    ? 'rgba(0, 83, 78, 0.12)'
-                                    : isInProgress
-                                    ? 'rgba(235, 116, 0, 0.12)'
-                                    : 'rgba(21, 101, 192, 0.12)',
-                                  color: isRescheduled
-                                    ? '#7E22CE'
-                                    : isCompleted
-                                    ? '#00534E'
-                                    : isInProgress
-                                    ? '#EB7400'
-                                    : '#1565C0',
-                                  border: `1px solid ${
-                                    isRescheduled
-                                      ? 'rgba(147, 51, 234, 0.3)'
-                                      : isCompleted
-                                      ? 'rgba(0, 83, 78, 0.25)'
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
+                                <span
+                                  style={{
+                                    padding: '0.2rem 0.55rem',
+                                    borderRadius: 'var(--radius-sm)',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                    background: isCompleted
+                                      ? 'rgba(0, 83, 78, 0.12)'
                                       : isInProgress
-                                      ? 'rgba(235, 116, 0, 0.25)'
-                                      : 'rgba(21, 101, 192, 0.25)'
-                                  }`,
-                                }}
-                              >
-                                {isRescheduled && '🔄 Rescheduled'}
-                                {isCompleted && '✓ Completed'}
-                                {isInProgress && '▶ In Progress'}
-                                {!isRescheduled && !isCompleted && !isInProgress && '⏳ Scheduled'}
-                              </span>
+                                      ? 'rgba(235, 116, 0, 0.12)'
+                                      : 'rgba(21, 101, 192, 0.12)',
+                                    color: isCompleted
+                                      ? '#00534E'
+                                      : isInProgress
+                                      ? '#EB7400'
+                                      : '#1565C0',
+                                    border: `1px solid ${
+                                      isCompleted
+                                        ? 'rgba(0, 83, 78, 0.25)'
+                                        : isInProgress
+                                        ? 'rgba(235, 116, 0, 0.25)'
+                                        : 'rgba(21, 101, 192, 0.25)'
+                                    }`,
+                                  }}
+                                >
+                                  {isCompleted && '✓ Completed'}
+                                  {isInProgress && '▶ In Progress'}
+                                  {isScheduled && '⏳ Scheduled'}
+                                </span>
+                                {isRescheduled && (
+                                  <span
+                                    style={{
+                                      padding: '0.1rem 0.4rem',
+                                      borderRadius: 'var(--radius-sm)',
+                                      fontSize: '0.62rem',
+                                      fontWeight: 600,
+                                      background: 'rgba(147, 51, 234, 0.1)',
+                                      color: '#7E22CE',
+                                      border: '1px solid rgba(147, 51, 234, 0.25)',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '2px',
+                                    }}
+                                  >
+                                    🔄 Rescheduled
+                                  </span>
+                                )}
+                              </div>
                             </td>
 
                             <td style={{ fontSize: '0.85rem' }}>

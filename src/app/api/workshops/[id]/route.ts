@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import db from '@/lib/db';
 import { canUserViewWorkshop, canUserManageParticipants, canUserRescheduleWorkshop } from '@/lib/permissions';
+import { computeWorkshopStatus } from '@/lib/workshopStatus';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -45,8 +46,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       placeId: workshop.placeId || workshop.targetOrgId,
       placeName: workshop.placeName || placeOrg?.name || 'Local Zonal Branch',
       daysHeld: workshop.daysHeld || 2,
-      status: workshop.status || 'Scheduled',
-      statusName: workshop.status || workshop.statusName || 'Scheduled',
+      status: computeWorkshopStatus(workshop).status,
+      statusName: computeWorkshopStatus(workshop).statusName,
+      statusId: computeWorkshopStatus(workshop).statusId,
       confirmationStatus: workshop.confirmationStatus || 'Confirmed',
       organizingOrgName: organizingOrg?.name || workshop.branch || 'MOE Branch',
       targetOrgName: workshop.placeName || placeOrg?.name || 'Host Branch',

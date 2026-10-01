@@ -18,6 +18,21 @@ const MONTH_NAMES = [
 ];
 
 function normalizeStatus(ws: any): 'Completed' | 'In Progress' | 'Scheduled' {
+  const startStr = (ws.startDate || '').slice(0, 10);
+  const endStr = (ws.endDate || ws.startDate || '').slice(0, 10);
+
+  if (startStr) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${y}-${m}-${d}`;
+
+    if (todayStr > endStr) return 'Completed';
+    if (todayStr >= startStr && todayStr <= endStr) return 'In Progress';
+    return 'Scheduled';
+  }
+
   const s = (ws.status || ws.statusName || '').toLowerCase();
   const id = (ws.statusId || '').toLowerCase();
 
@@ -755,30 +770,21 @@ export default function DashboardCalendar({ workshops = [], onStatusChange, load
                       Open Workshop →
                     </Link>
 
-                    {/* Quick status dropdown */}
-                    {onStatusChange && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>Set:</span>
-                        <select
-                          value={status}
-                          disabled={isUpdating}
-                          onChange={(e) => handleQuickStatusChange(ws.id, e.target.value)}
-                          style={{
-                            fontSize: '0.7rem',
-                            padding: '0.15rem 0.35rem',
-                            borderRadius: 'var(--radius-sm)',
-                            border: '1px solid var(--border-default)',
-                            background: 'var(--bg-light)',
-                            color: 'var(--text-primary)',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <option value="Scheduled">Scheduled (Pending)</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Completed">Completed</option>
-                        </select>
-                      </div>
-                    )}
+                    <span style={{
+                      fontSize: '0.68rem',
+                      color: 'var(--text-tertiary)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                    }}>
+                      <span style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        background: status === 'Completed' ? '#00534E' : status === 'In Progress' ? '#EB7400' : '#1565C0',
+                      }} />
+                      Auto (by date)
+                    </span>
                   </div>
                 </div>
               );

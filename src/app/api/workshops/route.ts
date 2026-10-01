@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import db, { Workshop } from '@/lib/db';
 import { canUserViewWorkshop, canUserRescheduleWorkshop } from '@/lib/permissions';
 import { formatWorkshopId, getNextSequenceForBranch } from '@/lib/workshopId';
+import { computeWorkshopStatus } from '@/lib/workshopStatus';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(req: NextRequest) {
@@ -99,8 +100,9 @@ export async function GET(req: NextRequest) {
       placeId: w.placeId || w.targetOrgId,
       placeName: w.placeName || placeOrg?.name || 'Local Zonal Branch',
       daysHeld: w.daysHeld || 2,
-      status: w.status || 'Scheduled',
-      statusName: w.status || w.statusName || 'Scheduled',
+      status: computeWorkshopStatus(w).status,
+      statusName: computeWorkshopStatus(w).statusName,
+      statusId: computeWorkshopStatus(w).statusId,
       confirmationStatus: w.confirmationStatus || 'Confirmed',
       organizingOrgName: organizingOrg?.name || w.branch || 'MOE Branch',
       targetOrgName: w.placeName || placeOrg?.name || 'Host Branch',

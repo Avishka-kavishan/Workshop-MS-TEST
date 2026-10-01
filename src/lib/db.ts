@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-const DB_FILE = path.join(process.cwd(), 'data', 'database.json');
+const IS_VERCEL = process.env.VERCEL === '1' || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+const SOURCE_DB_FILE = path.join(process.cwd(), 'data', 'database.json');
+const DB_FILE = IS_VERCEL ? path.join('/tmp', 'database.json') : SOURCE_DB_FILE;
 
 export interface DbSchema {
   organizationTypes: OrganizationType[];
@@ -245,12 +247,26 @@ class JsonDatabase {
   private ensureDataDir(): void {
     const dir = path.dirname(DB_FILE);
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+      try {
+        fs.mkdirSync(dir, { recursive: true });
+      } catch (err) {
+        console.error('Error creating database directory:', err);
+      }
     }
   }
 
   read(): DbSchema {
     this.ensureDataDir();
+
+    if (IS_VERCEL && !fs.existsSync(DB_FILE)) {
+      if (fs.existsSync(SOURCE_DB_FILE)) {
+        try {
+          fs.copyFileSync(SOURCE_DB_FILE, DB_FILE);
+        } catch (err) {
+          console.error('Failed to copy seed database to /tmp:', err);
+        }
+      }
+    }
 
     if (!fs.existsSync(DB_FILE)) {
       const emptyDb: DbSchema = {

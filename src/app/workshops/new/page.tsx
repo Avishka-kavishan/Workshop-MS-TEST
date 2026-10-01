@@ -297,19 +297,29 @@ export default function NewWorkshopPage() {
       const assignments: HostAssignment[] = targetOrgs.map((org) => {
         const branches = cache[org.id] || [];
 
-        // Check if existing assignment exists to preserve user edit
-        const existing = hostAssignments.find((a) => a.orgId === org.id);
-        if (existing && branches.some((b: HierarchyOrg) => b.id === existing.branchId)) {
-          return {
-            ...existing,
-            availableBranches: branches,
-          };
+        // Pick branch matching defaultBranchName using robust semantic matching
+        const def = defaultBranchName.toLowerCase();
+        let selectedBranch = branches.find((b: HierarchyOrg) =>
+          b.name.toLowerCase() === def || b.name.toLowerCase().includes(def)
+        );
+
+        if (!selectedBranch) {
+          if (def.includes('it') || def.includes('ict')) {
+            selectedBranch = branches.find((b: HierarchyOrg) => /\b(it|ict)\b/i.test(b.name));
+          } else if (def.includes('plan')) {
+            selectedBranch = branches.find((b: HierarchyOrg) => /plan/i.test(b.name));
+          } else if (def.includes('educat')) {
+            selectedBranch = branches.find((b: HierarchyOrg) => /educat/i.test(b.name));
+          } else if (def.includes('admin')) {
+            selectedBranch = branches.find((b: HierarchyOrg) => /admin/i.test(b.name));
+          } else if (def.includes('train')) {
+            selectedBranch = branches.find((b: HierarchyOrg) => /train/i.test(b.name));
+          }
         }
 
-        // Otherwise pick default branch or first branch or the org itself
-        let selectedBranch = branches.find((b: HierarchyOrg) => b.name.toLowerCase().includes(defaultBranchName.toLowerCase())) || branches[0];
+        const shortOrg = org.name.replace(/ Zonal Education Office| Education Department/g, '').trim();
         const branchId = selectedBranch?.id || org.id;
-        const branchName = selectedBranch ? `${org.name} → ${selectedBranch.name}` : org.name;
+        const branchName = selectedBranch ? selectedBranch.name : `${shortOrg} ${defaultBranchName}`;
         const targetPath = [...(parentPathMap[org.id] || []), branchId !== org.id ? branchId : ''].filter(Boolean);
 
         return {
@@ -896,9 +906,6 @@ export default function NewWorkshopPage() {
           padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)',
           flexWrap: 'wrap',
         }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            Default Branch / Unit to assign:
-          </span>
           <select
             className="form-select"
             value={defaultBranchName}
@@ -932,9 +939,6 @@ export default function NewWorkshopPage() {
               </>
             )}
           </select>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-            (Applied to all below; you can also customize individual hosts)
-          </span>
         </div>
       </div>
     );
@@ -997,22 +1001,9 @@ export default function NewWorkshopPage() {
                     {assignment.orgName}
                   </td>
                   <td style={{ padding: '0.65rem 0.85rem' }}>
-                    {assignment.availableBranches.length > 0 ? (
-                      <select
-                        className="form-select"
-                        value={assignment.branchId}
-                        onChange={(e) => handleUpdateAssignmentBranch(assignment.orgId, e.target.value)}
-                        style={{ padding: '0.3rem 0.65rem', fontSize: '0.8rem', width: '100%', maxWidth: '280px' }}
-                      >
-                        {assignment.availableBranches.map((b) => (
-                          <option key={b.id} value={b.id}>{b.name}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                        {assignment.branchName}
-                      </span>
-                    )}
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', fontWeight: 500 }}>
+                      {assignment.availableBranches.find((b) => b.id === assignment.branchId)?.name || assignment.branchName}
+                    </span>
                   </td>
                   <td style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>
                     <button

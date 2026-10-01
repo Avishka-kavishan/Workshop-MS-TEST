@@ -265,6 +265,16 @@
       "unitType": "branch"
     },
     {
+      "id": "org-zone-colombo-plan",
+      "name": "Colombo Zone Planning Branch",
+      "code": "ZONE-COL-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-colombo",
+      "isActive": true,
+      "createdAt": "2026-09-28T06:03:41.165Z",
+      "unitType": "branch"
+    },
+    {
       "id": "org-zone-kandy-it",
       "name": "Kandy Zone IT Branch",
       "code": "ZONE-KANDY-IT",
@@ -1583,6 +1593,536 @@
       "unitType": "branch",
       "isActive": true,
       "createdAt": "2026-09-30T07:31:16.515Z"
+    },
+    {
+      "id": "org-zone-kandy-plan",
+      "name": "Kandy Zone Planning Branch",
+      "code": "ZONE-KANDY-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-kandy",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.142Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-matara-plan",
+      "name": "Matara Zone Planning Branch",
+      "code": "ZONE-MATARA-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-matara",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-gam-plan",
+      "name": "Gampaha Zone Planning Branch",
+      "code": "ZONE-GAM-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-gampaha",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-kal-plan",
+      "name": "Kalutara Zone Planning Branch",
+      "code": "ZONE-KAL-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-kalutara",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-mat-plan",
+      "name": "Matale Zone Planning Branch",
+      "code": "ZONE-MAT-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-matale",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-nuw-plan",
+      "name": "Nuwara Eliya Zone Planning Branch",
+      "code": "ZONE-NUW-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-nuwara eliya",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-ham-plan",
+      "name": "Hambantota Zone Planning Branch",
+      "code": "ZONE-HAM-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-hambantota",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-jaf-plan",
+      "name": "Jaffna Zone Planning Branch",
+      "code": "ZONE-JAF-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-jaffna",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-kil-plan",
+      "name": "Kilinochchi Zone Planning Branch",
+      "code": "ZONE-KIL-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-kilinochchi",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-man-plan",
+      "name": "Mannar Zone Planning Branch",
+      "code": "ZONE-MAN-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-mannar",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-vav-plan",
+      "name": "Vavuniya Zone Planning Branch",
+      "code": "ZONE-VAV-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-vavuniya",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-bat-plan",
+      "name": "Batticaloa Zone Planning Branch",
+      "code": "ZONE-BAT-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-batticaloa",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-tri-plan",
+      "name": "Trincomalee Zone Planning Branch",
+      "code": "ZONE-TRI-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-trincomalee",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-amp-plan",
+      "name": "Ampara Zone Planning Branch",
+      "code": "ZONE-AMP-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-ampara",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-kur-plan",
+      "name": "Kurunegala Zone Planning Branch",
+      "code": "ZONE-KUR-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-kurunegala",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-put-plan",
+      "name": "Puttalam Zone Planning Branch",
+      "code": "ZONE-PUT-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-puttalam",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-chl-plan",
+      "name": "Chilaw Zone Planning Branch",
+      "code": "ZONE-CHL-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-chilaw",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-anu-plan",
+      "name": "Anuradhapura Zone Planning Branch",
+      "code": "ZONE-ANU-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-anuradhapura",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-pol-plan",
+      "name": "Polonnaruwa Zone Planning Branch",
+      "code": "ZONE-POL-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-polonnaruwa",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-bad-plan",
+      "name": "Badulla Zone Planning Branch",
+      "code": "ZONE-BAD-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-badulla",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-mon-plan",
+      "name": "Monaragala Zone Planning Branch",
+      "code": "ZONE-MON-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-monaragala",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-rat-plan",
+      "name": "Ratnapura Zone Planning Branch",
+      "code": "ZONE-RAT-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-ratnapura",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-zone-keg-plan",
+      "name": "Kegalle Zone Planning Branch",
+      "code": "ZONE-KEG-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-zone-kegalle",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.143Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-wp-plan",
+      "name": "Western Province Planning Branch",
+      "code": "PROV-WP-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-western",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-cp-plan",
+      "name": "Central Province Planning Branch",
+      "code": "PROV-CP-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-central",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-sp-ed",
+      "name": "Southern Province Education Branch",
+      "code": "PROV-SP-ED",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-southern",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-sp-plan",
+      "name": "Southern Province Planning Branch",
+      "code": "PROV-SP-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-southern",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-np-plan",
+      "name": "Northern Province Planning Branch",
+      "code": "PROV-NP-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-northern",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-ep-plan",
+      "name": "Eastern Province Planning Branch",
+      "code": "PROV-EP-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-eastern",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-nw-plan",
+      "name": "North Western Province Planning Branch",
+      "code": "PROV-NW-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-north-western",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-nc-plan",
+      "name": "North Central Province Planning Branch",
+      "code": "PROV-NC-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-north-central",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-uva-plan",
+      "name": "Uva Province Planning Branch",
+      "code": "PROV-UVA-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-uva",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-prov-sab-plan",
+      "name": "Sabaragamuwa Province Planning Branch",
+      "code": "PROV-SAB-PLAN",
+      "typeId": "ot-branch",
+      "parentId": "org-prov-sabaragamuwa",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-ananda-admin",
+      "name": "Ananda College Administration Unit",
+      "code": "SCH-ANANDA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-ananda",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-royal-admin",
+      "name": "Royal College Administration Unit",
+      "code": "SCH-ROYAL-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-royal",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-vishaka-admin",
+      "name": "Visakha Vidyalaya Administration Unit",
+      "code": "SCH-VISHAKA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-vishaka",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-devi-admin",
+      "name": "Devi Balika Vidyalaya Administration Unit",
+      "code": "SCH-DEVI-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-devi",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-nalanda-admin",
+      "name": "Nalanda College Administration Unit",
+      "code": "SCH-NALANDA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-nalanda",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-richmond-admin",
+      "name": "Richmond College Administration Unit",
+      "code": "SCH-RICHMOND-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-richmond",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-mahinda-admin",
+      "name": "Mahinda College Administration Unit",
+      "code": "SCH-MAHINDA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-mahinda",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-southlands-admin",
+      "name": "Southlands College Administration Unit",
+      "code": "SCH-SOUTHLANDS-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-southlands",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-trinity-admin",
+      "name": "Trinity College Administration Unit",
+      "code": "SCH-TRINITY-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-trinity",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-dharmaraja-admin",
+      "name": "Dharmaraja College Administration Unit",
+      "code": "SCH-DHARMARAJA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-dharmaraja",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-mahamaya-admin",
+      "name": "Mahamaya Girls College Administration Unit",
+      "code": "SCH-MAHAMAYA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-mahamaya",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-kingswood-admin",
+      "name": "Kingswood College Administration Unit",
+      "code": "SCH-KINGSWOOD-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-kingswood",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-dss-admin",
+      "name": "D.S. Senanayake College Administration Unit",
+      "code": "SCH-DSS-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-ds-senanayake",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-bandar-admin",
+      "name": "Bandaranayake College Administration Unit",
+      "code": "SCH-BANDAR-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-bandaranayake",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-rahula-admin",
+      "name": "Rahula College Administration Unit",
+      "code": "SCH-RAHULA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-rahula",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.144Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-sujatha-admin",
+      "name": "Sujatha Vidyalaya Administration Unit",
+      "code": "SCH-SUJATHA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-sujatha",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.145Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-jfnc-admin",
+      "name": "Jaffna Central College Administration Unit",
+      "code": "SCH-JFNC-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-jaffna-central",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.145Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-jfnh-admin",
+      "name": "Jaffna Hindu College Administration Unit",
+      "code": "SCH-JFNH-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-jaffna-hindu",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.145Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-maliya-admin",
+      "name": "Maliyadeva College Administration Unit",
+      "code": "SCH-MALIYA-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-maliyadeva",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.145Z",
+      "unitType": "branch"
+    },
+    {
+      "id": "org-school-badc-admin",
+      "name": "Badulla Central College Administration Unit",
+      "code": "SCH-BADC-ADMIN",
+      "typeId": "ot-branch",
+      "parentId": "org-school-badulla-central",
+      "isActive": true,
+      "createdAt": "2026-10-01T09:42:18.145Z",
+      "unitType": "branch"
     }
   ],
   "userRoles": [

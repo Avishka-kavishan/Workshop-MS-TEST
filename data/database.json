@@ -2194,7 +2194,7 @@
       "roleId": "role-moe-officer",
       "isActive": true,
       "createdAt": "2026-09-28T06:03:41.165Z",
-      "lastLogin": "2026-09-30T05:15:55.084Z"
+      "lastLogin": "2026-10-12T03:24:52.583Z"
     },
     {
       "id": "user-galle-it",
@@ -3774,22 +3774,28 @@
       "aim": "Train teachers on integrating LMS platforms, interactive digital boards, and student engagement tools.",
       "placeId": "org-zone-galle-it",
       "placeName": "Galle Zone IT Branch",
-      "daysHeld": 3,
+      "daysHeld": 15,
       "workshopType": "Internal",
-      "startDate": "2026-09-08",
-      "endDate": "2026-09-10",
+      "startDate": "2026-10-08",
+      "endDate": "2026-10-22",
       "venue": "Galle District Education Resource Centre",
       "organizingOrgId": "org-moe-ict",
       "targetOrgId": "org-zone-galle-it",
       "expectedTrainees": 45,
-      "actualTrainees": 44,
-      "status": "Completed",
+      "actualTrainees": 0,
+      "status": "Rescheduled",
       "statusId": "status-completed",
-      "statusName": "Completed",
+      "statusName": "Rescheduled",
       "createdBy": "user-ict-officer",
       "creatorName": "MOE ICT Branch",
       "createdAt": "2026-09-01T08:00:00.000Z",
-      "updatedAt": "2026-09-10T16:00:00.000Z"
+      "updatedAt": "2026-10-12T03:32:14.259Z",
+      "originalStartDate": "2026-09-08",
+      "originalEndDate": "2026-09-10",
+      "originalVenue": "Galle District Education Resource Centre",
+      "lastRescheduledAt": "2026-10-12T03:32:14.259Z",
+      "lastRescheduleReason": "for testing",
+      "rescheduleCount": 2
     },
     {
       "id": "ws-2026-09-02",
@@ -4059,6 +4065,25 @@
       "attendanceStatus": "registered",
       "createdAt": "2026-10-01T10:14:30.428Z",
       "updatedAt": "2026-10-01T10:14:30.428Z"
+    },
+    {
+      "id": "1161278e-87a9-45fb-94c0-8647cf247a4a",
+      "workshopId": "ws-2026-09-01",
+      "serialNumber": 1,
+      "name": "Avishka Kavishan",
+      "nicNumber": "200280401310",
+      "position": "IT teacher",
+      "designation": "IT teacher",
+      "schoolInstitute": "Galle Zone IT Branch",
+      "organization": "Galle Zone IT Branch",
+      "region": "minuwangoda",
+      "province": "all",
+      "phone": "0785906572",
+      "email": "",
+      "remarks": "",
+      "attendanceStatus": "registered",
+      "createdAt": "2026-10-12T03:30:54.106Z",
+      "updatedAt": "2026-10-12T03:30:54.106Z"
     }
   ],
   "resourcePersons": [
@@ -4191,6 +4216,24 @@
       "message": "\"National Science & Technology Practical Pedagogy\" (Subject: Science & Technology) originally scheduled for 2026-09-29 to 2026-10-01 has been rescheduled to 2026-10-09 to 2026-10-21 by MOE ICT Branch. Reason: blaaa",
       "isRead": false,
       "createdAt": "2026-09-30T05:44:25.101Z"
+    },
+    {
+      "id": "6c7abb23-c2a7-4b8b-8efb-46193c8229c1",
+      "recipientOrgId": "org-zone-galle-it",
+      "workshopId": "ws-2026-09-01",
+      "title": "🔄 Workshop Rescheduled: Digital Smart Classroom Pedagogy & LMS Integration",
+      "message": "\"Digital Smart Classroom Pedagogy & LMS Integration\" (Subject: Information & Communication Technology) originally scheduled for 2026-09-08 to 2026-09-10 has been rescheduled to 2026-09-10 to 2026-09-19 by MOE ICT Branch. Reason: note\nnote \nnote",
+      "isRead": false,
+      "createdAt": "2026-10-12T03:30:13.702Z"
+    },
+    {
+      "id": "652c2f97-4f1e-4696-b124-8cc1892741f9",
+      "recipientOrgId": "org-zone-galle-it",
+      "workshopId": "ws-2026-09-01",
+      "title": "🔄 Workshop Rescheduled: Digital Smart Classroom Pedagogy & LMS Integration",
+      "message": "\"Digital Smart Classroom Pedagogy & LMS Integration\" (Subject: Information & Communication Technology) originally scheduled for 2026-09-10 to 2026-09-19 has been rescheduled to 2026-10-08 to 2026-10-22 by MOE ICT Branch. Reason: for testing",
+      "isRead": false,
+      "createdAt": "2026-10-12T03:32:14.259Z"
     }
   ],
   "meta": {
@@ -4214,6 +4257,42 @@
       "newVenue": "MAin hall",
       "reason": "blaaa",
       "createdAt": "2026-09-30T05:44:25.101Z"
+    },
+    {
+      "id": "RS-MV4P224M-624",
+      "workshopId": "ws-2026-09-01",
+      "rescheduledByUserId": "user-ict-officer",
+      "rescheduledByName": "MOE ICT Branch",
+      "rescheduledByOrgName": "MOE ICT Branch",
+      "rescheduledByBranchType": "organizer",
+      "oldStartDate": "2026-09-08",
+      "oldEndDate": "2026-09-10",
+      "oldDaysHeld": 3,
+      "oldVenue": "Galle District Education Resource Centre",
+      "newStartDate": "2026-09-10",
+      "newEndDate": "2026-09-19",
+      "newDaysHeld": 10,
+      "newVenue": "Galle District Education Resource Centre",
+      "reason": "note\nnote \nnote",
+      "createdAt": "2026-10-12T03:30:13.702Z"
+    },
+    {
+      "id": "RS-MV4P4N5F-778",
+      "workshopId": "ws-2026-09-01",
+      "rescheduledByUserId": "user-ict-officer",
+      "rescheduledByName": "MOE ICT Branch",
+      "rescheduledByOrgName": "MOE ICT Branch",
+      "rescheduledByBranchType": "organizer",
+      "oldStartDate": "2026-09-10",
+      "oldEndDate": "2026-09-19",
+      "oldDaysHeld": 10,
+      "oldVenue": "Galle District Education Resource Centre",
+      "newStartDate": "2026-10-08",
+      "newEndDate": "2026-10-22",
+      "newDaysHeld": 15,
+      "newVenue": "Galle District Education Resource Centre",
+      "reason": "for testing",
+      "createdAt": "2026-10-12T03:32:14.259Z"
     }
   ]
 }

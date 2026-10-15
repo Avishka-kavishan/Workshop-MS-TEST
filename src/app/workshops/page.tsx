@@ -133,7 +133,7 @@ export default function WorkshopsPage() {
               transition: 'all var(--ease)',
             }}
           >
-            <span>🌐 All Connected Workshops</span>
+            <span>🌐 All Workshops</span>
             <span
               style={{
                 fontSize: '0.72rem',
@@ -167,7 +167,7 @@ export default function WorkshopsPage() {
               transition: 'all var(--ease)',
             }}
           >
-            <span>📍 Workshops to Conduct (Host Place)</span>
+            <span>📍 Self conduct workshops</span>
             <span
               style={{
                 fontSize: '0.72rem',
@@ -201,7 +201,7 @@ export default function WorkshopsPage() {
               transition: 'all var(--ease)',
             }}
           >
-            <span>📤 Workshops You Scheduled (Organizer)</span>
+            <span>📤 Workshop conduct by organizer</span>
             <span
               style={{
                 fontSize: '0.72rem',

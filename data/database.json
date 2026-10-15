@@ -2194,7 +2194,7 @@
       "roleId": "role-moe-officer",
       "isActive": true,
       "createdAt": "2026-09-28T06:03:41.165Z",
-      "lastLogin": "2026-10-12T03:24:52.583Z"
+      "lastLogin": "2026-10-15T04:19:52.779Z"
     },
     {
       "id": "user-galle-it",
@@ -2232,7 +2232,8 @@
       "organizationId": "org-prov-southern-it",
       "roleId": "role-place-coordinator",
       "isActive": true,
-      "createdAt": "2026-09-28T06:03:41.165Z"
+      "createdAt": "2026-09-28T06:03:41.165Z",
+      "lastLogin": "2026-10-15T04:11:33.210Z"
     },
     {
       "id": "user-colombo-it",
@@ -3878,6 +3879,40 @@
       "creatorName": "MOE ICT Branch",
       "createdAt": "2026-09-29T08:55:43.652Z",
       "updatedAt": "2026-10-01T09:53:26.489Z"
+    },
+    {
+      "id": "d657e0d5-4b4a-40c9-984f-ab68fd3166a6",
+      "workshopNumber": "MOE/ICT/20261015/0004",
+      "year": "2026",
+      "branch": "MOE ICT Branch",
+      "subject": "Information & Communication Technology",
+      "title": "jk",
+      "aim": "ll",
+      "expectedOutput": "ll",
+      "placeId": "org-prov-southern-it",
+      "placeName": "Southern Province IT Branch",
+      "targetLevel": "province",
+      "targetPath": [
+        "org-prov-southern",
+        "org-prov-southern-it"
+      ],
+      "daysHeld": 3,
+      "startDate": "2026-10-15",
+      "endDate": "2026-10-17",
+      "venue": "",
+      "organizingOrgId": "org-moe-ict",
+      "targetOrgId": "org-prov-southern-it",
+      "isSelfOrganized": false,
+      "expectedTrainees": 40,
+      "actualTrainees": 0,
+      "status": "Scheduled",
+      "statusId": "status-scheduled",
+      "statusName": "Scheduled",
+      "confirmationStatus": "Confirmed",
+      "createdBy": "user-ict-officer",
+      "creatorName": "MOE ICT Branch",
+      "createdAt": "2026-10-15T04:07:50.431Z",
+      "updatedAt": "2026-10-15T04:07:50.431Z"
     }
   ],
   "trainees": [
@@ -4234,6 +4269,15 @@
       "message": "\"Digital Smart Classroom Pedagogy & LMS Integration\" (Subject: Information & Communication Technology) originally scheduled for 2026-09-10 to 2026-09-19 has been rescheduled to 2026-10-08 to 2026-10-22 by MOE ICT Branch. Reason: for testing",
       "isRead": false,
       "createdAt": "2026-10-12T03:32:14.259Z"
+    },
+    {
+      "id": "3ff70aee-48c9-4886-9ca9-0f1e9c0f3423",
+      "recipientOrgId": "org-prov-southern-it",
+      "workshopId": "d657e0d5-4b4a-40c9-984f-ab68fd3166a6",
+      "title": "📢 Workshop Scheduled at Southern Province IT Branch",
+      "message": "MOE ICT Branch has scheduled \"jk\" (Subject: Information & Communication Technology) at Southern Province IT Branch for 3 days in 2026. You can now add trainees and resource persons.",
+      "isRead": false,
+      "createdAt": "2026-10-15T04:07:50.431Z"
     }
   ],
   "meta": {

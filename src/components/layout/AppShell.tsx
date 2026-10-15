@@ -92,6 +92,7 @@ export default function AppShell({ children }: AppShellProps) {
   };
 
   const navItems = [
+    { href: '/workshops/new',  icon: '➕', label: 'Schedule New Workshop', exact: true, isAction: true },
     { href: '/dashboard',      icon: '📊', label: 'Dashboard' },
     { href: '/workshops',      icon: '📋', label: 'Workshops',      exact: false },
     { href: '/reports',        icon: '📈', label: 'Analytics & Reports' },
@@ -188,6 +189,51 @@ export default function AppShell({ children }: AppShellProps) {
         <nav style={{ flex: 1, padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
           {navItems.map((item) => {
             const active = isActive(item.href, item.exact);
+            if (item.isAction) {
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.625rem',
+                    padding: '0.65rem 1rem',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    background: active
+                      ? 'rgba(255,255,255,0.22)'
+                      : 'rgba(255,255,255,0.1)',
+                    border: active
+                      ? '1px solid rgba(255, 190, 41, 0.8)'
+                      : '1px solid rgba(255,255,255,0.18)',
+                    borderLeft: active ? '3px solid #FFBE29' : '1px solid rgba(255,255,255,0.18)',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    transition: 'all 150ms ease',
+                    textDecoration: 'none',
+                    marginBottom: '0.45rem',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.12)',
+                  }}
+                  onMouseEnter={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.18)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+                    }
+                  }}
+                >
+                  <span style={{ fontSize: '1.05rem', color: '#FFBE29' }}>{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            }
             return (
               <Link
                 key={item.href}
@@ -299,7 +345,7 @@ export default function AppShell({ children }: AppShellProps) {
               <span style={{ color: 'var(--primary)', fontWeight: 600, textTransform: 'capitalize' }}>
                 {pathname === '/dashboard' ? 'Dashboard'
                   : pathname === '/workshops' ? 'Workshops'
-                  : pathname === '/workshops/new' ? 'Plan Workshop'
+                  : pathname === '/workshops/new' ? 'Schedule New Workshop'
                   : pathname === '/organizations' ? 'Organizations'
                   : pathname === '/reports' ? 'Reports'
                   : pathname.startsWith('/workshops/') ? 'Workshop Details'
@@ -576,7 +622,7 @@ export default function AppShell({ children }: AppShellProps) {
             }}>
               ➕
             </div>
-            <span style={{ marginTop: '2px', fontWeight: 600 }}>Plan</span>
+            <span style={{ marginTop: '2px', fontWeight: 600 }}>Schedule</span>
           </Link>
           <Link
             href="/reports"

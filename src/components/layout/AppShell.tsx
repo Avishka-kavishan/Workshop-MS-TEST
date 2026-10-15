@@ -92,15 +92,18 @@ export default function AppShell({ children }: AppShellProps) {
   };
 
   const navItems = [
-    { href: '/workshops/new',  icon: '➕', label: 'Schedule New Workshop', exact: true, isAction: true },
-    { href: '/dashboard',      icon: '📊', label: 'Dashboard' },
-    { href: '/workshops',      icon: '📋', label: 'Workshops',      exact: false },
-    { href: '/reports',        icon: '📈', label: 'Analytics & Reports' },
+    { href: '/workshops/new',         icon: '➕', label: 'Schedule New Workshop', exact: true, isAction: true },
+    { href: '/resource-persons/new',  icon: '👤', label: 'Register Resource Person', exact: true, isAction: true },
+    { href: '/dashboard',             icon: '📊', label: 'Dashboard' },
+    { href: '/workshops',             icon: '📋', label: 'Workshops',             exact: false },
+    { href: '/resource-persons',      icon: '👥', label: 'Resource Persons',      exact: false },
+    { href: '/reports',               icon: '📈', label: 'Analytics & Reports' },
   ];
 
   const isActive = (href: string, exact = false) => {
     if (exact) return pathname === href;
     if (href === '/workshops') return pathname.startsWith('/workshops') && pathname !== '/workshops/new';
+    if (href === '/resource-persons') return pathname.startsWith('/resource-persons') && pathname !== '/resource-persons/new';
     return pathname === href || pathname.startsWith(href + '/');
   };
 
@@ -346,6 +349,8 @@ export default function AppShell({ children }: AppShellProps) {
                 {pathname === '/dashboard' ? 'Dashboard'
                   : pathname === '/workshops' ? 'Workshops'
                   : pathname === '/workshops/new' ? 'Schedule New Workshop'
+                  : pathname === '/resource-persons/new' ? 'Register Resource Person'
+                  : pathname.startsWith('/resource-persons') ? 'Resource Persons'
                   : pathname === '/organizations' ? 'Organizations'
                   : pathname === '/reports' ? 'Reports'
                   : pathname.startsWith('/workshops/') ? 'Workshop Details'

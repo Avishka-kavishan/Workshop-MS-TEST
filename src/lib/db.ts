@@ -184,7 +184,7 @@ export interface Trainee {
 
 export interface ResourcePerson {
   id: string;
-  workshopId: string;
+  workshopId?: string;
   serialNumber?: number;
   nic?: string;
   name: string;

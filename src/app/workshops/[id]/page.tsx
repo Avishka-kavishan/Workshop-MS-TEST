@@ -191,6 +191,7 @@ export default function WorkshopDetailPage() {
   // Resource Person Modal state
   const [showRpModal, setShowRpModal] = useState(false);
   const [editingRp, setEditingRp] = useState<any>(null);
+  const [poolRps, setPoolRps] = useState<any[]>([]);
   const [rpForm, setRpForm] = useState({
     serialNumber: 1,
     nic: '',
@@ -381,6 +382,10 @@ export default function WorkshopDetailPage() {
       });
     }
     setShowRpModal(true);
+    fetch('/api/resource-persons')
+      .then((res) => res.json())
+      .then((d) => setPoolRps(d.resourcePersons || []))
+      .catch(() => {});
   };
 
   const handleSaveRp = async (e: React.FormEvent) => {
@@ -1689,6 +1694,52 @@ export default function WorkshopDetailPage() {
 
               <form onSubmit={handleSaveRp}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                  {/* Quick Autofill from Registered Resource Persons Pool */}
+                  {!editingRp && poolRps.length > 0 && (
+                    <div style={{
+                      background: 'rgba(0, 83, 78, 0.05)',
+                      border: '1px dashed var(--teal)',
+                      borderRadius: '6px',
+                      padding: '0.75rem',
+                      marginBottom: '0.25rem'
+                    }}>
+                      <label className="form-label" style={{ color: 'var(--teal-dark)', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+                        ⭐ Quick Autofill from Registered Resource Persons Pool
+                      </label>
+                      <select
+                        className="form-input"
+                        style={{ fontSize: '0.85rem' }}
+                        defaultValue=""
+                        onChange={(e) => {
+                          const selected = poolRps.find((p) => p.id === e.target.value);
+                          if (selected) {
+                            setRpForm((prev) => ({
+                              ...prev,
+                              nic: selected.nic || prev.nic,
+                              name: selected.name || prev.name,
+                              position: selected.position || selected.designation || prev.position,
+                              service: selected.service || prev.service,
+                              grade: selected.grade || prev.grade,
+                              workplace: selected.workplace || selected.organization || prev.workplace,
+                              personalAddress: selected.personalAddress || prev.personalAddress,
+                              educationalQualifications: selected.educationalQualifications || prev.educationalQualifications,
+                              subjectQualifications: selected.subjectQualifications || selected.expertiseArea || prev.subjectQualifications,
+                              phone: selected.phone || prev.phone,
+                              specialNotes: selected.specialNotes || selected.remarks || prev.specialNotes,
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">-- Choose from registered resource persons to autofill --</option>
+                        {poolRps.map((p: any) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} {p.position ? `(${p.position})` : ''} {p.workplace ? `— ${p.workplace}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   {/* 1. Serial Number (Auto-generated) & 2. NIC Number */}
                   <div className="form-row">

@@ -2181,7 +2181,8 @@
       "organizationId": "org-moe-planning",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "createdAt": "2026-09-28T06:03:41.165Z"
+      "createdAt": "2026-09-28T06:03:41.165Z",
+      "lastLogin": "2026-10-15T09:10:23.843Z"
     },
     {
       "id": "user-ict-officer",
@@ -2194,7 +2195,7 @@
       "roleId": "role-moe-officer",
       "isActive": true,
       "createdAt": "2026-09-28T06:03:41.165Z",
-      "lastLogin": "2026-10-15T04:19:52.779Z"
+      "lastLogin": "2026-10-15T09:36:37.430Z"
     },
     {
       "id": "user-galle-it",
@@ -3912,7 +3913,7 @@
       "createdBy": "user-ict-officer",
       "creatorName": "MOE ICT Branch",
       "createdAt": "2026-10-15T04:07:50.431Z",
-      "updatedAt": "2026-10-15T04:07:50.431Z"
+      "updatedAt": "2026-10-15T09:45:32.079Z"
     }
   ],
   "trainees": [
@@ -4119,6 +4120,25 @@
       "attendanceStatus": "registered",
       "createdAt": "2026-10-12T03:30:54.106Z",
       "updatedAt": "2026-10-12T03:30:54.106Z"
+    },
+    {
+      "id": "68739579-ef0b-4005-a3da-e6a0c92c7d57",
+      "workshopId": "d657e0d5-4b4a-40c9-984f-ab68fd3166a6",
+      "serialNumber": 1,
+      "name": "kumari",
+      "nicNumber": "3888999",
+      "position": "IT teacher",
+      "designation": "IT teacher",
+      "schoolInstitute": "Southern Province IT Branch",
+      "organization": "Southern Province IT Branch",
+      "region": "minuwangoda",
+      "province": "all",
+      "phone": "0785906572",
+      "email": "",
+      "remarks": "",
+      "attendanceStatus": "registered",
+      "createdAt": "2026-10-15T09:45:32.079Z",
+      "updatedAt": "2026-10-15T09:45:32.079Z"
     }
   ],
   "resourcePersons": [
@@ -4193,6 +4213,30 @@
       "remarks": "Managing software installations",
       "createdAt": "2026-09-28T06:03:41.165Z",
       "updatedAt": "2026-09-28T06:03:41.165Z"
+    },
+    {
+      "id": "543bf6a0-21b9-46df-8187-47427478dded",
+      "workshopId": "d657e0d5-4b4a-40c9-984f-ab68fd3166a6",
+      "serialNumber": 4,
+      "nic": "198912304567",
+      "name": "Lahiru Gunasekara",
+      "position": "Technical Consultant",
+      "service": "Sri Lanka ICT Service (SLICTS)",
+      "grade": "Grade II",
+      "workplace": "MOE - ICT Branch",
+      "personalAddress": "No. 88, Galle Road, Colombo 03",
+      "educationalQualifications": "B.Sc in Information Technology, CCNA, RHCE",
+      "subjectQualifications": "Server Infrastructure & Linux Lab Orchestration",
+      "phone": "0778901234",
+      "specialNotes": "Managing software installations and local network setup",
+      "organization": "MOE - ICT Branch",
+      "designation": "Technical Consultant",
+      "expertiseArea": "Server Infrastructure & Linux Lab Orchestration",
+      "roleInWorkshop": "Lead Facilitator",
+      "email": "",
+      "remarks": "Managing software installations and local network setup",
+      "createdAt": "2026-10-15T09:44:28.064Z",
+      "updatedAt": "2026-10-15T09:44:28.064Z"
     }
   ],
   "workshopApprovals": [],

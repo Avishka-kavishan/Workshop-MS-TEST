@@ -174,7 +174,7 @@ export default function ResourcePersonsPage() {
 
   return (
     <AppShell>
-      <div style={{ paddingBottom: '3rem' }}>
+      <div className="page-container" style={{ paddingBottom: '3rem' }}>
 
         {/* ── Toast Notification ── */}
         {toast && (
@@ -200,9 +200,7 @@ export default function ResourcePersonsPage() {
         )}
 
         {/* ── Top Header ── */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
+        <div className="page-header" style={{
           alignItems: 'flex-start',
           flexWrap: 'wrap',
           gap: '1rem',
@@ -217,10 +215,10 @@ export default function ResourcePersonsPage() {
               </span>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Ministry of Education Sri Lanka</span>
             </div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--primary)', margin: 0, letterSpacing: '-0.02em' }}>
+            <h1 className="page-title" style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>
               Resource Persons & Facilitators
             </h1>
-            <p style={{ margin: '0.35rem 0 0 0', color: 'var(--text-secondary)', fontSize: '0.92rem' }}>
+            <p className="page-subtitle" style={{ margin: 0 }}>
               Manage expert trainers, lecturers, and facilitators registered across the education sector.
             </p>
           </div>
@@ -236,7 +234,7 @@ export default function ResourcePersonsPage() {
                 padding: '0.65rem 1.25rem',
                 fontWeight: 600,
                 fontSize: '0.9rem',
-                boxShadow: '0 3px 10px rgba(141, 21, 58, 0.25)'
+                boxShadow: 'var(--shadow-primary)'
               }}
             >
               <span>➕</span> Register Resource Person
@@ -245,22 +243,15 @@ export default function ResourcePersonsPage() {
         </div>
 
         {/* ── Stats Summary Cards ── */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1rem',
-          marginBottom: '1.75rem'
-        }}>
-          <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '10px',
+        <div className="stats-grid" style={{ marginBottom: '1.75rem' }}>
+          <div className="stat-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stat-icon" style={{
               background: 'rgba(141, 21, 58, 0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.5rem'
+              fontSize: '1.5rem',
+              borderRadius: 'var(--radius-md)'
             }}>
               👥
             </div>
@@ -268,22 +259,20 @@ export default function ResourcePersonsPage() {
               <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
                 Total Resource Persons
               </div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+              <div className="stat-value" style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2 }}>
                 {totalCount}
               </div>
             </div>
           </div>
 
-          <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '10px',
+          <div className="stat-card teal" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stat-icon" style={{
               background: 'rgba(0, 83, 78, 0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.5rem'
+              fontSize: '1.5rem',
+              borderRadius: 'var(--radius-md)'
             }}>
               ⭐
             </div>
@@ -291,22 +280,20 @@ export default function ResourcePersonsPage() {
               <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
                 Master Pool (Without Workshop)
               </div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--teal)', lineHeight: 1.2 }}>
+              <div className="stat-value" style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--teal)', lineHeight: 1.2 }}>
                 {unassignedCount}
               </div>
             </div>
           </div>
 
-          <div className="card" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '10px',
+          <div className="stat-card accent" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stat-icon" style={{
               background: 'rgba(235, 116, 0, 0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.5rem'
+              fontSize: '1.5rem',
+              borderRadius: 'var(--radius-md)'
             }}>
               📋
             </div>
@@ -314,7 +301,7 @@ export default function ResourcePersonsPage() {
               <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
                 Assigned to Workshops
               </div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent)', lineHeight: 1.2 }}>
+              <div className="stat-value" style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent)', lineHeight: 1.2 }}>
                 {assignedCount}
               </div>
             </div>
@@ -388,7 +375,7 @@ export default function ResourcePersonsPage() {
         </div>
 
         {/* ── Resource Persons Table ── */}
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="card" style={{ padding: '0.75rem' }}>
           {loading ? (
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-tertiary)' }}>
               Loading resource persons...
@@ -405,8 +392,8 @@ export default function ResourcePersonsPage() {
               </Link>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="table" style={{ margin: 0 }}>
+            <div className="table-container">
+              <table className="data-table" style={{ margin: 0 }}>
                 <thead>
                   <tr>
                     <th style={{ width: '60px' }}>#</th>

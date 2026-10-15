@@ -192,6 +192,9 @@ export default function WorkshopDetailPage() {
   const [showRpModal, setShowRpModal] = useState(false);
   const [editingRp, setEditingRp] = useState<any>(null);
   const [poolRps, setPoolRps] = useState<any[]>([]);
+  const [rpSearchQuery, setRpSearchQuery] = useState('');
+  const [rpSearchDropdownOpen, setRpSearchDropdownOpen] = useState(false);
+  const [selectedPoolRp, setSelectedPoolRp] = useState<any>(null);
   const [rpForm, setRpForm] = useState({
     serialNumber: 1,
     nic: '',
@@ -344,6 +347,9 @@ export default function WorkshopDetailPage() {
 
   // ── Resource Person Handlers ────────────────────────────────────────
   const handleOpenRpModal = (rp?: any) => {
+    setRpSearchQuery('');
+    setRpSearchDropdownOpen(false);
+    setSelectedPoolRp(null);
     if (rp) {
       setEditingRp(rp);
       setRpForm({
@@ -384,8 +390,38 @@ export default function WorkshopDetailPage() {
     setShowRpModal(true);
     fetch('/api/resource-persons')
       .then((res) => res.json())
-      .then((d) => setPoolRps(d.resourcePersons || []))
+      .then((d) => {
+        const allRps = d.resourcePersons || [];
+        setPoolRps(allRps);
+        if (!rp) {
+          const maxSerial = allRps.reduce((max: number, r: any) => Math.max(max, r.serialNumber || 0), 0);
+          setRpForm((prev) => ({
+            ...prev,
+            serialNumber: maxSerial + 1,
+          }));
+        }
+      })
       .catch(() => {});
+  };
+
+  const handleSelectPoolRp = (selected: any) => {
+    setSelectedPoolRp(selected);
+    setRpSearchQuery(`${selected.name}${selected.nic ? ` (NIC: ${selected.nic})` : ''}`);
+    setRpSearchDropdownOpen(false);
+    setRpForm((prev) => ({
+      ...prev,
+      nic: selected.nic || prev.nic,
+      name: selected.name || prev.name,
+      position: selected.position || selected.designation || prev.position,
+      service: selected.service || prev.service,
+      grade: selected.grade || prev.grade,
+      workplace: selected.workplace || selected.organization || prev.workplace,
+      personalAddress: selected.personalAddress || prev.personalAddress,
+      educationalQualifications: selected.educationalQualifications || prev.educationalQualifications,
+      subjectQualifications: selected.subjectQualifications || selected.expertiseArea || prev.subjectQualifications,
+      phone: selected.phone || prev.phone,
+      specialNotes: selected.specialNotes || selected.remarks || prev.specialNotes,
+    }));
   };
 
   const handleSaveRp = async (e: React.FormEvent) => {
@@ -1695,51 +1731,229 @@ export default function WorkshopDetailPage() {
               <form onSubmit={handleSaveRp}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-                  {/* Quick Autofill from Registered Resource Persons Pool */}
-                  {!editingRp && poolRps.length > 0 && (
-                    <div style={{
-                      background: 'rgba(0, 83, 78, 0.05)',
-                      border: '1px dashed var(--teal)',
-                      borderRadius: '6px',
-                      padding: '0.75rem',
-                      marginBottom: '0.25rem'
-                    }}>
-                      <label className="form-label" style={{ color: 'var(--teal-dark)', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>
-                        ⭐ Quick Autofill from Registered Resource Persons Pool
-                      </label>
-                      <select
-                        className="form-input"
-                        style={{ fontSize: '0.85rem' }}
-                        defaultValue=""
-                        onChange={(e) => {
-                          const selected = poolRps.find((p) => p.id === e.target.value);
-                          if (selected) {
-                            setRpForm((prev) => ({
-                              ...prev,
-                              nic: selected.nic || prev.nic,
-                              name: selected.name || prev.name,
-                              position: selected.position || selected.designation || prev.position,
-                              service: selected.service || prev.service,
-                              grade: selected.grade || prev.grade,
-                              workplace: selected.workplace || selected.organization || prev.workplace,
-                              personalAddress: selected.personalAddress || prev.personalAddress,
-                              educationalQualifications: selected.educationalQualifications || prev.educationalQualifications,
-                              subjectQualifications: selected.subjectQualifications || selected.expertiseArea || prev.subjectQualifications,
-                              phone: selected.phone || prev.phone,
-                              specialNotes: selected.specialNotes || selected.remarks || prev.specialNotes,
-                            }));
-                          }
-                        }}
-                      >
-                        <option value="">-- Choose from registered resource persons to autofill --</option>
-                        {poolRps.map((p: any) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} {p.position ? `(${p.position})` : ''} {p.workplace ? `— ${p.workplace}` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  {/* Quick Search & Autofill from Registered Resource Persons Pool */}
+                  {!editingRp && poolRps.length > 0 && (() => {
+                    const filteredPoolRps = poolRps.filter((p: any) => {
+                      if (!rpSearchQuery.trim()) return true;
+                      const q = rpSearchQuery.toLowerCase().trim();
+                      const nameMatch = p.name && p.name.toLowerCase().includes(q);
+                      const nicMatch = p.nic && p.nic.toLowerCase().includes(q);
+                      return nameMatch || nicMatch;
+                    });
+
+                    return (
+                      <div style={{
+                        background: 'rgba(0, 83, 78, 0.04)',
+                        border: '1.5px dashed var(--teal)',
+                        borderRadius: '8px',
+                        padding: '0.85rem 1rem',
+                        marginBottom: '0.5rem',
+                        position: 'relative'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                          <label className="form-label" style={{ color: 'var(--teal-dark)', fontSize: '0.82rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <span>⭐</span> Quick Search & Autofill from Resource Persons Pool
+                          </label>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
+                            Type to filter by Name or NIC
+                          </span>
+                        </div>
+
+                        {/* Search Input Container */}
+                        <div style={{ position: 'relative' }}>
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <span style={{
+                              position: 'absolute',
+                              left: '0.75rem',
+                              color: 'var(--text-tertiary)',
+                              fontSize: '0.95rem',
+                              pointerEvents: 'none',
+                              zIndex: 1
+                            }}>
+                              🔍
+                            </span>
+                            <input
+                              type="text"
+                              className="form-input"
+                              placeholder="Type Name or NIC to search and autofill..."
+                              value={rpSearchQuery}
+                              onFocus={() => setRpSearchDropdownOpen(true)}
+                              onChange={(e) => {
+                                setRpSearchQuery(e.target.value);
+                                setRpSearchDropdownOpen(true);
+                                if (selectedPoolRp) setSelectedPoolRp(null);
+                              }}
+                              style={{
+                                paddingLeft: '2.25rem',
+                                paddingRight: rpSearchQuery ? '2.25rem' : '0.875rem',
+                                fontSize: '0.875rem',
+                                borderColor: rpSearchDropdownOpen ? 'var(--teal)' : 'var(--border-default)',
+                                boxShadow: rpSearchDropdownOpen ? '0 0 0 3px rgba(0, 83, 78, 0.12)' : 'none'
+                              }}
+                            />
+                            {rpSearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRpSearchQuery('');
+                                  setSelectedPoolRp(null);
+                                  setRpSearchDropdownOpen(false);
+                                }}
+                                style={{
+                                  position: 'absolute',
+                                  right: '0.6rem',
+                                  background: 'none',
+                                  border: 'none',
+                                  color: 'var(--text-tertiary)',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  padding: '0.25rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  zIndex: 1
+                                }}
+                                title="Clear search"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Selected Indicator Pill */}
+                          {selectedPoolRp && (
+                            <div style={{
+                              marginTop: '0.45rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '0.5rem',
+                              fontSize: '0.76rem',
+                              color: 'var(--teal-dark)',
+                              background: 'var(--teal-10)',
+                              padding: '0.35rem 0.65rem',
+                              borderRadius: 'var(--radius-sm)',
+                              border: '1px solid var(--teal-20)'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <span>✓</span>
+                                <span>Autofilled from: <strong>{selectedPoolRp.name}</strong> {selectedPoolRp.nic ? `• NIC: ${selectedPoolRp.nic}` : ''}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPoolRp(null);
+                                  setRpSearchQuery('');
+                                }}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: 'var(--teal-dark)',
+                                  cursor: 'pointer',
+                                  fontSize: '0.72rem',
+                                  textDecoration: 'underline',
+                                  padding: 0
+                                }}
+                              >
+                                Reset
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Dropdown Results Menu */}
+                          {rpSearchDropdownOpen && (
+                            <>
+                              <div
+                                style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+                                onClick={() => setRpSearchDropdownOpen(false)}
+                              />
+                              <div style={{
+                                position: 'absolute',
+                                top: 'calc(100% + 4px)',
+                                left: 0,
+                                right: 0,
+                                background: 'var(--white)',
+                                border: '1px solid var(--border-medium)',
+                                borderRadius: 'var(--radius-md)',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                                zIndex: 999,
+                                maxHeight: '230px',
+                                overflowY: 'auto'
+                              }}>
+                                <div style={{
+                                  padding: '0.45rem 0.75rem',
+                                  background: 'var(--gray-100)',
+                                  borderBottom: '1px solid var(--border-light)',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  color: 'var(--text-tertiary)',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.04em',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center'
+                                }}>
+                                  <span>Pool Resource Persons ({filteredPoolRps.length})</span>
+                                  <span>Search matches Name or NIC</span>
+                                </div>
+
+                                {filteredPoolRps.length === 0 ? (
+                                  <div style={{ padding: '1rem', fontSize: '0.82rem', color: 'var(--text-tertiary)', textAlign: 'center' }}>
+                                    No registered resource persons found matching "<strong>{rpSearchQuery}</strong>"
+                                  </div>
+                                ) : (
+                                  filteredPoolRps.map((p: any) => (
+                                    <div
+                                      key={p.id}
+                                      onClick={() => handleSelectPoolRp(p)}
+                                      style={{
+                                        padding: '0.65rem 0.85rem',
+                                        borderBottom: '1px solid var(--border-light)',
+                                        cursor: 'pointer',
+                                        transition: 'background var(--ease)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: '0.75rem',
+                                        background: selectedPoolRp?.id === p.id ? 'var(--teal-10)' : 'transparent'
+                                      }}
+                                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--gray-100)'; }}
+                                      onMouseLeave={(e) => { e.currentTarget.style.background = selectedPoolRp?.id === p.id ? 'var(--teal-10)' : 'transparent'; }}
+                                    >
+                                      <div style={{ minWidth: 0, flex: 1 }}>
+                                        <div style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--text-primary)' }}>
+                                          {p.name}
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginTop: '2px', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                                          {p.nic && (
+                                            <span style={{ background: 'var(--gray-200)', padding: '0.05rem 0.35rem', borderRadius: '3px', color: 'var(--text-secondary)' }}>
+                                              NIC: <strong style={{ fontFamily: 'var(--font-mono)' }}>{p.nic}</strong>
+                                            </span>
+                                          )}
+                                          {(p.position || p.workplace) && (
+                                            <span>
+                                              {[p.position, p.workplace].filter(Boolean).join(' — ')}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        className="btn btn-secondary btn-sm"
+                                        style={{ fontSize: '0.72rem', padding: '0.2rem 0.6rem', whiteSpace: 'nowrap', pointerEvents: 'none' }}
+                                      >
+                                        Select & Autofill ↵
+                                      </button>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* 1. Serial Number (Auto-generated) & 2. NIC Number */}
                   <div className="form-row">
@@ -1757,31 +1971,58 @@ export default function WorkshopDetailPage() {
                     </div>
 
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">
-                        NIC Number
+                      <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span>NIC Number</span>
+                        {selectedPoolRp && (
+                          <span style={{ fontSize: '0.72rem', color: 'var(--teal)', fontWeight: 600 }}>
+                            🔒 Locked (Registry)
+                          </span>
+                        )}
                       </label>
                       <input
                         type="text"
                         className="form-input"
                         placeholder="e.g. 198512345678 or 851234567V"
                         value={rpForm.nic}
-                        onChange={(e) => setRpForm({ ...rpForm, nic: e.target.value })}
+                        readOnly={!!selectedPoolRp}
+                        onChange={(e) => !selectedPoolRp && setRpForm({ ...rpForm, nic: e.target.value })}
+                        style={selectedPoolRp ? {
+                          background: 'var(--bg-light)',
+                          color: 'var(--text-secondary)',
+                          cursor: 'not-allowed',
+                          borderColor: 'var(--border-light)'
+                        } : {}}
                       />
                     </div>
                   </div>
 
                   {/* 3. Name */}
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">
-                      Name <span className="required">*</span>
+                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>
+                        Name <span className="required">*</span>
+                      </span>
+                      {selectedPoolRp && (
+                        <span style={{ fontSize: '0.72rem', color: 'var(--teal)', fontWeight: 600 }}>
+                          🔒 Locked (Registry)
+                        </span>
+                      )}
                     </label>
                     <input
                       type="text"
                       className="form-input"
                       placeholder="e.g. K.A. Nimal Fernando"
                       value={rpForm.name}
-                      onChange={(e) => setRpForm({ ...rpForm, name: e.target.value })}
+                      readOnly={!!selectedPoolRp}
+                      onChange={(e) => !selectedPoolRp && setRpForm({ ...rpForm, name: e.target.value })}
                       required
+                      style={selectedPoolRp ? {
+                        background: 'var(--bg-light)',
+                        color: 'var(--text-secondary)',
+                        cursor: 'not-allowed',
+                        borderColor: 'var(--border-light)',
+                        fontWeight: 600
+                      } : {}}
                     />
                   </div>
 

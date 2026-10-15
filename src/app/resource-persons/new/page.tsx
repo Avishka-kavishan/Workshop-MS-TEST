@@ -133,7 +133,7 @@ export default function RegisterResourcePersonPage() {
 
   return (
     <AppShell>
-      <div style={{ maxWidth: '980px', margin: '0 auto', paddingBottom: '3rem' }}>
+      <div className="page-container" style={{ maxWidth: '980px', margin: '0 auto', paddingBottom: '3rem' }}>
 
         {/* ── Page Header ── */}
         <div style={{

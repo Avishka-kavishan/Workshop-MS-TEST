@@ -77,10 +77,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     let newRP: ResourcePerson | null = null;
 
     db.update((d) => {
-      // Auto-generate serial number for this workshop
-      const existingRps = d.resourcePersons.filter((r) => r.workshopId === params.id);
-      const maxSerial = existingRps.reduce((max, r) => Math.max(max, r.serialNumber || 0), 0);
-      const computedSerial = serialNumber ? Number(serialNumber) : (maxSerial > 0 ? maxSerial + 1 : existingRps.length + 1);
+      // Auto-generate serial number - globally unique across all resource persons so hash # never duplicates
+      const maxSerial = (d.resourcePersons || []).reduce((max, r) => Math.max(max, r.serialNumber || 0), 0);
+      const computedSerial = serialNumber && Number(serialNumber) > 0 && !(d.resourcePersons || []).some((r) => r.serialNumber === Number(serialNumber))
+        ? Number(serialNumber)
+        : maxSerial + 1;
 
       const resolvedWorkplace = (workplace || organization || '').trim();
       const resolvedPosition = (position || designation || '').trim();

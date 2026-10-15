@@ -92,18 +92,11 @@ export async function POST(req: NextRequest) {
         ? workshopId.trim()
         : '';
 
-      // Determine serial number
-      let computedSerial = 1;
-      if (serialNumber) {
-        computedSerial = Number(serialNumber);
-      } else if (resolvedWsId) {
-        const existingForWs = d.resourcePersons.filter((r) => r.workshopId === resolvedWsId);
-        const maxSerial = existingForWs.reduce((max, r) => Math.max(max, r.serialNumber || 0), 0);
-        computedSerial = maxSerial > 0 ? maxSerial + 1 : existingForWs.length + 1;
-      } else {
-        const maxSerial = d.resourcePersons.reduce((max, r) => Math.max(max, r.serialNumber || 0), 0);
-        computedSerial = maxSerial > 0 ? maxSerial + 1 : d.resourcePersons.length + 1;
-      }
+      // Determine serial number - globally unique across all resource persons so hash # never duplicates
+      const maxSerial = d.resourcePersons.reduce((max, r) => Math.max(max, r.serialNumber || 0), 0);
+      const computedSerial = serialNumber && Number(serialNumber) > 0 && !d.resourcePersons.some((r) => r.serialNumber === Number(serialNumber))
+        ? Number(serialNumber)
+        : maxSerial + 1;
 
       const resolvedWorkplace = (workplace || organization || '').trim();
       const resolvedPosition = (position || designation || '').trim();

@@ -61,15 +61,31 @@ const poolConfig = connectionString
     };
 
 async function ensureDatabaseExists() {
-  // If we are connecting to a local Postgres server with a target database name,
-  // ensure the database exists or create it.
-  if (connectionString) return; // For remote connection strings, the database is assumed to exist
+  let targetDb = 'workshop_ms';
+  let maintenanceConfig;
 
-  const targetDb = poolConfig.database;
-  const maintenanceClient = new Client({
-    ...poolConfig,
-    database: 'postgres',
-  });
+  if (connectionString) {
+    if (!isLocalhost) return; // For cloud databases (Supabase, Neon, etc.) database already exists
+    try {
+      const parsedUrl = new URL(connectionString);
+      targetDb = parsedUrl.pathname.replace(/^\//, '') || 'workshop_ms';
+      parsedUrl.pathname = '/postgres';
+      maintenanceConfig = {
+        connectionString: parsedUrl.toString(),
+        ssl: false,
+      };
+    } catch {
+      return;
+    }
+  } else {
+    targetDb = poolConfig.database;
+    maintenanceConfig = {
+      ...poolConfig,
+      database: 'postgres',
+    };
+  }
+
+  const maintenanceClient = new Client(maintenanceConfig);
 
   try {
     await maintenanceClient.connect();

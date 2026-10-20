@@ -139,18 +139,17 @@ async function seedData(pool) {
     );
   }
 
-  // 2. Organizations
+  // 2. Organizations (Two-pass insert to avoid self-referential parent_id constraint conflicts)
   for (const o of data.organizations || []) {
     await pool.query(
       `INSERT INTO organizations (id, name, code, type_id, parent_id, unit_type, address, phone, email, is_active, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       VALUES ($1, $2, $3, $4, NULL, $5, $6, $7, $8, $9, $10)
        ON CONFLICT (id) DO NOTHING`,
       [
         o.id,
         o.name,
         o.code || null,
         o.typeId || null,
-        o.parentId || null,
         o.unitType || 'location',
         o.address || null,
         o.phone || null,
@@ -159,6 +158,16 @@ async function seedData(pool) {
         o.createdAt || new Date().toISOString(),
       ]
     );
+  }
+
+  // Update parent_id references
+  for (const o of data.organizations || []) {
+    if (o.parentId) {
+      await pool.query(
+        `UPDATE organizations SET parent_id = $1 WHERE id = $2`,
+        [o.parentId, o.id]
+      ).catch(() => {});
+    }
   }
 
   // 3. User Roles

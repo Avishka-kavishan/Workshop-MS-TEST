@@ -347,7 +347,7 @@ export async function updateDb(
 
       // 1. Sync Workshops
       const currentWorkshopIds = new Set(current.workshops.map((w) => w.id));
-      for (const oldId of prevWorkshopIds) {
+      for (const oldId of Array.from(prevWorkshopIds)) {
         if (!currentWorkshopIds.has(oldId)) {
           await query('DELETE FROM workshops WHERE id = $1', [oldId]);
         }
@@ -358,7 +358,7 @@ export async function updateDb(
 
       // 2. Sync Trainees
       const currentTraineeIds = new Set(current.trainees.map((t) => t.id));
-      for (const oldId of prevTraineeIds) {
+      for (const oldId of Array.from(prevTraineeIds)) {
         if (!currentTraineeIds.has(oldId)) {
           await query('DELETE FROM trainees WHERE id = $1', [oldId]);
         }
@@ -369,7 +369,7 @@ export async function updateDb(
 
       // 3. Sync Resource Persons
       const currentRpIds = new Set(current.resourcePersons.map((r) => r.id));
-      for (const oldId of prevRpIds) {
+      for (const oldId of Array.from(prevRpIds)) {
         if (!currentRpIds.has(oldId)) {
           await query('DELETE FROM resource_persons WHERE id = $1', [oldId]);
         }

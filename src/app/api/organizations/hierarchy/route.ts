@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db, { getDb } from '@/lib/db';
 
 /**
  * GET /api/organizations/hierarchy
@@ -14,7 +14,7 @@ import db from '@/lib/db';
  *   ?includeBranches=true                 — embed branches into each org item
  */
 export async function GET(req: NextRequest) {
-  const data = db.read();
+  const data = await getDb();
   const { searchParams } = new URL(req.url);
   const level = searchParams.get('level');
   const parentId = searchParams.get('parentId');

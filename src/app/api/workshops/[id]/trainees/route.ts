@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db, { Trainee } from '@/lib/db';
+import db, { getDb, updateDb, Trainee } from '@/lib/db';
 import { canUserViewWorkshop, canUserManageParticipants } from '@/lib/permissions';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const now = new Date().toISOString();
     let newTrainee: Trainee | null = null;
 
-    db.update((d) => {
+    await updateDb((d) => {
       // Auto-generate serial number for this workshop
       const existingTrainees = d.trainees.filter((t) => t.workshopId === params.id);
       const maxSerial = existingTrainees.reduce((max, t) => Math.max(max, t.serialNumber || 0), 0);

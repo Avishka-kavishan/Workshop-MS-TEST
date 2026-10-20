@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb } from '@/lib/db';
 import { getPermittedTargetOrganizations } from '@/lib/permissions';
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as any;
-  const data = db.read();
+  const data = await getDb();
 
   const permittedTargetOrgs = user
     ? getPermittedTargetOrganizations(user.id, user.organizationId, user.roleName)

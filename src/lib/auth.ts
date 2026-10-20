@@ -1,7 +1,7 @@
 import { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import db from '@/lib/db';
+import db, { getDb, updateDb } from '@/lib/db';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const data = db.read();
+        const data = await getDb();
         const user = data.users.find(
           (u) => u.username === credentials.username && u.isActive
         );
@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
         const org = data.organizations.find((o) => o.id === user.organizationId);
 
         // Update last login
-        db.update((d) => {
+        await updateDb((d) => {
           const u = d.users.find((u) => u.id === user.id);
           if (u) u.lastLogin = new Date().toISOString();
         });
@@ -74,7 +74,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        const data = db.read();
+        const data = await getDb();
         const freshUser = data.users.find(
           (u) => u.id === token.id || u.username === token.username
         );

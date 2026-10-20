@@ -15,10 +15,11 @@ export function getAvailablePlaces(): Organization[] {
 export function getPermittedTargetOrganizations(
   userId: string,
   userOrgId: string,
-  roleName: string
+  roleName: string,
+  organizations?: Organization[]
 ): Organization[] {
-  const data = db.read();
-  const allOrgs = data.organizations.filter((o) => o.isActive && o.id !== 'org-moe');
+  const orgList = organizations || db.read().organizations;
+  const allOrgs = orgList.filter((o) => o.isActive && o.id !== 'org-moe');
   return allOrgs;
 }
 
@@ -35,7 +36,8 @@ export function getPermittedTargetOrganizations(
 export function canUserViewWorkshop(
   user: { id: string; organizationId: string; roleName: string; organizationName?: string; username?: string },
   workshop: Workshop,
-  allowAdminAll = false
+  allowAdminAll = false,
+  organizations?: Organization[]
 ): boolean {
   if (!user) return false;
 
@@ -74,8 +76,8 @@ export function canUserViewWorkshop(
   }
 
   // 4. Parent org check — e.g. if user is at Zone level and workshop is at a sub-branch of that zone
-  const data = db.read();
-  const placeOrg = data.organizations.find(
+  const orgList = organizations || db.read().organizations;
+  const placeOrg = orgList.find(
     (o) => o.id === (workshop.placeId || workshop.targetOrgId)
   );
   if (placeOrg?.parentId && placeOrg.parentId === user.organizationId) {
@@ -142,7 +144,8 @@ export function canUserManageParticipants(
  */
 export function canUserRescheduleWorkshop(
   user: { id?: string; organizationId?: string; roleName?: string; organizationName?: string; username?: string } | null | undefined,
-  workshop: Workshop | null | undefined
+  workshop: Workshop | null | undefined,
+  organizations?: Organization[]
 ): boolean {
   if (!user || !workshop) return false;
 
@@ -181,8 +184,8 @@ export function canUserRescheduleWorkshop(
 
   // 5. Parent org check — e.g. if user is at Zone level and workshop is at a sub-branch of that zone
   try {
-    const data = db.read();
-    const placeOrg = data.organizations.find(
+    const orgList = organizations || db.read().organizations;
+    const placeOrg = orgList.find(
       (o) => o.id === (workshop.placeId || workshop.targetOrgId)
     );
     if (placeOrg?.parentId && placeOrg.parentId === user.organizationId) {

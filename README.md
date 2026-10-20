@@ -75,11 +75,47 @@ Default password for all demo accounts: `password123`
 
 ## 🛠️ How to Run Locally
 
+### Option A: With PostgreSQL Backend (Recommended for Production & Vercel)
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment variables**:
+   Create a `.env.local` file (or copy from `.env.example`):
+   ```env
+   DATABASE_URL=postgresql://postgres:your_password@localhost:5432/workshop_ms
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=workshop-management-system-secret-key-2026
+   ```
+   *(Works seamlessly with local PostgreSQL, Supabase, Neon, AWS RDS, or Vercel Postgres)*
+
+3. **Initialize & Seed PostgreSQL database**:
+   ```bash
+   npm run db:init
+   ```
+   *(This creates all relational tables, foreign keys, performance indexes, and seeds initial data from `database.json`)*
+
+4. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Verify database connection**:
+   Visit [http://localhost:3000/api/db-status](http://localhost:3000/api/db-status) to confirm PostgreSQL status and table row counts.
+
+---
+
+### Option B: Without PostgreSQL (Local JSON Fallback)
+
+If no `DATABASE_URL` is configured, the system automatically falls back to the embedded local JSON database:
+
 ```bash
-# 1. Install dependencies (if not already installed)
+# 1. Install dependencies
 npm install
 
-# 2. Seed database with educational hierarchy and sample workshops
+# 2. Seed JSON database with initial educational hierarchy and sample workshops
 node src/lib/seed.js
 
 # 3. Start development server
@@ -87,3 +123,4 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+

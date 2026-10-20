@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb, updateDb } from '@/lib/db';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const now = new Date().toISOString();
 
-    db.update((d) => {
+    await updateDb((d) => {
       const w = d.workshops.find((item) => item.id === params.id);
       if (w) {
         w.status = targetStatus;

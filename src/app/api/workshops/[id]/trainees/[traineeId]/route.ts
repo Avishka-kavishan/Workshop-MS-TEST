@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb, updateDb } from '@/lib/db';
 
 export async function PUT(
   req: NextRequest,
@@ -13,7 +13,7 @@ export async function PUT(
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -41,7 +41,7 @@ export async function PUT(
 
     const now = new Date().toISOString();
 
-    db.update((d) => {
+    await updateDb((d) => {
       const trainee = d.trainees.find((t) => t.id === params.traineeId && t.workshopId === params.id);
       if (trainee) {
         if (serialNumber !== undefined) trainee.serialNumber = Number(serialNumber);
@@ -101,14 +101,14 @@ export async function DELETE(
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
     return NextResponse.json({ error: 'Workshop not found' }, { status: 404 });
   }
 
-  db.update((d) => {
+  await updateDb((d) => {
     d.trainees = d.trainees.filter((t) => !(t.id === params.traineeId && t.workshopId === params.id));
     const attendedCount = d.trainees.filter(
       (t) => t.workshopId === params.id && t.attendanceStatus === 'attended'

@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "node src/lib/seed.js"
+    "seed": "node src/lib/seed.js",
+    "db:init": "node scripts/init-db.js",
+    "db:seed": "node scripts/init-db.js --seed"
   },
   "keywords": [],
   "author": "",
@@ -15,10 +17,12 @@
   "type": "commonjs",
   "dependencies": {
     "@types/node": "^26.6.2",
+    "@types/pg": "^8.23.1",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.3",
     "next": "^14.2.35",
     "next-auth": "^4.24.15",
+    "pg": "^8.23.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sql.js": "^1.14.2",

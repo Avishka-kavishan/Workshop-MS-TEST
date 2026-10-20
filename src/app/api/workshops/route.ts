@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db, { Workshop } from '@/lib/db';
+import db, { getDb, updateDb, Workshop } from '@/lib/db';
 import { canUserViewWorkshop, canUserRescheduleWorkshop } from '@/lib/permissions';
 import { formatWorkshopId, getNextSequenceForBranch } from '@/lib/workshopId';
 import { computeWorkshopStatus } from '@/lib/workshopStatus';
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const connectionFilter = searchParams.get('connection'); // 'to-conduct' | 'scheduled-by-you' | 'all'
 
-  const data = db.read();
+  const data = await getDb();
 
   // Filter based on user permissions: only workshops connected to the user
   const allConnected = data.workshops.filter((w) => canUserViewWorkshop(user, w));
@@ -185,12 +185,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please select at least one host organization / branch.' }, { status: 400 });
     }
 
-    const data = db.read();
+    const data = await getDb();
     const now = new Date().toISOString();
 
     const createdWorkshops: Workshop[] = [];
 
-    db.update((dbData) => {
+    await updateDb((dbData) => {
       if (!dbData.notifications) dbData.notifications = [];
 
       // Calculate start and end dates

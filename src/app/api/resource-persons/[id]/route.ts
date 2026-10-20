@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb, updateDb } from '@/lib/db';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const data = db.read();
+  const data = await getDb();
   const rp = data.resourcePersons.find((r) => r.id === params.id);
   if (!rp) {
     return NextResponse.json({ error: 'Resource person not found' }, { status: 404 });
@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const body = await req.json();
-    const data = db.read();
+    const data = await getDb();
     const rp = data.resourcePersons.find((r) => r.id === params.id);
     if (!rp) {
       return NextResponse.json({ error: 'Resource person not found' }, { status: 404 });
@@ -67,7 +67,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const now = new Date().toISOString();
     let updatedRP: any = null;
 
-    db.update((d) => {
+    await updateDb((d) => {
       const target = d.resourcePersons.find((r) => r.id === params.id);
       if (!target) return;
 
@@ -115,13 +115,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const data = db.read();
+  const data = await getDb();
   const rp = data.resourcePersons.find((r) => r.id === params.id);
   if (!rp) {
     return NextResponse.json({ error: 'Resource person not found' }, { status: 404 });
   }
 
-  db.update((d) => {
+  await updateDb((d) => {
     d.resourcePersons = d.resourcePersons.filter((r) => r.id !== params.id);
   });
 

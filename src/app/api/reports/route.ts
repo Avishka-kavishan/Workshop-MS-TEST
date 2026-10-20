@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb } from '@/lib/db';
 import { canUserViewWorkshop } from '@/lib/permissions';
 import { computeWorkshopStatus } from '@/lib/workshopStatus';
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
 
   // Permitted workshops for this user
   const userWorkshops = data.workshops.filter((w) => canUserViewWorkshop(user, w));

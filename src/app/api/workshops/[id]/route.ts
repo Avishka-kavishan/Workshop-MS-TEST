@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb, updateDb } from '@/lib/db';
 import { canUserViewWorkshop, canUserManageParticipants, canUserRescheduleWorkshop } from '@/lib/permissions';
 import { computeWorkshopStatus } from '@/lib/workshopStatus';
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const now = new Date().toISOString();
 
-    db.update((d) => {
+    await updateDb((d) => {
       const w = d.workshops.find((item) => item.id === params.id);
       if (w) {
         if (status) {
@@ -114,14 +114,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
     return NextResponse.json({ error: 'Workshop not found' }, { status: 404 });
   }
 
-  db.update((d) => {
+  await updateDb((d) => {
     d.workshops = d.workshops.filter((w) => w.id !== params.id);
     d.trainees = d.trainees.filter((t) => t.workshopId !== params.id);
     d.resourcePersons = d.resourcePersons.filter((r) => r.workshopId !== params.id);

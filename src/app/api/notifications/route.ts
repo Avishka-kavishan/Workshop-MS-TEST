@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb, updateDb } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const allNotifications = data.notifications || [];
 
   // Notifications relevant to user: either targeted to their organizationId, userId, or if admin
@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const { notificationId, markAllRead } = body;
 
-  db.update((data) => {
+  await updateDb((data) => {
     if (!data.notifications) data.notifications = [];
     if (markAllRead) {
       data.notifications.forEach((n) => {

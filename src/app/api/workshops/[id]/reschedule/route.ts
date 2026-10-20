@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db, { WorkshopReschedule } from '@/lib/db';
+import db, { getDb, updateDb, WorkshopReschedule } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { canUserRescheduleWorkshop } from '@/lib/permissions';
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const data = db.read();
+    const data = await getDb();
     const workshop = data.workshops.find((w) => w.id === params.id);
     if (!workshop) {
       return NextResponse.json({ error: 'Workshop not found' }, { status: 404 });
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const user = session.user as any;
-    const data = db.read();
+    const data = await getDb();
     const workshop = data.workshops.find((w) => w.id === params.id);
 
     if (!workshop) {
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       createdAt: now,
     };
 
-    db.update((d) => {
+    await updateDb((d) => {
       const ws = d.workshops.find((w) => w.id === params.id);
       if (ws) {
         if (!ws.originalStartDate) ws.originalStartDate = oldStart;

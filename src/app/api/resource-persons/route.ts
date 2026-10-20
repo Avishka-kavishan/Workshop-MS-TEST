@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db, { ResourcePerson } from '@/lib/db';
+import db, { getDb, updateDb, ResourcePerson } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(req: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const workshopId = searchParams.get('workshopId');
   const search = (searchParams.get('search') || '').trim().toLowerCase();
 
-  const data = db.read();
+  const data = await getDb();
   let list = data.resourcePersons || [];
 
   if (workshopId === 'unassigned') {
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     let newRP: ResourcePerson | null = null;
 
-    db.update((d) => {
+    await updateDb((d) => {
       if (!d.resourcePersons) d.resourcePersons = [];
 
       const resolvedWsId = (workshopId && workshopId.trim() !== '' && workshopId !== 'none' && workshopId !== 'unassigned')

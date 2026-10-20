@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db, { ResourcePerson } from '@/lib/db';
+import db, { getDb, updateDb, ResourcePerson } from '@/lib/db';
 import { canUserViewWorkshop, canUserManageParticipants } from '@/lib/permissions';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const user = session.user as any;
-  const data = db.read();
+  const data = await getDb();
   const workshop = data.workshops.find((w) => w.id === params.id);
 
   if (!workshop) {
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const now = new Date().toISOString();
     let newRP: ResourcePerson | null = null;
 
-    db.update((d) => {
+    await updateDb((d) => {
       // Auto-generate serial number - globally unique across all resource persons so hash # never duplicates
       const maxSerial = (d.resourcePersons || []).reduce((max, r) => Math.max(max, r.serialNumber || 0), 0);
       const computedSerial = serialNumber && Number(serialNumber) > 0 && !(d.resourcePersons || []).some((r) => r.serialNumber === Number(serialNumber))

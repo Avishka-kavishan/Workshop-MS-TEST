@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import db from '@/lib/db';
+import db, { getDb, updateDb } from '@/lib/db';
 import { canUserManageParticipants } from '@/lib/permissions';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const user = session.user as any;
-    const data = db.read();
+    const data = await getDb();
     const workshop = data.workshops.find((w) => w.id === params.id);
 
     if (!workshop) {
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const now = new Date().toISOString();
     let attendedCount = 0;
 
-    db.update((d) => {
+    await updateDb((d) => {
       const workshopTrainees = d.trainees.filter((t) => t.workshopId === params.id);
 
       workshopTrainees.forEach((trainee) => {

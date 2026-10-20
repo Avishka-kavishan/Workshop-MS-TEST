@@ -1,5 +1,15 @@
 import fs from 'fs';
 import path from 'path';
+import { isPostgresConfigured, query } from './pg';
+import {
+  loadFullSchemaFromPostgres,
+  pgInsertWorkshop,
+  pgInsertTrainee,
+  pgInsertResourcePerson,
+  pgInsertReschedule,
+  pgInsertNotification,
+  pgSetMeta,
+} from './postgres';
 
 const IS_VERCEL = process.env.VERCEL === '1' || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 const SOURCE_DB_FILE = path.join(process.cwd(), 'data', 'database.json');
@@ -20,7 +30,7 @@ export interface DbSchema {
   attachments: Attachment[];
   notifications: Notification[];
   workshopReschedules: WorkshopReschedule[];
-  meta: { lastWorkshopNumber: number; };
+  meta: { lastWorkshopNumber: number };
 }
 
 export interface OrganizationType {
@@ -37,7 +47,7 @@ export interface Organization {
   code: string;
   typeId: string;
   parentId: string | null;
-  unitType?: 'location' | 'branch';  // 'location' = Province/Zone/School, 'branch' = internal division/unit
+  unitType?: 'location' | 'branch';
   address?: string;
   phone?: string;
   email?: string;
@@ -98,21 +108,18 @@ export interface WorkshopStatus {
 export interface Workshop {
   id: string;
   workshopNumber: string;
-  // User's specific required fields:
-  year: string;                   // Year (e.g. "2025")
-  branch: string;                 // Organizing Branch (e.g. "MOE - ICT Branch")
-  subject: string;                // Subject (e.g. "Information & Communication Technology")
-  title: string;                  // Workshop Title / Name
-  aim: string;                    // Objectives of the workshop
-  expectedOutput?: string;        // Expected output of the workshop
-  placeId: string;                // Place ID (The other user / branch unit, e.g. "org-zone-galle-it")
-  placeName: string;              // Place name (e.g. "Galle Zone IT Branch")
-  targetLevel?: 'national' | 'province' | 'zone' | 'school';  // Which hierarchy level was targeted
-  targetPath?: string[];          // Array of org IDs from top→bottom (e.g. ["org-prov-western", "org-zone-colombo", "org-school-ananda"])
-  daysHeld: number;               // How many days it held (e.g. 3)
+  year: string;
+  branch: string;
+  subject: string;
+  title: string;
+  aim: string;
+  expectedOutput?: string;
+  placeId: string;
+  placeName: string;
+  targetLevel?: 'national' | 'province' | 'zone' | 'school';
+  targetPath?: string[];
+  daysHeld: number;
   workshopType?: string;
-  
-  // Timing & legacy compatibility:
   startDate: string;
   endDate: string;
   venue?: string;
@@ -171,7 +178,6 @@ export interface Trainee {
   region?: string;
   province?: string;
   phone?: string;
-  // Legacy / fallback fields
   designation?: string;
   organization?: string;
   email?: string;
@@ -197,7 +203,6 @@ export interface ResourcePerson {
   subjectQualifications?: string;
   phone?: string;
   specialNotes?: string;
-  // Legacy / backward-compat fields
   organization?: string;
   designation?: string;
   expertiseArea?: string;
@@ -241,85 +246,195 @@ export interface Attachment {
   createdAt: string;
 }
 
-class JsonDatabase {
-  private data: DbSchema | null = null;
+// ── JSON Local File Helpers ──────────────────────────────────────────
 
-  private ensureDataDir(): void {
-    const dir = path.dirname(DB_FILE);
-    if (!fs.existsSync(dir)) {
+function ensureDataDir(): void {
+  const dir = path.dirname(DB_FILE);
+  if (!fs.existsSync(dir)) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (err) {
+      console.error('Error creating database directory:', err);
+    }
+  }
+}
+
+function readJsonFile(): DbSchema {
+  ensureDataDir();
+
+  if (IS_VERCEL && !fs.existsSync(DB_FILE)) {
+    if (fs.existsSync(SOURCE_DB_FILE)) {
       try {
-        fs.mkdirSync(dir, { recursive: true });
+        fs.copyFileSync(SOURCE_DB_FILE, DB_FILE);
       } catch (err) {
-        console.error('Error creating database directory:', err);
+        console.error('Failed to copy seed database to /tmp:', err);
       }
     }
   }
 
-  read(): DbSchema {
-    this.ensureDataDir();
+  if (!fs.existsSync(DB_FILE)) {
+    const emptyDb: DbSchema = {
+      organizationTypes: [],
+      organizations: [],
+      userRoles: [],
+      users: [],
+      userOrgPermissions: [],
+      workshopCategories: [],
+      workshopStatuses: [],
+      workshops: [],
+      trainees: [],
+      resourcePersons: [],
+      workshopApprovals: [],
+      attachments: [],
+      notifications: [],
+      workshopReschedules: [],
+      meta: { lastWorkshopNumber: 0 },
+    };
+    writeJsonFile(emptyDb);
+    return emptyDb;
+  }
 
-    if (IS_VERCEL && !fs.existsSync(DB_FILE)) {
-      if (fs.existsSync(SOURCE_DB_FILE)) {
-        try {
-          fs.copyFileSync(SOURCE_DB_FILE, DB_FILE);
-        } catch (err) {
-          console.error('Failed to copy seed database to /tmp:', err);
+  try {
+    const raw = fs.readFileSync(DB_FILE, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (!parsed.notifications) parsed.notifications = [];
+    if (!parsed.workshopReschedules) parsed.workshopReschedules = [];
+    return parsed as DbSchema;
+  } catch (err) {
+    console.error('Error reading JSON database file:', err);
+    throw err;
+  }
+}
+
+function writeJsonFile(data: DbSchema): void {
+  try {
+    ensureDataDir();
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    // Non-fatal if read-only filesystem
+    console.warn('Could not write JSON database file:', err);
+  }
+}
+
+// ── Core Async Database Methods (PostgreSQL + JSON Fallback) ──────────
+
+export async function getDb(): Promise<DbSchema> {
+  if (isPostgresConfigured()) {
+    try {
+      return await loadFullSchemaFromPostgres();
+    } catch (err: any) {
+      console.error('[Database] Failed to query PostgreSQL, falling back to JSON:', err?.message);
+      return readJsonFile();
+    }
+  }
+  return readJsonFile();
+}
+
+export async function updateDb(
+  updater: (data: DbSchema) => void | Promise<void>
+): Promise<DbSchema> {
+  const isPg = isPostgresConfigured();
+
+  if (isPg) {
+    try {
+      const current = await loadFullSchemaFromPostgres();
+      // Clone previous collections for diffing
+      const prevWorkshopIds = new Set(current.workshops.map((w) => w.id));
+      const prevTraineeIds = new Set(current.trainees.map((t) => t.id));
+      const prevRpIds = new Set(current.resourcePersons.map((r) => r.id));
+
+      await updater(current);
+
+      // 1. Sync Workshops
+      const currentWorkshopIds = new Set(current.workshops.map((w) => w.id));
+      for (const oldId of prevWorkshopIds) {
+        if (!currentWorkshopIds.has(oldId)) {
+          await query('DELETE FROM workshops WHERE id = $1', [oldId]);
         }
       }
-    }
+      for (const w of current.workshops) {
+        await pgInsertWorkshop(w);
+      }
 
-    if (!fs.existsSync(DB_FILE)) {
-      const emptyDb: DbSchema = {
-        organizationTypes: [],
-        organizations: [],
-        userRoles: [],
-        users: [],
-        userOrgPermissions: [],
-        workshopCategories: [],
-        workshopStatuses: [],
-        workshops: [],
-        trainees: [],
-        resourcePersons: [],
-        workshopApprovals: [],
-        attachments: [],
-        notifications: [],
-        workshopReschedules: [],
-        meta: { lastWorkshopNumber: 0 },
-      };
-      this.write(emptyDb);
-      return emptyDb;
-    }
+      // 2. Sync Trainees
+      const currentTraineeIds = new Set(current.trainees.map((t) => t.id));
+      for (const oldId of prevTraineeIds) {
+        if (!currentTraineeIds.has(oldId)) {
+          await query('DELETE FROM trainees WHERE id = $1', [oldId]);
+        }
+      }
+      for (const t of current.trainees) {
+        await pgInsertTrainee(t);
+      }
 
-    try {
-      const raw = fs.readFileSync(DB_FILE, 'utf-8');
-      const parsed = JSON.parse(raw);
-      if (!parsed.notifications) parsed.notifications = [];
-      if (!parsed.workshopReschedules) parsed.workshopReschedules = [];
-      this.data = parsed as DbSchema;
-      return this.data;
-    } catch (err) {
-      if (this.data) return this.data;
-      throw err;
+      // 3. Sync Resource Persons
+      const currentRpIds = new Set(current.resourcePersons.map((r) => r.id));
+      for (const oldId of prevRpIds) {
+        if (!currentRpIds.has(oldId)) {
+          await query('DELETE FROM resource_persons WHERE id = $1', [oldId]);
+        }
+      }
+      for (const rp of current.resourcePersons) {
+        await pgInsertResourcePerson(rp);
+      }
+
+      // 4. Sync Reschedules
+      for (const r of current.workshopReschedules || []) {
+        await pgInsertReschedule(r);
+      }
+
+      // 5. Sync Notifications
+      for (const n of current.notifications || []) {
+        await pgInsertNotification(n);
+      }
+
+      // 6. Sync Metadata
+      if (current.meta?.lastWorkshopNumber !== undefined) {
+        await pgSetMeta('lastWorkshopNumber', String(current.meta.lastWorkshopNumber));
+      }
+
+      // Also update JSON file as a local backup if writable
+      writeJsonFile(current);
+
+      return current;
+    } catch (err: any) {
+      console.error('[Database] Failed to persist updates to PostgreSQL, falling back to JSON:', err?.message);
     }
+  }
+
+  // Fallback to JSON file storage
+  const data = readJsonFile();
+  await updater(data);
+  writeJsonFile(data);
+  return data;
+}
+
+// ── Backward-Compatible db Object ─────────────────────────────────────
+
+class DatabaseFacade {
+  read(): DbSchema {
+    return readJsonFile();
   }
 
   write(data: DbSchema): void {
-    this.ensureDataDir();
-    this.data = data;
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    writeJsonFile(data);
   }
 
   update(updater: (data: DbSchema) => void): DbSchema {
     const data = this.read();
     updater(data);
     this.write(data);
+    // If PostgreSQL is configured, schedule async persistence in background
+    if (isPostgresConfigured()) {
+      updateDb((d) => {
+        updater(d);
+      }).catch((e) => console.error('[DatabaseFacade] Background PG update error:', e));
+    }
     return data;
   }
 
-  invalidate(): void {
-    this.data = null;
-  }
+  invalidate(): void {}
 }
 
-const db = new JsonDatabase();
+const db = new DatabaseFacade();
 export default db;

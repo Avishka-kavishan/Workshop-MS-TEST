@@ -46,11 +46,13 @@ interface AipActivity {
   updatedAt: string;
 }
 
+interface MoeBranch {
+  id: string;
+  name: string;
+  code: string;
+}
+
 const MONTH_NAMES_SHORT = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
-const MONTH_NAMES_FULL = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
 
 export default function AnnualPlanPage() {
   const { data: session } = useSession();
@@ -58,6 +60,9 @@ export default function AnnualPlanPage() {
 
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState('2027');
+  const [selectedBranchId, setSelectedBranchId] = useState('');
+  const [moeBranches, setMoeBranches] = useState<MoeBranch[]>([]);
+
   const [plan, setPlan] = useState<AipPlan | null>(null);
   const [activities, setActivities] = useState<AipActivity[]>([]);
   const [branchInfo, setBranchInfo] = useState<{ id: string; name: string } | null>(null);
@@ -98,13 +103,18 @@ export default function AnnualPlanPage() {
   const [formTargetQ4, setFormTargetQ4] = useState('100%');
 
   // Load Data
-  const loadPlanData = async () => {
+  const loadPlanData = async (branchIdToLoad?: string) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/annual-plan?year=${selectedYear}`);
+      const bId = branchIdToLoad || selectedBranchId || user?.organizationId || 'org-moe-ict';
+      const res = await fetch(`/api/annual-plan?year=${selectedYear}&branchId=${bId}`);
       if (res.ok) {
         const json = await res.json();
         setBranchInfo(json.branch);
+        setMoeBranches(json.moeBranches || []);
+        if (!selectedBranchId && json.branch?.id) {
+          setSelectedBranchId(json.branch.id);
+        }
         setPlan(json.plan);
         setActivities(json.activities || []);
 
@@ -113,11 +123,6 @@ export default function AnnualPlanPage() {
           setMainContact(json.plan.mainContactNo || '');
           setOverallResp(json.plan.overallResponsibility || '');
           setOverallContact(json.plan.overallContactNo || '');
-        } else {
-          setMainResp('Mrs. Udara T. Dikkumbura, Add.Sec.(Information Technology and Digital Education)');
-          setMainContact('714929279');
-          setOverallResp('Mrs. S. Dakshina Kasthuriarachchi (Director of Education)');
-          setOverallContact('714325568');
         }
       }
     } catch (err) {
@@ -129,35 +134,12 @@ export default function AnnualPlanPage() {
 
   useEffect(() => {
     loadPlanData();
-  }, [selectedYear]);
+  }, [selectedYear, selectedBranchId]);
 
-  // Create AIP Plan button
-  const handleCreateAip = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/annual-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          year: selectedYear,
-          phaseTitle: '3. Implementation Phase',
-          targetTitle: `Overall Physical and Financial Targets ${selectedYear}`,
-          mainResponsibility: mainResp || 'Mrs. Udara T. Dikkumbura, Add.Sec.(Information Technology and Digital Education)',
-          mainContactNo: mainContact || '714929279',
-          overallResponsibility: overallResp || 'Mrs. S. Dakshina Kasthuriarachchi (Director of Education)',
-          overallContactNo: overallContact || '714325568',
-          status: 'Draft',
-        }),
-      });
-
-      if (res.ok) {
-        await loadPlanData();
-      }
-    } catch (err) {
-      console.error('Error creating AIP plan:', err);
-    } finally {
-      setLoading(false);
-    }
+  // Handle branch switch
+  const handleBranchChange = (newBranchId: string) => {
+    setSelectedBranchId(newBranchId);
+    loadPlanData(newBranchId);
   };
 
   // Save directly editable fields in the sheet
@@ -169,6 +151,8 @@ export default function AnnualPlanPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: plan?.id,
+          branchId: branchInfo?.id || selectedBranchId,
+          branchName: branchInfo?.name,
           year: selectedYear,
           mainResponsibility: mainResp,
           mainContactNo: mainContact,
@@ -307,7 +291,6 @@ export default function AnnualPlanPage() {
     updated[monthIdx] = num;
     setFormFinancialMonths(updated);
 
-    // Auto calculate cumulative quarters
     const q1 = updated[0] + updated[1] + updated[2];
     const q2 = q1 + updated[3] + updated[4] + updated[5];
     const q3 = q2 + updated[6] + updated[7] + updated[8];
@@ -323,7 +306,6 @@ export default function AnnualPlanPage() {
     updated[monthIdx] = valStr;
     setFormPhysicalMonths(updated);
 
-    // Helper to parse %
     const parseP = (v: string) => {
       const n = parseFloat(String(v || '').replace('%', '').trim());
       return isNaN(n) ? 0 : n;
@@ -355,6 +337,8 @@ export default function AnnualPlanPage() {
       const payload = {
         id: editingActivity?.id,
         planId: plan?.id,
+        branchId: branchInfo?.id || selectedBranchId,
+        branchName: branchInfo?.name,
         year: selectedYear,
         outputNo: formOutputNo,
         activityCode: formActivityCode || String(activities.length + 1),
@@ -428,7 +412,7 @@ export default function AnnualPlanPage() {
 
     // Header info rows
     rows.push(['3. Implementation Phase']);
-    rows.push([`Overall Physical and Financial Targets ${selectedYear}`]);
+    rows.push([`Overall Physical and Financial Targets ${selectedYear} - ${branchInfo?.name || 'MOE Branch'}`]);
     rows.push([`Main responsibility: ${mainResp}`, '', '', '', '', '', `Contact No: ${mainContact}`]);
     rows.push([`Overall responsibility: ${overallResp}`, '', '', '', '', '', `Contact No: ${overallContact}`]);
     rows.push([]);
@@ -486,7 +470,7 @@ export default function AnnualPlanPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `MOE_AIP_${selectedYear}_Official_Matrix.csv`);
+    link.setAttribute('download', `MOE_${branchInfo?.name?.replace(/\s+/g, '_')}_AIP_${selectedYear}_Official_Matrix.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -522,14 +506,6 @@ export default function AnnualPlanPage() {
           background: #f8fafc;
           font-weight: 700;
           color: #374151;
-        }
-        .aip-table .header-maroon {
-          background: #7a1c2d;
-          color: #ffffff;
-        }
-        .aip-table .header-sub-maroon {
-          background: #5a101e;
-          color: #ffffff;
         }
         .aip-table .header-sub-group {
           background: #f1f5f9;
@@ -588,20 +564,18 @@ export default function AnnualPlanPage() {
               <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#7a1c2d', margin: 0 }}>
                 Annual Implementation Plan (AIP)
               </h1>
-              {plan && (
-                <span style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  padding: '3px 10px',
-                  borderRadius: '12px',
-                  background: '#fef3c7',
-                  color: '#92400e',
-                  border: '1px solid #fde68a',
-                }}>
-                  {plan.status || 'Draft'}
-                </span>
-              )}
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                padding: '3px 10px',
+                borderRadius: '12px',
+                background: '#fef3c7',
+                color: '#92400e',
+                border: '1px solid #fde68a',
+              }}>
+                {plan?.status || 'Draft'}
+              </span>
             </div>
             <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>
               Ministry of Education Official Format • Implementation Matrix & Quarterly Targets
@@ -609,6 +583,32 @@ export default function AnnualPlanPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {/* MOE Branch Selector (for all MOE level branches) */}
+            {moeBranches.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ffffff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #d1d5db' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#4b5563' }}>🏛️ MOE Branch:</span>
+                <select
+                  value={selectedBranchId || branchInfo?.id || ''}
+                  onChange={(e) => handleBranchChange(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: 700,
+                    color: '#7a1c2d',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {moeBranches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Year Selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ffffff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #d1d5db' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#4b5563' }}>Year:</span>
@@ -631,67 +631,63 @@ export default function AnnualPlanPage() {
               </select>
             </div>
 
-            {plan ? (
-              <>
-                <button
-                  onClick={handleOpenAddModal}
-                  style={{
-                    background: '#7a1c2d',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.55rem 1.15rem',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    boxShadow: '0 2px 6px rgba(122, 28, 45, 0.25)',
-                  }}
-                >
-                  <span>➕</span> Add Activity
-                </button>
+            <button
+              onClick={handleOpenAddModal}
+              style={{
+                background: '#7a1c2d',
+                color: '#ffffff',
+                border: 'none',
+                padding: '0.55rem 1.15rem',
+                borderRadius: '8px',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 2px 6px rgba(122, 28, 45, 0.25)',
+              }}
+            >
+              <span>➕</span> Add Activity
+            </button>
 
-                <button
-                  onClick={handleExportCSV}
-                  style={{
-                    background: '#ffffff',
-                    color: '#374151',
-                    border: '1px solid #d1d5db',
-                    padding: '0.55rem 1rem',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
-                >
-                  <span>📥</span> Export CSV
-                </button>
+            <button
+              onClick={handleExportCSV}
+              style={{
+                background: '#ffffff',
+                color: '#374151',
+                border: '1px solid #d1d5db',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+            >
+              <span>📥</span> Export CSV
+            </button>
 
-                <button
-                  onClick={() => window.print()}
-                  style={{
-                    background: '#ffffff',
-                    color: '#374151',
-                    border: '1px solid #d1d5db',
-                    padding: '0.55rem 1rem',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
-                >
-                  <span>🖨️</span> Print / PDF
-                </button>
-              </>
-            ) : null}
+            <button
+              onClick={() => window.print()}
+              style={{
+                background: '#ffffff',
+                color: '#374151',
+                border: '1px solid #d1d5db',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+            >
+              <span>🖨️</span> Print / PDF
+            </button>
           </div>
         </div>
 
@@ -710,8 +706,8 @@ export default function AnnualPlanPage() {
         }}>
           <div>
             <span style={{ fontSize: '0.8125rem', color: '#6b7280', fontWeight: 600 }}>Active User Branch: </span>
-            <strong style={{ color: '#7a1c2d', fontSize: '0.925rem' }}>
-              {branchInfo?.name || user?.organizationName || 'Information Technology and Digital Education Branch'}
+            <strong style={{ color: '#7a1c2d', fontSize: '0.95rem' }}>
+              {branchInfo?.name || user?.organizationName || 'MOE ICT Branch'}
             </strong>
           </div>
           <div style={{ fontSize: '0.8125rem', color: '#4b5563' }}>
@@ -723,43 +719,6 @@ export default function AnnualPlanPage() {
           <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6b7280' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⏳</div>
             Loading Annual Implementation Plan...
-          </div>
-        ) : !plan ? (
-          /* ── Empty State / Create AIP Prompt ── */
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '12px',
-            border: '2px dashed #cbd5e1',
-            padding: '3.5rem 2rem',
-            textAlign: 'center',
-            maxWidth: '700px',
-            margin: '2rem auto',
-          }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏛️</div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1f2937', marginBottom: '0.5rem' }}>
-              Create {selectedYear} Annual Implementation Plan
-            </h2>
-            <p style={{ color: '#4b5563', fontSize: '0.95rem', lineHeight: '1.5', maxWidth: '520px', margin: '0 auto 1.75rem auto' }}>
-              No AIP has been initialized for <strong>{branchInfo?.name || 'this branch'}</strong> for year {selectedYear}.
-              Click below to initialize the official Ministry of Education template.
-            </p>
-
-            <button
-              onClick={handleCreateAip}
-              style={{
-                background: '#7a1c2d',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.75rem 2rem',
-                borderRadius: '8px',
-                fontWeight: 700,
-                fontSize: '1rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(122, 28, 45, 0.35)',
-              }}
-            >
-              ✨ Create AIP ({selectedYear})
-            </button>
           </div>
         ) : (
           /* ── Official AIP Sheet ── */
@@ -774,10 +733,10 @@ export default function AnnualPlanPage() {
               borderBottom: '2px solid #5a101e',
             }}>
               <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, letterSpacing: '0.025em' }}>
-                {plan.phaseTitle || '3. Implementation Phase'}
+                {plan?.phaseTitle || '3. Implementation Phase'}
               </h2>
               <h3 style={{ margin: '0.35rem 0 0 0', fontSize: '1.05rem', fontWeight: 600, opacity: 0.95 }}>
-                {plan.targetTitle || `Overall Physical and Financial Targets ${selectedYear}`}
+                {plan?.targetTitle || `Overall Physical and Financial Targets ${selectedYear}`}
               </h3>
             </div>
 
@@ -937,7 +896,7 @@ export default function AnnualPlanPage() {
                 <tbody>
                   {activities.length === 0 ? (
                     <tr>
-                      <td colSpan={24} style={{ padding: '3rem 1rem', color: '#6b7280', fontSize: '0.9rem' }}>
+                      <td colSpan={24} style={{ padding: '3.5rem 1rem', color: '#6b7280', fontSize: '0.9rem' }}>
                         No activities added yet. Click <strong>"➕ Add Activity"</strong> to insert your first activity.
                       </td>
                     </tr>
@@ -1147,7 +1106,7 @@ export default function AnnualPlanPage() {
                   {editingActivity ? `✏️ Edit Activity (Code: ${editingActivity.activityCode})` : '➕ Add Activity (Official MOE Format)'}
                 </h3>
                 <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
-                  {selectedYear} Annual Implementation Plan
+                  {selectedYear} Annual Implementation Plan • {branchInfo?.name || 'MOE Branch'}
                 </span>
               </div>
               <button
@@ -1483,4 +1442,3 @@ export default function AnnualPlanPage() {
     </AppShell>
   );
 }
-

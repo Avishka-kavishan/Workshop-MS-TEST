@@ -13,34 +13,59 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year') || '2027';
-
-    // Automatically identify branch from logged in user
-    let branchId = user?.organizationId;
-    if (!branchId) {
-      // Default to MOE ICT / ITDE for demo if not logged in
-      branchId = 'org-moe-ict';
-    }
+    const reqBranchId = searchParams.get('branchId');
 
     const data = await getDb();
     const organizations = data.organizations || [];
+
+    // Filter all MOE-level branches
+    const moeBranches = organizations
+      .filter((o) => o.typeId === 'ot-moe' && o.id !== 'org-moe')
+      .map((o) => ({ id: o.id, name: o.name, code: o.code }));
+
+    // Automatically identify branch from user, or query param, or default to ICT
+    let branchId = reqBranchId || user?.organizationId;
+    if (!branchId) {
+      branchId = 'org-moe-ict';
+    }
+
     const currentBranch = organizations.find((o) => o.id === branchId) || {
       id: branchId,
       name: user?.organizationName || 'Information Technology and Digital Education Branch',
+      code: 'MOE-ICT',
     };
 
     // Find AIP plan for this branch and year
     const allPlans = data.aipPlans || [];
     let plan = allPlans.find((p) => p.branchId === branchId && p.year === year);
 
-    // If branch is org-moe-ict and no plan exists yet, check default 2027
-    if (!plan && branchId === 'org-moe-ict') {
-      plan = allPlans.find((p) => p.year === year);
+    // If no plan found in database, automatically provide default Draft plan
+    if (!plan) {
+      plan = {
+        id: `plan-${branchId}-${year}`,
+        branchId,
+        branchName: currentBranch.name,
+        year,
+        phaseTitle: '3. Implementation Phase',
+        targetTitle: `Overall Physical and Financial Targets ${year}`,
+        mainResponsibility: branchId === 'org-moe-ict'
+          ? 'Mrs. Udara T. Dikkumbura, Add.Sec.(Information Technology and Digital Education)'
+          : '',
+        mainContactNo: branchId === 'org-moe-ict' ? '714929279' : '',
+        overallResponsibility: branchId === 'org-moe-ict'
+          ? 'Mrs. S. Dakshina Kasthuriarachchi (Director of Education)'
+          : '',
+        overallContactNo: branchId === 'org-moe-ict' ? '714325568' : '',
+        status: 'Draft',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     }
 
     // Filter activities for this branch and year
     const allActivities = data.aipActivities || [];
     const activities = allActivities.filter(
-      (a) => (a.branchId === branchId || !branchId) && (a.year === year || !a.year)
+      (a) => a.branchId === branchId && (a.year === year || !a.year)
     );
 
     // Sort numerically by activityCode (1, 2, 3 ... 17)
@@ -70,10 +95,6 @@ export async function GET(request: NextRequest) {
     });
 
     // 3. Quarterly Cumulative Financial Targets
-    // Q1 = J + F + M
-    // Q2 = Q1 + A + M + J
-    // Q3 = Q2 + J + A + S
-    // Q4 = Q3 + O + N + D
     const q1Fin = monthlyFinancialTotals[0] + monthlyFinancialTotals[1] + monthlyFinancialTotals[2];
     const q2Fin = q1Fin + monthlyFinancialTotals[3] + monthlyFinancialTotals[4] + monthlyFinancialTotals[5];
     const q3Fin = q2Fin + monthlyFinancialTotals[6] + monthlyFinancialTotals[7] + monthlyFinancialTotals[8];
@@ -81,7 +102,6 @@ export async function GET(request: NextRequest) {
     const quarterlyFinancialCumulative = [q1Fin, q2Fin, q3Fin, q4Fin];
 
     // 4. Monthly Physical Progress Totals (January to December)
-    // Calculate average percentage contribution of each month across activities
     const monthlyPhysicalSums = Array(12).fill(0);
     const n = activities.length || 1;
     activities.forEach((act) => {
@@ -101,7 +121,6 @@ export async function GET(request: NextRequest) {
     const monthlyPhysicalTotals = monthlyPhysicalSums.map((sum) => Math.round((sum / n) * 10) / 10);
 
     // 5. Quarterly Cumulative Physical Targets
-    // Q1 = sum(Jan..Mar), Q2 = sum(Jan..Jun), Q3 = sum(Jan..Sep), Q4 = 100%
     const q1Phys = Math.round((monthlyPhysicalTotals[0] + monthlyPhysicalTotals[1] + monthlyPhysicalTotals[2]) * 10) / 10;
     const q2Phys = Math.round((q1Phys + monthlyPhysicalTotals[3] + monthlyPhysicalTotals[4] + monthlyPhysicalTotals[5]) * 10) / 10;
     const q3Phys = Math.round((q2Phys + monthlyPhysicalTotals[6] + monthlyPhysicalTotals[7] + monthlyPhysicalTotals[8]) * 10) / 10;
@@ -110,9 +129,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      hasPlan: Boolean(plan),
-      plan: plan || null,
+      hasPlan: true,
+      plan,
       branch: currentBranch,
+      moeBranches,
       year,
       activities,
       totals: {
@@ -155,6 +175,7 @@ export async function POST(request: NextRequest) {
         // Update existing plan
         data.aipPlans[existingIdx] = {
           ...data.aipPlans[existingIdx],
+          branchName: body.branchName || data.aipPlans[existingIdx].branchName || branchName,
           phaseTitle: body.phaseTitle !== undefined ? body.phaseTitle : data.aipPlans[existingIdx].phaseTitle,
           targetTitle: body.targetTitle !== undefined ? body.targetTitle : data.aipPlans[existingIdx].targetTitle,
           mainResponsibility: body.mainResponsibility !== undefined ? body.mainResponsibility : data.aipPlans[existingIdx].mainResponsibility,
@@ -168,16 +189,16 @@ export async function POST(request: NextRequest) {
       } else {
         // Create new AIP Plan
         const newPlan: AipPlan = {
-          id: body.id || `plan-${randomUUID()}`,
+          id: body.id || `plan-${branchId}-${year}`,
           branchId,
           branchName,
           year,
           phaseTitle: body.phaseTitle || '3. Implementation Phase',
           targetTitle: body.targetTitle || `Overall Physical and Financial Targets ${year}`,
-          mainResponsibility: body.mainResponsibility || 'Mrs. Udara T. Dikkumbura, Add.Sec.(Information Technology and Digital Education)',
-          mainContactNo: body.mainContactNo || '714929279',
-          overallResponsibility: body.overallResponsibility || 'Mrs. S. Dakshina Kasthuriarachchi (Director of Education)',
-          overallContactNo: body.overallContactNo || '714325568',
+          mainResponsibility: body.mainResponsibility || '',
+          mainContactNo: body.mainContactNo || '',
+          overallResponsibility: body.overallResponsibility || '',
+          overallContactNo: body.overallContactNo || '',
           status: 'Draft',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -196,4 +217,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

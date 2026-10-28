@@ -698,7 +698,7 @@ export default function AnnualPlanPage() {
             <div style={{
               background: '#7a1c2d',
               color: '#ffffff',
-              padding: '1.25rem 1.5rem',
+              padding: '1.1rem 1.5rem',
               textAlign: 'center',
               borderBottom: '2px solid #5a101e',
             }}>
@@ -712,7 +712,7 @@ export default function AnnualPlanPage() {
                   border: 'none',
                   borderBottom: '1px dashed rgba(255,255,255,0.5)',
                   color: '#ffffff',
-                  fontSize: '1.3rem',
+                  fontSize: '1.35rem',
                   fontWeight: 800,
                   letterSpacing: '0.025em',
                   textAlign: 'center',
@@ -723,28 +723,6 @@ export default function AnnualPlanPage() {
                 }}
                 placeholder="3. Implementation Phase"
                 title="Click to edit phase title"
-              />
-              <input
-                value={formTargetTitle || `Overall Physical and Financial Targets ${selectedYear}`}
-                onChange={(e) => setFormTargetTitle(e.target.value)}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: '1px dashed rgba(255,255,255,0.5)',
-                  color: '#ffffff',
-                  fontSize: '1.05rem',
-                  fontWeight: 600,
-                  opacity: 0.95,
-                  textAlign: 'center',
-                  outline: 'none',
-                  margin: '0.35rem auto 0',
-                  padding: '2px 0',
-                  cursor: 'text',
-                }}
-                placeholder={`Overall Physical and Financial Targets ${selectedYear}`}
-                title="Click to edit target title"
               />
             </div>
 
@@ -869,25 +847,60 @@ export default function AnnualPlanPage() {
             <div className="aip-table-wrapper">
               <table className="aip-table">
                 <thead>
-                  {/* Top Header Row */}
+                  {/* Row 1: Super Header Row */}
                   <tr>
-                    <th rowSpan={2} style={{ width: '60px' }}>Outcome / Output No</th>
-                    <th rowSpan={2} style={{ width: '55px' }}>Activity No</th>
-                    <th rowSpan={2} style={{ minWidth: '280px', maxWidth: '380px' }}>Main Activities</th>
-                    <th rowSpan={2} style={{ width: '130px' }}>Vote Number</th>
-                    <th rowSpan={2} style={{ width: '90px' }}>Allocation / Estimated Cost (Mn)</th>
-                    <th rowSpan={2} style={{ width: '115px' }}>Target Type</th>
+                    <th rowSpan={3} style={{ width: '60px' }}>Outcome / Output No</th>
+                    <th rowSpan={3} style={{ width: '55px' }}>Activity No</th>
+                    <th rowSpan={3} style={{ minWidth: '280px', maxWidth: '380px' }}>Main Activities</th>
+                    <th rowSpan={3} style={{ width: '130px' }}>Vote Number</th>
+                    <th rowSpan={3} style={{ width: '90px' }}>Allocation / Estimated Cost (Mn)</th>
+                    <th rowSpan={3} style={{ width: '115px' }}>Target Type</th>
+                    <th
+                      colSpan={16}
+                      style={{
+                        background: '#7a1c2d',
+                        color: '#ffffff',
+                        padding: '6px 10px',
+                        textAlign: 'center',
+                        fontWeight: 700,
+                        fontSize: '0.875rem',
+                        letterSpacing: '0.02em',
+                        border: '1px solid #5a101e',
+                      }}
+                    >
+                      <input
+                        value={formTargetTitle !== undefined && formTargetTitle !== '' ? formTargetTitle : `Overall Physical and Financial Targets ${selectedYear}`}
+                        onChange={(e) => setFormTargetTitle(e.target.value)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          borderBottom: '1px dashed rgba(255,255,255,0.4)',
+                          color: '#ffffff',
+                          fontSize: '0.875rem',
+                          fontWeight: 700,
+                          textAlign: 'center',
+                          outline: 'none',
+                          width: '100%',
+                          cursor: 'text',
+                        }}
+                        title="Click to edit target heading"
+                      />
+                    </th>
+                    <th rowSpan={3} style={{ minWidth: '180px' }}>Responsibility</th>
+                    <th rowSpan={3} className="no-print" style={{ width: '80px' }}>Actions</th>
+                  </tr>
+
+                  {/* Row 2: Monthly and Quarterly Section Headers */}
+                  <tr>
                     <th colSpan={12} className="header-sub-group">
                       January to December - Monthly basis (Non-Cumulative)
                     </th>
                     <th colSpan={4} className="header-sub-group" style={{ background: '#fef3c7', color: '#92400e' }}>
                       Q1 to Q4 - Quarterly basis (Cumulative)
                     </th>
-                    <th rowSpan={2} style={{ minWidth: '180px' }}>Responsibility</th>
-                    <th rowSpan={2} className="no-print" style={{ width: '80px' }}>Actions</th>
                   </tr>
 
-                  {/* Sub Header Months & Quarters */}
+                  {/* Row 3: Sub Header Months & Quarters */}
                   <tr>
                     {MONTH_NAMES_SHORT.map((m, i) => (
                       <th key={`m-${i}`} style={{ width: '38px', fontSize: '0.75rem' }}>

@@ -253,3 +253,53 @@ CREATE INDEX IF NOT EXISTS idx_trainees_workshop ON trainees(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_resource_persons_workshop ON resource_persons(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient_org_id, recipient_user_id);
 CREATE INDEX IF NOT EXISTS idx_workshop_reschedules_workshop ON workshop_reschedules(workshop_id);
+
+
+-- 16. AIP Plans
+CREATE TABLE IF NOT EXISTS aip_plans (
+  id VARCHAR(100) PRIMARY KEY,
+  branch_id VARCHAR(100) REFERENCES organizations(id) ON DELETE CASCADE,
+  branch_name VARCHAR(255),
+  year VARCHAR(10) NOT NULL DEFAULT '2027',
+  phase_title VARCHAR(255) DEFAULT '3. Implementation Phase',
+  target_title VARCHAR(255) DEFAULT 'Overall Physical and Financial Targets 2027',
+  main_responsibility VARCHAR(255),
+  main_contact_no VARCHAR(50),
+  overall_responsibility VARCHAR(255),
+  overall_contact_no VARCHAR(50),
+  status VARCHAR(50) DEFAULT 'Draft',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 17. AIP Activities
+CREATE TABLE IF NOT EXISTS aip_activities (
+  id VARCHAR(100) PRIMARY KEY,
+  plan_id VARCHAR(100) REFERENCES aip_plans(id) ON DELETE SET NULL,
+  branch_id VARCHAR(100) REFERENCES organizations(id) ON DELETE CASCADE,
+  branch_name VARCHAR(255),
+  year VARCHAR(10) NOT NULL DEFAULT '2027',
+  output_no VARCHAR(50) DEFAULT '1',
+  activity_code VARCHAR(50) NOT NULL,
+  activity TEXT NOT NULL,
+  vote_number VARCHAR(100),
+  estimated_cost NUMERIC(15, 3) DEFAULT 0,
+  financial_months JSONB DEFAULT '[]',
+  physical_months JSONB DEFAULT '[]',
+  financial_q1 NUMERIC(15, 3) DEFAULT 0,
+  financial_q2 NUMERIC(15, 3) DEFAULT 0,
+  financial_q3 NUMERIC(15, 3) DEFAULT 0,
+  financial_q4 NUMERIC(15, 3) DEFAULT 0,
+  target_q1 VARCHAR(50),
+  target_q2 VARCHAR(50),
+  target_q3 VARCHAR(50),
+  target_q4 VARCHAR(50),
+  responsible_officer VARCHAR(255),
+  created_by VARCHAR(100) REFERENCES users(id) ON DELETE SET NULL,
+  creator_name VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_aip_plans_branch ON aip_plans(branch_id, year);
+CREATE INDEX IF NOT EXISTS idx_aip_activities_branch ON aip_activities(branch_id, year);

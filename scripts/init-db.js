@@ -461,6 +461,100 @@ async function seedData(pool) {
     [String(lastWorkshopNum)]
   );
 
+  // 14. AIP Plans
+  for (const p of data.aipPlans || []) {
+    await pool.query(
+      `INSERT INTO aip_plans (
+        id, branch_id, branch_name, year, phase_title, target_title,
+        main_responsibility, main_contact_no, overall_responsibility,
+        overall_contact_no, status, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      ON CONFLICT (id) DO UPDATE SET
+        branch_name = EXCLUDED.branch_name,
+        phase_title = EXCLUDED.phase_title,
+        target_title = EXCLUDED.target_title,
+        main_responsibility = EXCLUDED.main_responsibility,
+        main_contact_no = EXCLUDED.main_contact_no,
+        overall_responsibility = EXCLUDED.overall_responsibility,
+        overall_contact_no = EXCLUDED.overall_contact_no,
+        status = EXCLUDED.status,
+        updated_at = EXCLUDED.updated_at`,
+      [
+        p.id,
+        p.branchId,
+        p.branchName,
+        p.year || '2027',
+        p.phaseTitle || '3. Implementation Phase',
+        p.targetTitle || 'Overall Physical and Financial Targets 2027',
+        p.mainResponsibility || null,
+        p.mainContactNo || null,
+        p.overallResponsibility || null,
+        p.overallContactNo || null,
+        p.status || 'Draft',
+        p.createdAt || new Date().toISOString(),
+        p.updatedAt || new Date().toISOString(),
+      ]
+    );
+  }
+
+  // 15. AIP Activities
+  for (const act of data.aipActivities || []) {
+    await pool.query(
+      `INSERT INTO aip_activities (
+        id, plan_id, branch_id, branch_name, year, output_no, activity_code,
+        activity, vote_number, estimated_cost, financial_months, physical_months,
+        financial_q1, financial_q2, financial_q3, financial_q4,
+        target_q1, target_q2, target_q3, target_q4, responsible_officer,
+        created_by, creator_name, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+      ON CONFLICT (id) DO UPDATE SET
+        output_no = EXCLUDED.output_no,
+        activity_code = EXCLUDED.activity_code,
+        activity = EXCLUDED.activity,
+        vote_number = EXCLUDED.vote_number,
+        estimated_cost = EXCLUDED.estimated_cost,
+        financial_months = EXCLUDED.financial_months,
+        physical_months = EXCLUDED.physical_months,
+        financial_q1 = EXCLUDED.financial_q1,
+        financial_q2 = EXCLUDED.financial_q2,
+        financial_q3 = EXCLUDED.financial_q3,
+        financial_q4 = EXCLUDED.financial_q4,
+        target_q1 = EXCLUDED.target_q1,
+        target_q2 = EXCLUDED.target_q2,
+        target_q3 = EXCLUDED.target_q3,
+        target_q4 = EXCLUDED.target_q4,
+        responsible_officer = EXCLUDED.responsible_officer,
+        updated_at = EXCLUDED.updated_at`,
+      [
+        act.id,
+        act.planId || null,
+        act.branchId,
+        act.branchName || null,
+        act.year || '2027',
+        act.outputNo || '1',
+        act.activityCode,
+        act.activity,
+        act.voteNumber || null,
+        act.estimatedCost || 0,
+        JSON.stringify(act.financialMonths || []),
+        JSON.stringify(act.physicalMonths || []),
+        act.financialQ1 || 0,
+        act.financialQ2 || 0,
+        act.financialQ3 || 0,
+        act.financialQ4 || 0,
+        act.targetQ1 || '-',
+        act.targetQ2 || '-',
+        act.targetQ3 || '-',
+        act.targetQ4 || '-',
+        act.responsibleOfficer || null,
+        act.createdBy || null,
+        act.creatorName || null,
+        act.createdAt || new Date().toISOString(),
+        act.updatedAt || new Date().toISOString(),
+      ]
+    );
+  }
+
   console.log('✅ Initial data seeded successfully into PostgreSQL!');
   console.log(`   - Organizations: ${(data.organizations || []).length}`);
   console.log(`   - Users: ${(data.users || []).length}`);

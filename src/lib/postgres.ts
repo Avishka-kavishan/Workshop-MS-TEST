@@ -15,6 +15,8 @@ import type {
   Notification,
   WorkshopApproval,
   Attachment,
+  AipPlan,
+  AipActivity,
 } from './db';
 
 // ── Row Mappers (PostgreSQL snake_case <-> TypeScript camelCase) ─────
@@ -252,6 +254,70 @@ export function rowToNotification(r: any): Notification {
   };
 }
 
+
+export function rowToAipPlan(r: any): AipPlan {
+  return {
+    id: r.id,
+    branchId: r.branch_id,
+    branchName: r.branch_name || '',
+    year: r.year ? String(r.year) : '2027',
+    phaseTitle: r.phase_title || '3. Implementation Phase',
+    targetTitle: r.target_title || 'Overall Physical and Financial Targets 2027',
+    mainResponsibility: r.main_responsibility || '',
+    mainContactNo: r.main_contact_no || '',
+    overallResponsibility: r.overall_responsibility || '',
+    overallContactNo: r.overall_contact_no || '',
+    status: r.status || 'Draft',
+    createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+  };
+}
+
+export function rowToAipActivity(r: any): AipActivity {
+  let finMonths: number[] = Array(12).fill(0);
+  let physMonths: string[] = Array(12).fill('-');
+  try {
+    if (r.financial_months) {
+      const parsed = typeof r.financial_months === 'string' ? JSON.parse(r.financial_months) : r.financial_months;
+      if (Array.isArray(parsed)) finMonths = parsed;
+    }
+  } catch (e) {}
+  try {
+    if (r.physical_months) {
+      const parsed = typeof r.physical_months === 'string' ? JSON.parse(r.physical_months) : r.physical_months;
+      if (Array.isArray(parsed)) physMonths = parsed;
+    }
+  } catch (e) {}
+
+  return {
+    id: r.id,
+    planId: r.plan_id || undefined,
+    branchId: r.branch_id,
+    branchName: r.branch_name || '',
+    year: r.year ? String(r.year) : '2027',
+    outputNo: r.output_no || '1',
+    activityCode: r.activity_code || '',
+    activity: r.activity || '',
+    voteNumber: r.vote_number || '',
+    estimatedCost: r.estimated_cost ? parseFloat(r.estimated_cost) : 0,
+    financialMonths: finMonths,
+    physicalMonths: physMonths,
+    financialQ1: r.financial_q1 ? parseFloat(r.financial_q1) : 0,
+    financialQ2: r.financial_q2 ? parseFloat(r.financial_q2) : 0,
+    financialQ3: r.financial_q3 ? parseFloat(r.financial_q3) : 0,
+    financialQ4: r.financial_q4 ? parseFloat(r.financial_q4) : 0,
+    targetQ1: r.target_q1 || '-',
+    targetQ2: r.target_q2 || '-',
+    targetQ3: r.target_q3 || '-',
+    targetQ4: r.target_q4 || '-',
+    responsibleOfficer: r.responsible_officer || '',
+    createdBy: r.created_by || undefined,
+    creatorName: r.creator_name || undefined,
+    createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+  };
+}
+
 // ── Full Schema Loader ────────────────────────────────────────────────
 
 export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
@@ -269,6 +335,8 @@ export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
     notifsRes,
     reschedulesRes,
     metaRes,
+    aipPlansRes,
+    aipActivitiesRes,
   ] = await Promise.all([
     query('SELECT * FROM organization_types ORDER BY level ASC, name ASC'),
     query('SELECT * FROM organizations ORDER BY name ASC'),
@@ -283,6 +351,8 @@ export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
     query('SELECT * FROM notifications ORDER BY created_at DESC'),
     query('SELECT * FROM workshop_reschedules ORDER BY created_at DESC'),
     query("SELECT value FROM system_meta WHERE key = 'lastWorkshopNumber'"),
+    query('SELECT * FROM aip_plans ORDER BY created_at ASC').catch(() => ({ rows: [] })),
+    query('SELECT * FROM aip_activities ORDER BY activity_code ASC, created_at ASC').catch(() => ({ rows: [] })),
   ]);
 
   const lastWorkshopNumber = metaRes.rows.length > 0 && metaRes.rows[0].value
@@ -305,6 +375,8 @@ export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
     notifications: notifsRes.rows.map(rowToNotification),
     workshopReschedules: reschedulesRes.rows.map(rowToReschedule),
     meta: { lastWorkshopNumber: isNaN(lastWorkshopNumber) ? 0 : lastWorkshopNumber },
+    aipPlans: (aipPlansRes?.rows || []).map(rowToAipPlan),
+    aipActivities: (aipActivitiesRes?.rows || []).map(rowToAipActivity),
   };
 }
 
@@ -593,3 +665,96 @@ export async function pgSetMeta(key: string, value: string): Promise<void> {
   );
 }
 
+
+
+export async function pgInsertAipPlan(plan: AipPlan): Promise<void> {
+  const sql = `
+    INSERT INTO aip_plans (
+      id, branch_id, branch_name, year, phase_title, target_title,
+      main_responsibility, main_contact_no, overall_responsibility,
+      overall_contact_no, status, created_at, updated_at
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    ON CONFLICT (id) DO UPDATE SET
+      branch_name = EXCLUDED.branch_name,
+      phase_title = EXCLUDED.phase_title,
+      target_title = EXCLUDED.target_title,
+      main_responsibility = EXCLUDED.main_responsibility,
+      main_contact_no = EXCLUDED.main_contact_no,
+      overall_responsibility = EXCLUDED.overall_responsibility,
+      overall_contact_no = EXCLUDED.overall_contact_no,
+      status = EXCLUDED.status,
+      updated_at = EXCLUDED.updated_at
+  `;
+  await query(sql, [
+    plan.id,
+    plan.branchId,
+    plan.branchName,
+    plan.year,
+    plan.phaseTitle || '3. Implementation Phase',
+    plan.targetTitle || 'Overall Physical and Financial Targets 2027',
+    plan.mainResponsibility || null,
+    plan.mainContactNo || null,
+    plan.overallResponsibility || null,
+    plan.overallContactNo || null,
+    plan.status || 'Draft',
+    plan.createdAt || new Date().toISOString(),
+    plan.updatedAt || new Date().toISOString(),
+  ]);
+}
+
+export async function pgInsertAipActivity(act: AipActivity): Promise<void> {
+  const sql = `
+    INSERT INTO aip_activities (
+      id, plan_id, branch_id, branch_name, year, output_no, activity_code,
+      activity, vote_number, estimated_cost, financial_months, physical_months,
+      financial_q1, financial_q2, financial_q3, financial_q4,
+      target_q1, target_q2, target_q3, target_q4, responsible_officer,
+      created_by, creator_name, created_at, updated_at
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+    ON CONFLICT (id) DO UPDATE SET
+      output_no = EXCLUDED.output_no,
+      activity_code = EXCLUDED.activity_code,
+      activity = EXCLUDED.activity,
+      vote_number = EXCLUDED.vote_number,
+      estimated_cost = EXCLUDED.estimated_cost,
+      financial_months = EXCLUDED.financial_months,
+      physical_months = EXCLUDED.physical_months,
+      financial_q1 = EXCLUDED.financial_q1,
+      financial_q2 = EXCLUDED.financial_q2,
+      financial_q3 = EXCLUDED.financial_q3,
+      financial_q4 = EXCLUDED.financial_q4,
+      target_q1 = EXCLUDED.target_q1,
+      target_q2 = EXCLUDED.target_q2,
+      target_q3 = EXCLUDED.target_q3,
+      target_q4 = EXCLUDED.target_q4,
+      responsible_officer = EXCLUDED.responsible_officer,
+      updated_at = EXCLUDED.updated_at
+  `;
+  await query(sql, [
+    act.id,
+    act.planId || null,
+    act.branchId,
+    act.branchName || null,
+    act.year || '2027',
+    act.outputNo || '1',
+    act.activityCode,
+    act.activity,
+    act.voteNumber || null,
+    act.estimatedCost || 0,
+    JSON.stringify(act.financialMonths || Array(12).fill(0)),
+    JSON.stringify(act.physicalMonths || Array(12).fill('-')),
+    act.financialQ1 || 0,
+    act.financialQ2 || 0,
+    act.financialQ3 || 0,
+    act.financialQ4 || 0,
+    act.targetQ1 || '-',
+    act.targetQ2 || '-',
+    act.targetQ3 || '-',
+    act.targetQ4 || '-',
+    act.responsibleOfficer || null,
+    act.createdBy || null,
+    act.creatorName || null,
+    act.createdAt || new Date().toISOString(),
+    act.updatedAt || new Date().toISOString(),
+  ]);
+}

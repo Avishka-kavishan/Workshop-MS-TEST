@@ -9,6 +9,8 @@ import {
   pgInsertReschedule,
   pgInsertNotification,
   pgSetMeta,
+  pgInsertAipPlan,
+  pgInsertAipActivity,
 } from './postgres';
 
 const IS_VERCEL = process.env.VERCEL === '1' || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
@@ -31,6 +33,8 @@ export interface DbSchema {
   notifications: Notification[];
   workshopReschedules: WorkshopReschedule[];
   meta: { lastWorkshopNumber: number };
+  aipPlans: AipPlan[];
+  aipActivities: AipActivity[];
 }
 
 export interface OrganizationType {
@@ -246,6 +250,51 @@ export interface Attachment {
   createdAt: string;
 }
 
+
+export interface AipPlan {
+  id: string;
+  branchId: string;
+  branchName: string;
+  year: string;
+  phaseTitle: string;
+  targetTitle: string;
+  mainResponsibility: string;
+  mainContactNo: string;
+  overallResponsibility: string;
+  overallContactNo: string;
+  status: 'Draft' | 'Submitted' | 'Approved';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AipActivity {
+  id: string;
+  planId?: string;
+  branchId: string;
+  branchName: string;
+  year: string;
+  outputNo: string;
+  activityCode: string;
+  activity: string;
+  voteNumber: string;
+  estimatedCost: number;
+  financialMonths: number[];
+  physicalMonths: string[];
+  financialQ1: number;
+  financialQ2: number;
+  financialQ3: number;
+  financialQ4: number;
+  targetQ1: string;
+  targetQ2: string;
+  targetQ3: string;
+  targetQ4: string;
+  responsibleOfficer: string;
+  createdBy?: string;
+  creatorName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ── JSON Local File Helpers ──────────────────────────────────────────
 
 function ensureDataDir(): void {
@@ -289,6 +338,8 @@ function readJsonFile(): DbSchema {
       notifications: [],
       workshopReschedules: [],
       meta: { lastWorkshopNumber: 0 },
+      aipPlans: [],
+      aipActivities: [],
     };
     writeJsonFile(emptyDb);
     return emptyDb;
@@ -299,6 +350,8 @@ function readJsonFile(): DbSchema {
     const parsed = JSON.parse(raw);
     if (!parsed.notifications) parsed.notifications = [];
     if (!parsed.workshopReschedules) parsed.workshopReschedules = [];
+    if (!parsed.aipPlans) parsed.aipPlans = [];
+    if (!parsed.aipActivities) parsed.aipActivities = [];
     return parsed as DbSchema;
   } catch (err) {
     console.error('Error reading JSON database file:', err);
@@ -391,6 +444,14 @@ export async function updateDb(
       // 6. Sync Metadata
       if (current.meta?.lastWorkshopNumber !== undefined) {
         await pgSetMeta('lastWorkshopNumber', String(current.meta.lastWorkshopNumber));
+      }
+
+      // 7. Sync AIP Plans & Activities
+      for (const p of current.aipPlans || []) {
+        try { await pgInsertAipPlan(p); } catch (e) {}
+      }
+      for (const a of current.aipActivities || []) {
+        try { await pgInsertAipActivity(a); } catch (e) {}
       }
 
       // Also update JSON file as a local backup if writable

@@ -96,7 +96,6 @@ export default function AppShell({ children }: AppShellProps) {
     { href: '/resource-persons/new',  icon: '👤', label: 'Register Resource Person', exact: true, isAction: true },
     { href: '/dashboard',             icon: '📊', label: 'Dashboard' },
     { href: '/workshops',             icon: '📋', label: 'Workshops',             exact: false },
-    { href: '/annual-plan',           icon: '📅', label: 'Annual Implementation Plan', exact: false },
     { href: '/resource-persons',      icon: '👥', label: 'Resource Persons',      exact: false },
     { href: '/reports',               icon: '📈', label: 'Analytics & Reports' },
   ];
@@ -105,7 +104,6 @@ export default function AppShell({ children }: AppShellProps) {
     if (exact) return pathname === href;
     if (href === '/workshops') return pathname.startsWith('/workshops') && pathname !== '/workshops/new';
     if (href === '/resource-persons') return pathname.startsWith('/resource-persons') && pathname !== '/resource-persons/new';
-    if (href === '/annual-plan') return pathname.startsWith('/annual-plan');
     return pathname === href || pathname.startsWith(href + '/');
   };
 

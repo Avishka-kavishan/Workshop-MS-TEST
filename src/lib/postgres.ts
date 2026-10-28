@@ -15,6 +15,8 @@ import type {
   Notification,
   WorkshopApproval,
   Attachment,
+  AipHeaderTemplate,
+  AipActivity,
 } from './db';
 
 // ── Row Mappers (PostgreSQL snake_case <-> TypeScript camelCase) ─────
@@ -252,6 +254,70 @@ export function rowToNotification(r: any): Notification {
   };
 }
 
+export function rowToAipHeaderTemplate(r: any): AipHeaderTemplate {
+  return {
+    id: r.id,
+    branchId: r.branch_id || undefined,
+    name: r.name,
+    phaseTitle: r.phase_title || '2. Implementation Phase',
+    targetTitle: r.target_title || 'Overall Physical and Financial Targets',
+    mainResponsibility: r.main_responsibility || '',
+    mainContactNo: r.main_contact_no || '',
+    overallResponsibility: r.overall_responsibility || '',
+    overallContactNo: r.overall_contact_no || '',
+    footnote: r.footnote || '',
+    isDefault: Boolean(r.is_default),
+    createdBy: r.created_by || undefined,
+    creatorName: r.creator_name || undefined,
+    createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+  };
+}
+
+export function rowToAipActivity(r: any): AipActivity {
+  let finMonths: (number | null)[] = [];
+  let physMonths: (string | null)[] = [];
+  try {
+    if (r.financial_months) {
+      finMonths = typeof r.financial_months === 'string' ? JSON.parse(r.financial_months) : r.financial_months;
+    }
+  } catch (e) {}
+  try {
+    if (r.physical_months) {
+      physMonths = typeof r.physical_months === 'string' ? JSON.parse(r.physical_months) : r.physical_months;
+    }
+  } catch (e) {}
+
+  return {
+    id: r.id,
+    branchId: r.branch_id,
+    branchName: r.branch_name || '',
+    year: r.year ? String(r.year) : '2026',
+    outputNo: r.output_no || '1',
+    activityCode: r.activity_code || '',
+    strategy: r.strategy || '',
+    activity: r.activity || '',
+    kpi: r.kpi || '',
+    voteNumber: r.vote_number || '',
+    estimatedCost: r.estimated_cost ? parseFloat(r.estimated_cost) : 0,
+    costNote: r.cost_note || '',
+    financialMonths: Array.isArray(finMonths) ? finMonths : [],
+    physicalMonths: Array.isArray(physMonths) ? physMonths : [],
+    targetQ1: r.target_q1 || '',
+    targetQ2: r.target_q2 || '',
+    targetQ3: r.target_q3 || '',
+    targetQ4: r.target_q4 || '',
+    totalTarget: r.total_target || '',
+    fundingSource: r.funding_source || '',
+    responsibleOfficer: r.responsible_officer || '',
+    status: r.status || 'Planned',
+    createdBy: r.created_by || undefined,
+    creatorName: r.creator_name || undefined,
+    createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+    updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+  };
+}
+
 // ── Full Schema Loader ────────────────────────────────────────────────
 
 export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
@@ -269,6 +335,8 @@ export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
     notifsRes,
     reschedulesRes,
     metaRes,
+    aipTemplatesRes,
+    aipActivitiesRes,
   ] = await Promise.all([
     query('SELECT * FROM organization_types ORDER BY level ASC, name ASC'),
     query('SELECT * FROM organizations ORDER BY name ASC'),
@@ -283,6 +351,8 @@ export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
     query('SELECT * FROM notifications ORDER BY created_at DESC'),
     query('SELECT * FROM workshop_reschedules ORDER BY created_at DESC'),
     query("SELECT value FROM system_meta WHERE key = 'lastWorkshopNumber'"),
+    query('SELECT * FROM aip_header_templates ORDER BY created_at ASC').catch(() => ({ rows: [] })),
+    query('SELECT * FROM aip_activities ORDER BY activity_code ASC, created_at ASC').catch(() => ({ rows: [] })),
   ]);
 
   const lastWorkshopNumber = metaRes.rows.length > 0 && metaRes.rows[0].value
@@ -305,6 +375,8 @@ export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
     notifications: notifsRes.rows.map(rowToNotification),
     workshopReschedules: reschedulesRes.rows.map(rowToReschedule),
     meta: { lastWorkshopNumber: isNaN(lastWorkshopNumber) ? 0 : lastWorkshopNumber },
+    aipHeaderTemplates: aipTemplatesRes.rows.map(rowToAipHeaderTemplate),
+    aipActivities: aipActivitiesRes.rows.map(rowToAipActivity),
   };
 }
 
@@ -592,3 +664,116 @@ export async function pgSetMeta(key: string, value: string): Promise<void> {
     [key, value]
   );
 }
+
+export async function pgInsertAipTemplate(tpl: AipHeaderTemplate): Promise<void> {
+  const sql = `
+    INSERT INTO aip_header_templates (
+      id, branch_id, name, phase_title, target_title,
+      main_responsibility, main_contact_no, overall_responsibility,
+      overall_contact_no, footnote, is_default, created_by,
+      creator_name, created_at, updated_at
+    ) VALUES (
+      $1, $2, $3, $4, $5,
+      $6, $7, $8,
+      $9, $10, $11, $12,
+      $13, $14, $15
+    )
+    ON CONFLICT (id) DO UPDATE SET
+      name = EXCLUDED.name,
+      phase_title = EXCLUDED.phase_title,
+      target_title = EXCLUDED.target_title,
+      main_responsibility = EXCLUDED.main_responsibility,
+      main_contact_no = EXCLUDED.main_contact_no,
+      overall_responsibility = EXCLUDED.overall_responsibility,
+      overall_contact_no = EXCLUDED.overall_contact_no,
+      footnote = EXCLUDED.footnote,
+      is_default = EXCLUDED.is_default,
+      updated_at = EXCLUDED.updated_at
+  `;
+
+  await query(sql, [
+    tpl.id,
+    tpl.branchId || null,
+    tpl.name,
+    tpl.phaseTitle || '2. Implementation Phase',
+    tpl.targetTitle || 'Overall Physical and Financial Targets',
+    tpl.mainResponsibility || null,
+    tpl.mainContactNo || null,
+    tpl.overallResponsibility || null,
+    tpl.overallContactNo || null,
+    tpl.footnote || null,
+    Boolean(tpl.isDefault),
+    tpl.createdBy || null,
+    tpl.creatorName || null,
+    tpl.createdAt || new Date().toISOString(),
+    tpl.updatedAt || new Date().toISOString(),
+  ]);
+}
+
+export async function pgInsertAipActivity(act: AipActivity): Promise<void> {
+  const sql = `
+    INSERT INTO aip_activities (
+      id, branch_id, branch_name, year, output_no, activity_code,
+      strategy, activity, kpi, vote_number, target_q1, target_q2,
+      target_q3, target_q4, total_target, estimated_cost, cost_note,
+      financial_months, physical_months, funding_source, responsible_officer, status,
+      created_by, creator_name, created_at, updated_at
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6,
+      $7, $8, $9, $10, $11, $12,
+      $13, $14, $15, $16, $17,
+      $18, $19, $20, $21, $22,
+      $23, $24, $25, $26
+    )
+    ON CONFLICT (id) DO UPDATE SET
+      output_no = EXCLUDED.output_no,
+      activity_code = EXCLUDED.activity_code,
+      strategy = EXCLUDED.strategy,
+      activity = EXCLUDED.activity,
+      kpi = EXCLUDED.kpi,
+      vote_number = EXCLUDED.vote_number,
+      target_q1 = EXCLUDED.target_q1,
+      target_q2 = EXCLUDED.target_q2,
+      target_q3 = EXCLUDED.target_q3,
+      target_q4 = EXCLUDED.target_q4,
+      total_target = EXCLUDED.total_target,
+      estimated_cost = EXCLUDED.estimated_cost,
+      cost_note = EXCLUDED.cost_note,
+      financial_months = EXCLUDED.financial_months,
+      physical_months = EXCLUDED.physical_months,
+      funding_source = EXCLUDED.funding_source,
+      responsible_officer = EXCLUDED.responsible_officer,
+      status = EXCLUDED.status,
+      updated_at = EXCLUDED.updated_at
+  `;
+
+  await query(sql, [
+    act.id,
+    act.branchId,
+    act.branchName || null,
+    act.year ? String(act.year) : '2026',
+    act.outputNo || '1',
+    act.activityCode || null,
+    act.strategy || null,
+    act.activity,
+    act.kpi || null,
+    act.voteNumber || null,
+    act.targetQ1 || null,
+    act.targetQ2 || null,
+    act.targetQ3 || null,
+    act.targetQ4 || null,
+    act.totalTarget || null,
+    act.estimatedCost || 0,
+    act.costNote || null,
+    JSON.stringify(act.financialMonths || []),
+    JSON.stringify(act.physicalMonths || []),
+    act.fundingSource || null,
+    act.responsibleOfficer || null,
+    act.status || 'Planned',
+    act.createdBy || null,
+    act.creatorName || null,
+    act.createdAt || new Date().toISOString(),
+    act.updatedAt || new Date().toISOString(),
+  ]);
+}
+

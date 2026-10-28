@@ -461,12 +461,125 @@ async function seedData(pool) {
     [String(lastWorkshopNum)]
   );
 
+  // 14. AIP Header Templates
+  for (const tpl of data.aipHeaderTemplates || []) {
+    await pool.query(
+      `INSERT INTO aip_header_templates (
+        id, branch_id, name, phase_title, target_title,
+        main_responsibility, main_contact_no, overall_responsibility,
+        overall_contact_no, footnote, is_default, created_by,
+        creator_name, created_at, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5,
+        $6, $7, $8,
+        $9, $10, $11, $12,
+        $13, $14, $15
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        phase_title = EXCLUDED.phase_title,
+        target_title = EXCLUDED.target_title,
+        main_responsibility = EXCLUDED.main_responsibility,
+        main_contact_no = EXCLUDED.main_contact_no,
+        overall_responsibility = EXCLUDED.overall_responsibility,
+        overall_contact_no = EXCLUDED.overall_contact_no,
+        footnote = EXCLUDED.footnote,
+        updated_at = EXCLUDED.updated_at`,
+      [
+        tpl.id,
+        tpl.branchId || null,
+        tpl.name,
+        tpl.phaseTitle || '2. Implementation Phase',
+        tpl.targetTitle || 'Overall Physical and Financial Targets',
+        tpl.mainResponsibility || null,
+        tpl.mainContactNo || null,
+        tpl.overallResponsibility || null,
+        tpl.overallContactNo || null,
+        tpl.footnote || null,
+        Boolean(tpl.isDefault),
+        tpl.createdBy || null,
+        tpl.creatorName || null,
+        tpl.createdAt || new Date().toISOString(),
+        tpl.updatedAt || new Date().toISOString(),
+      ]
+    );
+  }
+
+  // 15. AIP Activities
+  for (const act of data.aipActivities || []) {
+    await pool.query(
+      `INSERT INTO aip_activities (
+        id, branch_id, branch_name, year, output_no, activity_code,
+        strategy, activity, kpi, vote_number, target_q1, target_q2,
+        target_q3, target_q4, total_target, estimated_cost, cost_note,
+        financial_months, physical_months, funding_source, responsible_officer, status,
+        created_by, creator_name, created_at, updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6,
+        $7, $8, $9, $10, $11, $12,
+        $13, $14, $15, $16, $17,
+        $18, $19, $20, $21, $22,
+        $23, $24, $25, $26
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        output_no = EXCLUDED.output_no,
+        activity_code = EXCLUDED.activity_code,
+        strategy = EXCLUDED.strategy,
+        activity = EXCLUDED.activity,
+        kpi = EXCLUDED.kpi,
+        vote_number = EXCLUDED.vote_number,
+        target_q1 = EXCLUDED.target_q1,
+        target_q2 = EXCLUDED.target_q2,
+        target_q3 = EXCLUDED.target_q3,
+        target_q4 = EXCLUDED.target_q4,
+        total_target = EXCLUDED.total_target,
+        estimated_cost = EXCLUDED.estimated_cost,
+        cost_note = EXCLUDED.cost_note,
+        financial_months = EXCLUDED.financial_months,
+        physical_months = EXCLUDED.physical_months,
+        funding_source = EXCLUDED.funding_source,
+        responsible_officer = EXCLUDED.responsible_officer,
+        status = EXCLUDED.status,
+        updated_at = EXCLUDED.updated_at`,
+      [
+        act.id,
+        act.branchId,
+        act.branchName || null,
+        act.year ? String(act.year) : '2026',
+        act.outputNo || '1',
+        act.activityCode || null,
+        act.strategy || null,
+        act.activity,
+        act.kpi || null,
+        act.voteNumber || null,
+        act.targetQ1 || null,
+        act.targetQ2 || null,
+        act.targetQ3 || null,
+        act.targetQ4 || null,
+        act.totalTarget || null,
+        act.estimatedCost || 0,
+        act.costNote || null,
+        JSON.stringify(act.financialMonths || []),
+        JSON.stringify(act.physicalMonths || []),
+        act.fundingSource || null,
+        act.responsibleOfficer || null,
+        act.status || 'Planned',
+        act.createdBy || null,
+        act.creatorName || null,
+        act.createdAt || new Date().toISOString(),
+        act.updatedAt || new Date().toISOString(),
+      ]
+    );
+  }
+
   console.log('✅ Initial data seeded successfully into PostgreSQL!');
   console.log(`   - Organizations: ${(data.organizations || []).length}`);
   console.log(`   - Users: ${(data.users || []).length}`);
   console.log(`   - Workshops: ${(data.workshops || []).length}`);
   console.log(`   - Trainees: ${(data.trainees || []).length}`);
   console.log(`   - Resource Persons: ${(data.resourcePersons || []).length}`);
+  console.log(`   - AIP Templates: ${(data.aipHeaderTemplates || []).length}`);
+  console.log(`   - AIP Activities: ${(data.aipActivities || []).length}`);
 }
 
 async function main() {

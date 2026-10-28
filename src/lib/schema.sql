@@ -236,6 +236,63 @@ CREATE TABLE IF NOT EXISTS system_meta (
   value TEXT
 );
 
+-- 16. AIP Header Templates
+CREATE TABLE IF NOT EXISTS aip_header_templates (
+  id VARCHAR(100) PRIMARY KEY,
+  branch_id VARCHAR(100) REFERENCES organizations(id) ON DELETE SET NULL,
+  name VARCHAR(255) NOT NULL,
+  phase_title VARCHAR(255) DEFAULT '2. Implementation Phase',
+  target_title VARCHAR(255) DEFAULT 'Overall Physical and Financial Targets',
+  main_responsibility VARCHAR(255),
+  main_contact_no VARCHAR(50),
+  overall_responsibility VARCHAR(255),
+  overall_contact_no VARCHAR(50),
+  footnote TEXT,
+  is_default BOOLEAN DEFAULT FALSE,
+  created_by VARCHAR(100) REFERENCES users(id) ON DELETE SET NULL,
+  creator_name VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 17. AIP Activities
+CREATE TABLE IF NOT EXISTS aip_activities (
+  id VARCHAR(100) PRIMARY KEY,
+  branch_id VARCHAR(100) REFERENCES organizations(id) ON DELETE CASCADE,
+  branch_name VARCHAR(255),
+  year VARCHAR(10) NOT NULL DEFAULT '2026',
+  output_no VARCHAR(50),
+  activity_code VARCHAR(50),
+  strategy TEXT,
+  activity TEXT NOT NULL,
+  kpi TEXT,
+  vote_number VARCHAR(100),
+  estimated_cost NUMERIC(15, 3) DEFAULT 0,
+  cost_note VARCHAR(100),
+  financial_months JSONB DEFAULT '[]',
+  physical_months JSONB DEFAULT '[]',
+  target_q1 VARCHAR(50),
+  target_q2 VARCHAR(50),
+  target_q3 VARCHAR(50),
+  target_q4 VARCHAR(50),
+  total_target VARCHAR(50),
+  funding_source VARCHAR(100),
+  responsible_officer VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'Planned',
+  created_by VARCHAR(100) REFERENCES users(id) ON DELETE SET NULL,
+  creator_name VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE aip_activities ADD COLUMN IF NOT EXISTS output_no VARCHAR(50);
+ALTER TABLE aip_activities ADD COLUMN IF NOT EXISTS vote_number VARCHAR(100);
+ALTER TABLE aip_activities ADD COLUMN IF NOT EXISTS cost_note VARCHAR(100);
+ALTER TABLE aip_activities ADD COLUMN IF NOT EXISTS financial_months JSONB DEFAULT '[]';
+ALTER TABLE aip_activities ADD COLUMN IF NOT EXISTS physical_months JSONB DEFAULT '[]';
+ALTER TABLE aip_activities ALTER COLUMN strategy DROP NOT NULL;
+ALTER TABLE aip_activities ALTER COLUMN kpi DROP NOT NULL;
+
 -- ====================================================================
 -- Performance Indexes
 -- ====================================================================
@@ -253,3 +310,5 @@ CREATE INDEX IF NOT EXISTS idx_trainees_workshop ON trainees(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_resource_persons_workshop ON resource_persons(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient_org_id, recipient_user_id);
 CREATE INDEX IF NOT EXISTS idx_workshop_reschedules_workshop ON workshop_reschedules(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_aip_activities_branch ON aip_activities(branch_id, year);
+CREATE INDEX IF NOT EXISTS idx_aip_templates_branch ON aip_header_templates(branch_id);

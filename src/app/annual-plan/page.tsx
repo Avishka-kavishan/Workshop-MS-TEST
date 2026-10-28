@@ -856,7 +856,7 @@ export default function AnnualPlanPage() {
                     <th rowSpan={3} style={{ width: '90px' }}>Allocation / Estimated Cost (Mn)</th>
                     <th rowSpan={3} style={{ width: '115px' }}>Target Type</th>
                     <th
-                      colSpan={16}
+                      colSpan={17}
                       style={{
                         background: '#7a1c2d',
                         color: '#ffffff',
@@ -886,11 +886,10 @@ export default function AnnualPlanPage() {
                         title="Click to edit target heading"
                       />
                     </th>
-                    <th rowSpan={3} style={{ minWidth: '180px' }}>Responsibility</th>
                     <th rowSpan={3} className="no-print" style={{ width: '80px' }}>Actions</th>
                   </tr>
 
-                  {/* Row 2: Monthly and Quarterly Section Headers */}
+                  {/* Row 2: Monthly, Quarterly and Responsibility Section Headers */}
                   <tr>
                     <th colSpan={12} className="header-sub-group">
                       January to December - Monthly basis (Non-Cumulative)
@@ -898,6 +897,7 @@ export default function AnnualPlanPage() {
                     <th colSpan={4} className="header-sub-group" style={{ background: '#fef3c7', color: '#92400e' }}>
                       Q1 to Q4 - Quarterly basis (Cumulative)
                     </th>
+                    <th rowSpan={2} style={{ minWidth: '180px' }}>Responsibility</th>
                   </tr>
 
                   {/* Row 3: Sub Header Months & Quarters */}

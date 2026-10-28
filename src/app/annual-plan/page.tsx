@@ -595,7 +595,7 @@ export default function AnnualPlanPage() {
                   cursor: 'pointer',
                 }}
               >
-                <option value="2027">2027 (Official Reference)</option>
+                <option value="2027">2027</option>
                 <option value="2026">2026</option>
                 <option value="2028">2028</option>
               </select>

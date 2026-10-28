@@ -72,6 +72,8 @@ export default function AnnualPlanPage() {
   const [mainContact, setMainContact] = useState('');
   const [overallResp, setOverallResp] = useState('');
   const [overallContact, setOverallContact] = useState('');
+  const [formPhaseTitle, setFormPhaseTitle] = useState('3. Implementation Phase');
+  const [formTargetTitle, setFormTargetTitle] = useState('');
   const [isSavingHeader, setIsSavingHeader] = useState(false);
   const [headerSavedSuccess, setHeaderSavedSuccess] = useState(false);
 
@@ -123,6 +125,8 @@ export default function AnnualPlanPage() {
           setMainContact(json.plan.mainContactNo || '');
           setOverallResp(json.plan.overallResponsibility || '');
           setOverallContact(json.plan.overallContactNo || '');
+          setFormPhaseTitle(json.plan.phaseTitle || '3. Implementation Phase');
+          setFormTargetTitle(json.plan.targetTitle || '');
         }
       }
     } catch (err) {
@@ -158,6 +162,8 @@ export default function AnnualPlanPage() {
           mainContactNo: mainContact,
           overallResponsibility: overallResp,
           overallContactNo: overallContact,
+          phaseTitle: formPhaseTitle,
+          targetTitle: formTargetTitle,
         }),
       });
       if (res.ok) {
@@ -564,18 +570,6 @@ export default function AnnualPlanPage() {
               <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#7a1c2d', margin: 0 }}>
                 Annual Implementation Plan (AIP)
               </h1>
-              <span style={{
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                padding: '3px 10px',
-                borderRadius: '12px',
-                background: '#fef3c7',
-                color: '#92400e',
-                border: '1px solid #fde68a',
-              }}>
-                {plan?.status || 'Draft'}
-              </span>
             </div>
             <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>
               Ministry of Education Official Format • Implementation Matrix & Quarterly Targets
@@ -583,31 +577,7 @@ export default function AnnualPlanPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            {/* MOE Branch Selector (for all MOE level branches) */}
-            {moeBranches.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ffffff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #d1d5db' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#4b5563' }}>🏛️ MOE Branch:</span>
-                <select
-                  value={selectedBranchId || branchInfo?.id || ''}
-                  onChange={(e) => handleBranchChange(e.target.value)}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    fontSize: '0.875rem',
-                    fontWeight: 700,
-                    color: '#7a1c2d',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {moeBranches.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+
 
             {/* Year Selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ffffff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #d1d5db' }}>
@@ -724,7 +694,7 @@ export default function AnnualPlanPage() {
           /* ── Official AIP Sheet ── */
           <div className="aip-sheet-card">
 
-            {/* Document Title Banner */}
+            {/* Document Title Banner - Editable */}
             <div style={{
               background: '#7a1c2d',
               color: '#ffffff',
@@ -732,12 +702,50 @@ export default function AnnualPlanPage() {
               textAlign: 'center',
               borderBottom: '2px solid #5a101e',
             }}>
-              <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, letterSpacing: '0.025em' }}>
-                {plan?.phaseTitle || '3. Implementation Phase'}
-              </h2>
-              <h3 style={{ margin: '0.35rem 0 0 0', fontSize: '1.05rem', fontWeight: 600, opacity: 0.95 }}>
-                {plan?.targetTitle || `Overall Physical and Financial Targets ${selectedYear}`}
-              </h3>
+              <input
+                value={formPhaseTitle}
+                onChange={(e) => setFormPhaseTitle(e.target.value)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px dashed rgba(255,255,255,0.5)',
+                  color: '#ffffff',
+                  fontSize: '1.3rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.025em',
+                  textAlign: 'center',
+                  outline: 'none',
+                  margin: '0 auto',
+                  padding: '2px 0',
+                  cursor: 'text',
+                }}
+                placeholder="3. Implementation Phase"
+                title="Click to edit phase title"
+              />
+              <input
+                value={formTargetTitle || `Overall Physical and Financial Targets ${selectedYear}`}
+                onChange={(e) => setFormTargetTitle(e.target.value)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px dashed rgba(255,255,255,0.5)',
+                  color: '#ffffff',
+                  fontSize: '1.05rem',
+                  fontWeight: 600,
+                  opacity: 0.95,
+                  textAlign: 'center',
+                  outline: 'none',
+                  margin: '0.35rem auto 0',
+                  padding: '2px 0',
+                  cursor: 'text',
+                }}
+                placeholder={`Overall Physical and Financial Targets ${selectedYear}`}
+                title="Click to edit target title"
+              />
             </div>
 
             {/* Editable Header Meta Box (Main & Overall Responsibility) */}

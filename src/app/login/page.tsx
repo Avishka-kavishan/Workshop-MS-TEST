@@ -50,7 +50,7 @@ export default function LoginPage() {
     }
   };
 
-  const demoAccounts = [
+    const demoAccounts = [
     {
       level: 'Level 1 – Organizing Branch',
       name: 'MOE Planning Branch',
@@ -73,6 +73,62 @@ export default function LoginPage() {
       role: 'ICT Education Branch',
       username: 'ict.officer',
       desc: 'Schedules workshops: Year, Branch, Subject, Title, Objectives, Host Branch, Days.',
+      badgeColor: '#8D153A',
+    },
+    {
+      level: 'Level 1 – Organizing Branch',
+      name: 'Piriven division',
+      role: 'Piriven Education Branch',
+      username: 'piriven.officer',
+      desc: 'Monastic education institutions, piriven teacher training and development.',
+      badgeColor: '#8D153A',
+    },
+    {
+      level: 'Level 1 – Organizing Branch',
+      name: 'Education Reforms',
+      role: 'Education Reforms Branch',
+      username: 'reforms.officer',
+      desc: 'National educational restructuring, new curriculum frameworks and modernizations.',
+      badgeColor: '#8D153A',
+    },
+    {
+      level: 'Level 1 – Organizing Branch',
+      name: 'National College of Education',
+      role: 'NCOE Coordinating Branch',
+      username: 'ncoe.officer',
+      desc: 'Pre-service teacher training, college administration, and admission coordination.',
+      badgeColor: '#8D153A',
+    },
+    {
+      level: 'Level 1 – Organizing Branch',
+      name: 'Agriculture and Environmental',
+      role: 'Agriculture & Environmental Branch',
+      username: 'agri.officer',
+      desc: 'School agricultural clubs, green school projects, and environmental sustainability.',
+      badgeColor: '#8D153A',
+    },
+    {
+      level: 'Level 1 – Organizing Branch',
+      name: 'Digital Education Infrastructure Development',
+      role: 'Digital Infrastructure Branch',
+      username: 'digital.infra',
+      desc: 'National smart classroom rollouts, school IT infrastructure and network development.',
+      badgeColor: '#8D153A',
+    },
+    {
+      level: 'Level 1 – Organizing Branch',
+      name: 'Mathematics',
+      role: 'Mathematics Branch',
+      username: 'maths.officer',
+      desc: 'National mathematics education, Olympiad preparation, and teacher subject competency.',
+      badgeColor: '#8D153A',
+    },
+    {
+      level: 'Level 1 – Organizing Branch',
+      name: 'School Health and Nutrition',
+      role: 'School Health & Nutrition Branch',
+      username: 'health.officer',
+      desc: 'School meal programs, adolescent health assessments, and sanitation standards.',
       badgeColor: '#8D153A',
     },
     {
@@ -283,6 +339,9 @@ export default function LoginPage() {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
                 gap: '0.875rem',
+                maxHeight: '620px',
+                overflowY: 'auto',
+                paddingRight: '4px',
               }}
             >
               {demoAccounts.map((account) => (

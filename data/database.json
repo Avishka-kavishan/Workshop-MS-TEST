@@ -2123,6 +2123,69 @@
       "unitType": "branch",
       "isActive": true,
       "createdAt": "2026-10-01T09:42:18.144Z"
+    },
+    {
+      "id": "org-moe-piriven",
+      "name": "Piriven division",
+      "code": "MOE-PIRIVEN",
+      "typeId": "ot-moe",
+      "parentId": "org-moe",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "org-moe-reforms",
+      "name": "Education Reforms",
+      "code": "MOE-REFORMS",
+      "typeId": "ot-moe",
+      "parentId": "org-moe",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "org-moe-ncoe",
+      "name": "National College of Education",
+      "code": "MOE-NCOE",
+      "typeId": "ot-moe",
+      "parentId": "org-moe",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "org-moe-agri",
+      "name": "Agriculture and Environmental",
+      "code": "MOE-AGRI",
+      "typeId": "ot-moe",
+      "parentId": "org-moe",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "org-moe-digital-infra",
+      "name": "Digital Education Infrastructure Development",
+      "code": "MOE-DIGI-INFRA",
+      "typeId": "ot-moe",
+      "parentId": "org-moe",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "org-moe-maths",
+      "name": "Mathematics",
+      "code": "MOE-MATHS",
+      "typeId": "ot-moe",
+      "parentId": "org-moe",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "org-moe-health",
+      "name": "School Health and Nutrition",
+      "code": "MOE-HEALTH",
+      "typeId": "ot-moe",
+      "parentId": "org-moe",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
     }
   ],
   "userRoles": [
@@ -2247,6 +2310,90 @@
       "isActive": true,
       "lastLogin": "2026-10-15T04:11:33.210Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
+    },
+    {
+      "id": "user-piriven",
+      "username": "piriven.officer",
+      "passwordHash": "$2b$10$./4O5YT/QD9uTYcc46P4ceeeEY7RSq165PIVDe9XgsKcuDE.Xxm/i",
+      "fullName": "Piriven division",
+      "email": "piriven@moe.gov.lk",
+      "designation": "Piriven Division Officer",
+      "organizationId": "org-moe-piriven",
+      "roleId": "role-moe-officer",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "user-reforms",
+      "username": "reforms.officer",
+      "passwordHash": "$2b$10$./4O5YT/QD9uTYcc46P4ceeeEY7RSq165PIVDe9XgsKcuDE.Xxm/i",
+      "fullName": "Education Reforms",
+      "email": "reforms@moe.gov.lk",
+      "designation": "Education Reforms Officer",
+      "organizationId": "org-moe-reforms",
+      "roleId": "role-moe-officer",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "user-ncoe",
+      "username": "ncoe.officer",
+      "passwordHash": "$2b$10$./4O5YT/QD9uTYcc46P4ceeeEY7RSq165PIVDe9XgsKcuDE.Xxm/i",
+      "fullName": "National College of Education",
+      "email": "ncoe@moe.gov.lk",
+      "designation": "NCOE Branch Officer",
+      "organizationId": "org-moe-ncoe",
+      "roleId": "role-moe-officer",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "user-agri",
+      "username": "agri.officer",
+      "passwordHash": "$2b$10$./4O5YT/QD9uTYcc46P4ceeeEY7RSq165PIVDe9XgsKcuDE.Xxm/i",
+      "fullName": "Agriculture and Environmental",
+      "email": "agri@moe.gov.lk",
+      "designation": "Agriculture & Environmental Officer",
+      "organizationId": "org-moe-agri",
+      "roleId": "role-moe-officer",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "user-digital-infra",
+      "username": "digital.infra",
+      "passwordHash": "$2b$10$./4O5YT/QD9uTYcc46P4ceeeEY7RSq165PIVDe9XgsKcuDE.Xxm/i",
+      "fullName": "Digital Education Infrastructure Development",
+      "email": "digital.infra@moe.gov.lk",
+      "designation": "Digital Infrastructure Officer",
+      "organizationId": "org-moe-digital-infra",
+      "roleId": "role-moe-officer",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "user-maths",
+      "username": "maths.officer",
+      "passwordHash": "$2b$10$./4O5YT/QD9uTYcc46P4ceeeEY7RSq165PIVDe9XgsKcuDE.Xxm/i",
+      "fullName": "Mathematics",
+      "email": "maths@moe.gov.lk",
+      "designation": "Mathematics Branch Officer",
+      "organizationId": "org-moe-maths",
+      "roleId": "role-moe-officer",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "user-health",
+      "username": "health.officer",
+      "passwordHash": "$2b$10$./4O5YT/QD9uTYcc46P4ceeeEY7RSq165PIVDe9XgsKcuDE.Xxm/i",
+      "fullName": "School Health and Nutrition",
+      "email": "health@moe.gov.lk",
+      "designation": "School Health & Nutrition Officer",
+      "organizationId": "org-moe-health",
+      "roleId": "role-moe-officer",
+      "isActive": true,
+      "createdAt": "2026-10-29T04:26:17.180Z"
     }
   ],
   "userOrgPermissions": [
@@ -3593,6 +3740,118 @@
       "canCreate": true,
       "canView": true,
       "canApprove": false
+    },
+    {
+      "id": "6b2f23e3-86d6-4bb3-aae0-19584382687f",
+      "userId": "user-piriven",
+      "organizationId": "org-moe-piriven",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "9241802f-4f58-412c-a8f8-fa43ce5d2bfd",
+      "userId": "user-piriven",
+      "organizationId": "org-moe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "904c6a90-4fb1-4710-985f-8f9574e14555",
+      "userId": "user-reforms",
+      "organizationId": "org-moe-reforms",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "91f0da6e-2abd-4c20-9982-04f156ac4a26",
+      "userId": "user-reforms",
+      "organizationId": "org-moe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "a22d12b1-82bf-4150-afee-5fdc00b70422",
+      "userId": "user-ncoe",
+      "organizationId": "org-moe-ncoe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "4ab8c6ce-9afd-48d5-a16e-5da12184b135",
+      "userId": "user-ncoe",
+      "organizationId": "org-moe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "86df022b-3c2e-415a-aa47-3548033c54ee",
+      "userId": "user-agri",
+      "organizationId": "org-moe-agri",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "038afb10-cacc-4c6f-a5bc-5066273a020d",
+      "userId": "user-agri",
+      "organizationId": "org-moe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "a60df966-cfbb-4339-aa12-5628815b4835",
+      "userId": "user-digital-infra",
+      "organizationId": "org-moe-digital-infra",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "d21b418c-dff1-4b4f-9951-7f9afb0fee83",
+      "userId": "user-digital-infra",
+      "organizationId": "org-moe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "d986b7c8-7900-46eb-8cbe-2eda6d8f32dd",
+      "userId": "user-maths",
+      "organizationId": "org-moe-maths",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "a9b4a698-8701-40ce-946a-87375b1fd512",
+      "userId": "user-maths",
+      "organizationId": "org-moe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "fa207310-5b5b-47d7-8af2-84a76f19ba07",
+      "userId": "user-health",
+      "organizationId": "org-moe-health",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
+    },
+    {
+      "id": "cd118c90-a4d3-4922-87da-b028a4efc059",
+      "userId": "user-health",
+      "organizationId": "org-moe",
+      "canCreate": true,
+      "canView": true,
+      "canApprove": false
     }
   ],
   "workshopCategories": [
@@ -4518,6 +4777,111 @@
       "status": "Draft",
       "createdAt": "2026-10-28T08:00:00.000Z",
       "updatedAt": "2026-10-28T09:17:05.201Z"
+    },
+    {
+      "id": "plan-org-moe-piriven-2027",
+      "branchId": "org-moe-piriven",
+      "branchName": "Piriven division",
+      "year": "2027",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "updatedAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "plan-org-moe-reforms-2027",
+      "branchId": "org-moe-reforms",
+      "branchName": "Education Reforms",
+      "year": "2027",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "updatedAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "plan-org-moe-ncoe-2027",
+      "branchId": "org-moe-ncoe",
+      "branchName": "National College of Education",
+      "year": "2027",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "updatedAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "plan-org-moe-agri-2027",
+      "branchId": "org-moe-agri",
+      "branchName": "Agriculture and Environmental",
+      "year": "2027",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "updatedAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "plan-org-moe-digital-infra-2027",
+      "branchId": "org-moe-digital-infra",
+      "branchName": "Digital Education Infrastructure Development",
+      "year": "2027",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "updatedAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "plan-org-moe-maths-2027",
+      "branchId": "org-moe-maths",
+      "branchName": "Mathematics",
+      "year": "2027",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "updatedAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "plan-org-moe-health-2027",
+      "branchId": "org-moe-health",
+      "branchName": "School Health and Nutrition",
+      "year": "2027",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "updatedAt": "2026-10-29T04:26:17.180Z"
     }
   ],
   "aipActivities": []

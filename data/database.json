@@ -2295,7 +2295,7 @@
       "organizationId": "org-moe-planning",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-10-29T04:33:18.278Z",
+      "lastLogin": "2026-10-29T04:42:13.660Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -4885,5 +4885,6 @@
       "updatedAt": "2026-10-29T04:26:17.180Z"
     }
   ],
-  "aipActivities": []
+  "aipActivities": [],
+  "aipAmendments": []
 }

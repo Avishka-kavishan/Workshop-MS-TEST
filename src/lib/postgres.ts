@@ -261,6 +261,8 @@ export function rowToAipPlan(r: any): AipPlan {
     branchId: r.branch_id,
     branchName: r.branch_name || '',
     year: r.year ? String(r.year) : '2027',
+    amendmentNumber: r.amendment_number !== undefined ? Number(r.amendment_number) : 0,
+    amendmentId: r.amendment_id || undefined,
     phaseTitle: r.phase_title || '3. Implementation Phase',
     targetTitle: r.target_title || 'Overall Physical and Financial Targets 2027',
     mainResponsibility: r.main_responsibility || '',
@@ -376,6 +378,7 @@ export async function loadFullSchemaFromPostgres(): Promise<DbSchema> {
     notifications: notifsRes.rows.map(rowToNotification),
     workshopReschedules: reschedulesRes.rows.map(rowToReschedule),
     meta: { lastWorkshopNumber: isNaN(lastWorkshopNumber) ? 0 : lastWorkshopNumber },
+    aipAmendments: [],
     aipPlans: (aipPlansRes?.rows || []).map(rowToAipPlan),
     aipActivities: (aipActivitiesRes?.rows || []).map(rowToAipActivity),
   };

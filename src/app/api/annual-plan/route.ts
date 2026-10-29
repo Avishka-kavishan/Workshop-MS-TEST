@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year') || '2027';
     const reqBranchId = searchParams.get('branchId');
+    const amendmentNumber = parseInt(searchParams.get('amendmentNumber') || '0', 10);
 
     const data = await getDb();
     const organizations = data.organizations || [];
@@ -24,7 +25,6 @@ export async function GET(request: NextRequest) {
       .map((o) => ({ id: o.id, name: o.name, code: o.code }));
 
     // Automatically identify branch from authenticated user session!
-    // If a specific reqBranchId was passed, use it; otherwise use the logged in user's branch
     let branchId = user?.organizationId || reqBranchId;
     if (!branchId) {
       branchId = 'org-moe-ict';
@@ -36,17 +36,90 @@ export async function GET(request: NextRequest) {
       code: 'MOE-ICT',
     };
 
-    // Find AIP plan for this branch and year
-    const allPlans = data.aipPlans || [];
-    let plan = allPlans.find((p) => p.branchId === branchId && p.year === year);
+    // Find all amendments for this year
+    const allAmendments = (data.aipAmendments || []).filter((a) => a.year === year);
+    allAmendments.sort((a, b) => a.amendmentNumber - b.amendmentNumber);
+    const currentAmendment = allAmendments.find((a) => a.amendmentNumber === amendmentNumber) || null;
 
-    // If no plan found in database, automatically provide default Draft plan
-    if (!plan) {
+    // Find AIP plan for this branch, year, and amendmentNumber
+    const allPlans = data.aipPlans || [];
+    let plan = allPlans.find(
+      (p) =>
+        p.branchId === branchId &&
+        p.year === year &&
+        Number(p.amendmentNumber || 0) === amendmentNumber
+    );
+
+    // If an amendment was called and branch hasn't opened it yet, auto-clone from previous version!
+    if (!plan && amendmentNumber > 0) {
+      // Find source plan (previous amendment or Original Plan 0)
+      const sourcePlan = allPlans.find(
+        (p) =>
+          p.branchId === branchId &&
+          p.year === year &&
+          Number(p.amendmentNumber || 0) === amendmentNumber - 1
+      ) || allPlans.find(
+        (p) =>
+          p.branchId === branchId &&
+          p.year === year &&
+          Number(p.amendmentNumber || 0) === 0
+      );
+
+      // Find source activities to clone
+      const sourceActivities = (data.aipActivities || []).filter(
+        (a) =>
+          a.branchId === branchId &&
+          a.year === year &&
+          Number(a.amendmentNumber || 0) === (sourcePlan?.amendmentNumber || 0)
+      );
+
+      const newPlanId = `plan-${branchId}-${year}-amend-${amendmentNumber}`;
+      plan = {
+        id: newPlanId,
+        branchId,
+        branchName: currentBranch.name,
+        year,
+        amendmentNumber,
+        amendmentId: currentAmendment?.id,
+        phaseTitle: sourcePlan?.phaseTitle || '3. Implementation Phase',
+        targetTitle: `Overall Physical and Financial Targets ${year} (Amendment ${amendmentNumber})`,
+        mainResponsibility: sourcePlan?.mainResponsibility || '',
+        mainContactNo: sourcePlan?.mainContactNo || '',
+        overallResponsibility: sourcePlan?.overallResponsibility || '',
+        overallContactNo: sourcePlan?.overallContactNo || '',
+        status: 'Draft',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Clone activities
+      const clonedActivities: AipActivity[] = sourceActivities.map((sa) => ({
+        ...sa,
+        id: `act-${randomUUID()}`,
+        planId: newPlanId,
+        amendmentNumber,
+        amendmentId: currentAmendment?.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }));
+
+      // Save into DB
+      await updateDb((dbData) => {
+        if (!dbData.aipPlans) dbData.aipPlans = [];
+        if (!dbData.aipActivities) dbData.aipActivities = [];
+        dbData.aipPlans.push(plan!);
+        clonedActivities.forEach((ca) => dbData.aipActivities.push(ca));
+      });
+    }
+
+    // Default baseline plan for Original Plan (amendmentNumber === 0)
+    if (!plan && amendmentNumber === 0) {
       plan = {
         id: `plan-${branchId}-${year}`,
         branchId,
         branchName: currentBranch.name,
         year,
+        amendmentNumber: 0,
         phaseTitle: '3. Implementation Phase',
         targetTitle: `Overall Physical and Financial Targets ${year}`,
         mainResponsibility: branchId === 'org-moe-ict'
@@ -63,27 +136,22 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Filter activities for this branch and year
-    const allActivities = data.aipActivities || [];
+    // Filter activities for this branch, year, and amendmentNumber
+    const freshData = await getDb();
+    const allActivities = freshData.aipActivities || [];
     const activities = allActivities.filter(
-      (a) => a.branchId === branchId && (a.year === year || !a.year)
+      (a) =>
+        a.branchId === branchId &&
+        (a.year === year || !a.year) &&
+        Number(a.amendmentNumber || 0) === amendmentNumber
     );
 
-    // Sort numerically by activityCode (1, 2, 3 ... 17)
-    activities.sort((a, b) => {
-      const codeA = parseFloat(a.activityCode) || 0;
-      const codeB = parseFloat(b.activityCode) || 0;
-      return codeA - codeB;
-    });
-
-    // ── Calculations ──────────────────────────────────────────
-    // 1. Total Estimated Cost
+    // Calculations for totals
     const totalEstimatedCost = activities.reduce(
       (sum, a) => sum + (Number(a.estimatedCost) || 0),
       0
     );
 
-    // 2. Monthly Financial Totals (January to December)
     const monthlyFinancialTotals = Array(12).fill(0);
     activities.forEach((act) => {
       if (Array.isArray(act.financialMonths)) {
@@ -95,14 +163,12 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // 3. Quarterly Cumulative Financial Targets
     const q1Fin = monthlyFinancialTotals[0] + monthlyFinancialTotals[1] + monthlyFinancialTotals[2];
     const q2Fin = q1Fin + monthlyFinancialTotals[3] + monthlyFinancialTotals[4] + monthlyFinancialTotals[5];
     const q3Fin = q2Fin + monthlyFinancialTotals[6] + monthlyFinancialTotals[7] + monthlyFinancialTotals[8];
     const q4Fin = q3Fin + monthlyFinancialTotals[9] + monthlyFinancialTotals[10] + monthlyFinancialTotals[11];
     const quarterlyFinancialCumulative = [q1Fin, q2Fin, q3Fin, q4Fin];
 
-    // 4. Monthly Physical Progress Totals (January to December)
     const monthlyPhysicalSums = Array(12).fill(0);
     const n = activities.length || 1;
     activities.forEach((act) => {
@@ -120,8 +186,6 @@ export async function GET(request: NextRequest) {
     });
 
     const monthlyPhysicalTotals = monthlyPhysicalSums.map((sum) => Math.round((sum / n) * 10) / 10);
-
-    // 5. Quarterly Cumulative Physical Targets
     const q1Phys = Math.round((monthlyPhysicalTotals[0] + monthlyPhysicalTotals[1] + monthlyPhysicalTotals[2]) * 10) / 10;
     const q2Phys = Math.round((q1Phys + monthlyPhysicalTotals[3] + monthlyPhysicalTotals[4] + monthlyPhysicalTotals[5]) * 10) / 10;
     const q3Phys = Math.round((q2Phys + monthlyPhysicalTotals[6] + monthlyPhysicalTotals[7] + monthlyPhysicalTotals[8]) * 10) / 10;
@@ -135,6 +199,9 @@ export async function GET(request: NextRequest) {
       branch: currentBranch,
       moeBranches,
       year,
+      amendmentNumber,
+      currentAmendment,
+      amendments: allAmendments,
       activities,
       totals: {
         totalEstimatedCost: Math.round(totalEstimatedCost * 1000) / 1000,
@@ -162,6 +229,7 @@ export async function POST(request: NextRequest) {
     const branchId = body.branchId || user?.organizationId || 'org-moe-ict';
     const branchName = body.branchName || user?.organizationName || 'Information Technology and Digital Education Branch';
     const year = body.year ? String(body.year) : '2027';
+    const amendmentNumber = parseInt(String(body.amendmentNumber || '0'), 10);
 
     let savedPlan: AipPlan | null = null;
 
@@ -169,11 +237,12 @@ export async function POST(request: NextRequest) {
       if (!data.aipPlans) data.aipPlans = [];
 
       const existingIdx = data.aipPlans.findIndex(
-        (p) => (body.id && p.id === body.id) || (p.branchId === branchId && p.year === year)
+        (p) =>
+          (body.id && p.id === body.id) ||
+          (p.branchId === branchId && p.year === year && Number(p.amendmentNumber || 0) === amendmentNumber)
       );
 
       if (existingIdx !== -1) {
-        // Update existing plan
         data.aipPlans[existingIdx] = {
           ...data.aipPlans[existingIdx],
           branchName: body.branchName || data.aipPlans[existingIdx].branchName || branchName,
@@ -183,17 +252,16 @@ export async function POST(request: NextRequest) {
           mainContactNo: body.mainContactNo !== undefined ? body.mainContactNo : data.aipPlans[existingIdx].mainContactNo,
           overallResponsibility: body.overallResponsibility !== undefined ? body.overallResponsibility : data.aipPlans[existingIdx].overallResponsibility,
           overallContactNo: body.overallContactNo !== undefined ? body.overallContactNo : data.aipPlans[existingIdx].overallContactNo,
-          status: body.status || data.aipPlans[existingIdx].status || 'Draft',
           updatedAt: new Date().toISOString(),
         };
         savedPlan = data.aipPlans[existingIdx];
       } else {
-        // Create new AIP Plan
         const newPlan: AipPlan = {
-          id: body.id || `plan-${branchId}-${year}`,
+          id: body.id || `plan-${branchId}-${year}${amendmentNumber > 0 ? `-amend-${amendmentNumber}` : ''}`,
           branchId,
           branchName,
           year,
+          amendmentNumber,
           phaseTitle: body.phaseTitle || '3. Implementation Phase',
           targetTitle: body.targetTitle || `Overall Physical and Financial Targets ${year}`,
           mainResponsibility: body.mainResponsibility || '',
@@ -211,9 +279,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, plan: savedPlan });
   } catch (error: any) {
-    console.error('Error saving AIP plan:', error);
+    console.error('Error saving annual plan header:', error);
     return NextResponse.json(
-      { error: 'Failed to save plan', details: error.message },
+      { error: 'Failed to save annual plan header', details: error.message },
       { status: 500 }
     );
   }

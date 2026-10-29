@@ -4,6 +4,27 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import AppShell from '@/components/layout/AppShell';
 
+interface AipAmendment {
+  id: string;
+  year: string;
+  amendmentNumber: number;
+  title: string;
+  circularRef?: string;
+  deadline?: string;
+  notes?: string;
+  status: 'Active' | 'Closed';
+  totalBranches?: number;
+  submittedBranchesCount?: number;
+  branchSubmissions?: Array<{
+    branchId: string;
+    branchName: string;
+    status: string;
+    submittedAt: string | null;
+    activityCount: number;
+    totalCost: number;
+  }>;
+}
+
 interface AipPlan {
   id: string;
   branchId: string;
@@ -15,6 +36,10 @@ interface AipPlan {
   mainContactNo: string;
   overallResponsibility: string;
   overallContactNo: string;
+  amendmentNumber?: number;
+  amendmentId?: string;
+  submittedAt?: string;
+  submissionNotes?: string;
   status: 'Draft' | 'Submitted' | 'Approved';
   createdAt: string;
   updatedAt: string;
@@ -66,6 +91,29 @@ export default function AnnualPlanPage() {
 
   const [plan, setPlan] = useState<AipPlan | null>(null);
   const [activities, setActivities] = useState<AipActivity[]>([]);
+
+  // Amendment states
+  const [amendments, setAmendments] = useState<AipAmendment[]>([]);
+  const [selectedAmendmentNumber, setSelectedAmendmentNumber] = useState<number>(0);
+  const [currentAmendment, setCurrentAmendment] = useState<AipAmendment | null>(null);
+
+  // Planning Branch: Call for Amendment Modal
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+  const [callTitle, setCallTitle] = useState('');
+  const [callCircular, setCallCircular] = useState('');
+  const [callDeadline, setCallDeadline] = useState('');
+  const [callNotes, setCallNotes] = useState('');
+  const [isCalling, setIsCalling] = useState(false);
+  const [callSuccessMsg, setCallSuccessMsg] = useState('');
+
+  // Planning Branch: Submissions Tracker Modal
+  const [isTrackerModalOpen, setIsTrackerModalOpen] = useState(false);
+
+  // Branch Officer: Submit Amendment to Planning Modal
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [submitNotes, setSubmitNotes] = useState('');
+  const [isSubmittingAmendment, setIsSubmittingAmendment] = useState(false);
+  const [submitSuccessMsg, setSubmitSuccessMsg] = useState('');
   const [branchInfo, setBranchInfo] = useState<{ id: string; name: string } | null>(null);
 
   // Directly editable fields in the sheet
@@ -106,14 +154,15 @@ export default function AnnualPlanPage() {
   const [formTargetQ3, setFormTargetQ3] = useState('-');
   const [formTargetQ4, setFormTargetQ4] = useState('100%');
 
-  // Load Data - dynamically detects branch from authenticated session
-  const loadPlanData = async (targetBranchId?: string) => {
+  // Load Data - dynamically detects branch, year, and amendment version
+  const loadPlanData = async (targetBranchId?: string, targetAmendmentNum?: number) => {
     try {
       setLoading(true);
       const bId = targetBranchId || user?.organizationId;
+      const amendNum = targetAmendmentNum !== undefined ? targetAmendmentNum : selectedAmendmentNumber;
       const url = bId 
-        ? `/api/annual-plan?year=${selectedYear}&branchId=${encodeURIComponent(bId)}`
-        : `/api/annual-plan?year=${selectedYear}`;
+        ? `/api/annual-plan?year=${selectedYear}&branchId=${encodeURIComponent(bId)}&amendmentNumber=${amendNum}`
+        : `/api/annual-plan?year=${selectedYear}&amendmentNumber=${amendNum}`;
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
@@ -124,6 +173,8 @@ export default function AnnualPlanPage() {
         }
         setPlan(json.plan);
         setActivities(json.activities || []);
+        setAmendments(json.amendments || []);
+        setCurrentAmendment(json.currentAmendment || null);
 
         if (json.plan) {
           setMainResp(json.plan.mainResponsibility || '');
@@ -143,8 +194,8 @@ export default function AnnualPlanPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    loadPlanData(user?.organizationId);
-  }, [status, user?.organizationId, selectedYear]);
+    loadPlanData(user?.organizationId, selectedAmendmentNumber);
+  }, [status, user?.organizationId, selectedYear, selectedAmendmentNumber]);
 
   // Handle branch switch
   const handleBranchChange = (newBranchId: string) => {
@@ -164,6 +215,7 @@ export default function AnnualPlanPage() {
           branchId: branchInfo?.id || selectedBranchId,
           branchName: branchInfo?.name,
           year: selectedYear,
+          amendmentNumber: selectedAmendmentNumber,
           mainResponsibility: mainResp,
           mainContactNo: mainContact,
           overallResponsibility: overallResp,
@@ -361,6 +413,8 @@ export default function AnnualPlanPage() {
         estimatedCost: parseFloat(formEstimatedCost) || 0,
         responsibleOfficer: formResponsibleOfficer,
         remarks: formRemarks,
+        amendmentNumber: selectedAmendmentNumber,
+        amendmentId: currentAmendment?.id,
         financialMonths: formFinancialMonths,
         physicalMonths: formPhysicalMonths,
         financialQ1: formFinancialQ1,
@@ -406,6 +460,88 @@ export default function AnnualPlanPage() {
       }
     } catch (err) {
       console.error('Error deleting activity:', err);
+    }
+  };
+
+  // Open Call for Amendment Modal (Planning Branch)
+  const handleOpenCallModal = () => {
+    const nextNum = (amendments.length || 0) + 1;
+    setCallTitle(`Amendment 0${nextNum} - Budget & Target Revision`);
+    setCallCircular('');
+    setCallDeadline('');
+    setCallNotes('');
+    setCallSuccessMsg('');
+    setIsCallModalOpen(true);
+  };
+
+  // Submit Call for Amendment (Planning Branch)
+  const handleCreateAmendmentCall = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsCalling(true);
+      const res = await fetch('/api/annual-plan/amendments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year: selectedYear,
+          title: callTitle,
+          circularRef: callCircular,
+          deadline: callDeadline,
+          notes: callNotes,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setCallSuccessMsg(json.message || 'Amendment broadcasted successfully!');
+        setTimeout(() => {
+          setIsCallModalOpen(false);
+          setCallSuccessMsg('');
+        }, 2000);
+        // Refresh and switch to new amendment
+        const createdNum = json.amendment?.amendmentNumber || (amendments.length + 1);
+        setSelectedAmendmentNumber(createdNum);
+        await loadPlanData(undefined, createdNum);
+      } else {
+        alert(json.error || 'Failed to call amendment');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error calling amendment');
+    } finally {
+      setIsCalling(false);
+    }
+  };
+
+  // Submit Amendment to Planning Branch (Branch Officers)
+  const handleSubmitAmendmentToPlanning = async () => {
+    if (selectedAmendmentNumber === 0) return;
+    try {
+      setIsSubmittingAmendment(true);
+      const res = await fetch('/api/annual-plan/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: plan?.id,
+          branchId: branchInfo?.id || user?.organizationId,
+          year: selectedYear,
+          amendmentNumber: selectedAmendmentNumber,
+          notes: submitNotes,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setSubmitSuccessMsg(json.message || 'Amendment submitted successfully!');
+        setTimeout(() => {
+          setIsSubmitModalOpen(false);
+          setSubmitSuccessMsg('');
+        }, 2000);
+        await loadPlanData();
+      } else {
+        alert(json.error || 'Failed to submit amendment');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error submitting amendment');
+    } finally {
+      setIsSubmittingAmendment(false);
     }
   };
 
@@ -610,6 +746,118 @@ export default function AnnualPlanPage() {
               </select>
             </div>
 
+            {/* Version / Amendment Selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ffffff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #d1d5db' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#4b5563' }}>Plan / Revision:</span>
+              <select
+                value={selectedAmendmentNumber}
+                onChange={(e) => setSelectedAmendmentNumber(parseInt(e.target.value, 10))}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  color: selectedAmendmentNumber === 0 ? '#1e293b' : '#b45309',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value={0}>📋 Original Plan (Internal Baseline - Not Sent)</option>
+                {amendments.map((a) => (
+                  <option key={a.id} value={a.amendmentNumber}>
+                    🔄 Amendment 0{a.amendmentNumber}: {a.title} {a.deadline ? `(Due ${a.deadline})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Planning Branch / Admin Tools */}
+            {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') && (
+              <>
+                <button
+                  onClick={handleOpenCallModal}
+                  style={{
+                    background: '#8D153A',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.55rem 1rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 2px 6px rgba(141, 21, 58, 0.25)',
+                  }}
+                  title="Initiate a new amendment cycle and broadcast notification to all branches"
+                >
+                  <span>📢</span> Call for Amendment
+                </button>
+
+                <button
+                  onClick={() => setIsTrackerModalOpen(true)}
+                  style={{
+                    background: '#ffffff',
+                    color: '#7a1c2d',
+                    border: '1px solid #7a1c2d',
+                    padding: '0.55rem 1rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                  title="View submission progress of all branches for amendments"
+                >
+                  <span>📊</span> Submissions Tracker
+                </button>
+              </>
+            )}
+
+            {/* Branch Officer Submit Button (Enabled only when viewing an Amendment) */}
+            {selectedAmendmentNumber > 0 && (
+              plan?.status === 'Submitted' ? (
+                <div style={{
+                  background: '#dcfce7',
+                  color: '#166534',
+                  border: '1px solid #86efac',
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}>
+                  <span>✅</span> Submitted to Planning Branch
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsSubmitModalOpen(true)}
+                  style={{
+                    background: '#166534',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.55rem 1.15rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 2px 6px rgba(22, 101, 52, 0.3)',
+                  }}
+                  title="Submit this amendment to MOE Planning Branch"
+                >
+                  <span>📤</span> Submit Amendment 0{selectedAmendmentNumber}
+                </button>
+              )
+            )}
+
             <button
               onClick={handleOpenAddModal}
               style={{
@@ -694,7 +942,85 @@ export default function AnnualPlanPage() {
           </div>
         </div>
 
-        {loading ? (
+{/* ─── Version & Amendment Status Context Banner ─── */}
+        <div className="no-print" style={{ marginBottom: '1.25rem' }}>
+          {selectedAmendmentNumber === 0 ? (
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              padding: '0.75rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              fontSize: '0.85rem',
+              color: '#334155',
+            }}>
+              <span style={{ fontSize: '1.25rem' }}>🔒</span>
+              <div>
+                <strong>Original Baseline Plan:</strong> This version is kept <em>internally in your branch</em> and is <strong>never sent anywhere</strong>. When MOE Planning Branch calls for an Amendment, switch to that amendment version from the dropdown above to adjust targets and submit.
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              background: plan?.status === 'Submitted' ? '#f0fdf4' : '#fffbeb',
+              border: `1px solid ${plan?.status === 'Submitted' ? '#86efac' : '#fde68a'}`,
+              borderRadius: '8px',
+              padding: '0.75rem 1.25rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              fontSize: '0.85rem',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.35rem' }}>{plan?.status === 'Submitted' ? '✅' : '🔄'}</span>
+                <div>
+                  <div style={{ fontWeight: 800, color: plan?.status === 'Submitted' ? '#166534' : '#92400e', fontSize: '0.95rem' }}>
+                    {currentAmendment?.title || `Amendment 0${selectedAmendmentNumber}`}
+                    {currentAmendment?.deadline && (
+                      <span style={{ marginLeft: '0.5rem', fontWeight: 500, fontSize: '0.8rem', color: '#6b7280' }}>
+                        (Submission Deadline: {currentAmendment.deadline})
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ color: '#4b5563', fontSize: '0.78rem', marginTop: '2px' }}>
+                    {plan?.status === 'Submitted'
+                      ? `Submitted to Planning Branch on ${new Date(plan.submittedAt || '').toLocaleString()}. Changes are recorded under this amendment.`
+                      : 'Draft revision: Update activities or votes as requested. Once ready, click "Submit Amendment to Planning Branch" to transmit your revision.'}
+                  </div>
+                  {currentAmendment?.notes && (
+                    <div style={{ marginTop: '4px', fontSize: '0.76rem', color: '#78350f', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                      <strong>Planning Note:</strong> {currentAmendment.notes}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {plan?.status !== 'Submitted' && (
+                <button
+                  onClick={() => setIsSubmitModalOpen(true)}
+                  style={{
+                    background: '#166534',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.5rem 1.15rem',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(22, 101, 52, 0.2)',
+                  }}
+                >
+                  📤 Submit Amendment 0{selectedAmendmentNumber} to Planning Branch
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+                {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6b7280' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⏳</div>
             Loading Annual Implementation Plan...
@@ -1104,6 +1430,350 @@ export default function AnnualPlanPage() {
       </div>
 
       {/* ── Add / Edit Activity Modal Form ── */}
+      {/* Modal: Call for Amendment (Planning Branch) */}
+      {isCallModalOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.55)',
+          backdropFilter: 'blur(3px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            maxWidth: '560px',
+            width: '100%',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              background: '#8D153A',
+              color: '#ffffff',
+              padding: '1.1rem 1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
+                📢 Call for Amendment ({selectedYear})
+              </h3>
+              <button
+                onClick={() => setIsCallModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateAmendmentCall} style={{ padding: '1.5rem' }}>
+              {callSuccessMsg && (
+                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', color: '#166534', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                  {callSuccessMsg}
+                </div>
+              )}
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.3rem' }}>
+                  Amendment Title <span style={{ color: '#dc2626' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={callTitle}
+                  onChange={(e) => setCallTitle(e.target.value)}
+                  placeholder="e.g. Amendment 01 - Q1 Budget & Target Revision"
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.3rem' }}>
+                    Circular / Reference No
+                  </label>
+                  <input
+                    type="text"
+                    value={callCircular}
+                    onChange={(e) => setCallCircular(e.target.value)}
+                    placeholder="e.g. ED/04/2027"
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.3rem' }}>
+                    Submission Deadline
+                  </label>
+                  <input
+                    type="date"
+                    value={callDeadline}
+                    onChange={(e) => setCallDeadline(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.3rem' }}>
+                  Guidance Notes / Instructions to Branches
+                </label>
+                <textarea
+                  rows={3}
+                  value={callNotes}
+                  onChange={(e) => setCallNotes(e.target.value)}
+                  placeholder="e.g. Please revise vote numbers according to Circular 04 and update Q2 expenditure forecasts."
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>
+                🔔 <strong>Broadcast Notification:</strong> Submitting this will automatically send an in-app notification to all 8+ MOE branches, creating their amendment template so they can fill and submit back.
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsCallModalOpen(false)}
+                  style={{ padding: '0.5rem 1rem', border: '1px solid #d1d5db', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCalling}
+                  style={{ padding: '0.5rem 1.25rem', background: '#8D153A', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  {isCalling ? 'Broadcasting...' : '📢 Broadcast to All Branches'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Submissions Tracker (Planning Branch / Admin) */}
+      {isTrackerModalOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.55)',
+          backdropFilter: 'blur(3px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            maxWidth: '820px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              background: '#7a1c2d',
+              color: '#ffffff',
+              padding: '1.1rem 1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700 }}>
+                  📊 Branch Submissions Tracker ({selectedYear})
+                </h3>
+                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', opacity: 0.9 }}>
+                  Tracking live submission progress of all MOE branches for amendments
+                </p>
+              </div>
+              <button
+                onClick={() => setIsTrackerModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ padding: '1.25rem', overflowY: 'auto', flex: 1 }}>
+              {amendments.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#6b7280' }}>
+                  No amendments called yet for year {selectedYear}. Click "Call for Amendment" to initiate the first amendment cycle.
+                </div>
+              ) : (
+                amendments.map((amend) => (
+                  <div key={amend.id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '1.25rem', overflow: 'hidden' }}>
+                    <div style={{
+                      background: '#f8fafc',
+                      padding: '0.75rem 1rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderBottom: '1px solid #e2e8f0',
+                    }}>
+                      <div>
+                        <strong style={{ color: '#7a1c2d', fontSize: '0.95rem' }}>
+                          Amendment 0{amend.amendmentNumber}: {amend.title}
+                        </strong>
+                        {amend.deadline && (
+                          <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
+                            (Deadline: {amend.deadline})
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, padding: '2px 8px', borderRadius: '12px', background: '#dcfce7', color: '#166534' }}>
+                        {amend.submittedBranchesCount || 0} / {amend.totalBranches || moeBranches.length} Branches Submitted
+                      </span>
+                    </div>
+
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                      <thead>
+                        <tr style={{ background: '#f1f5f9', color: '#475569', textAlign: 'left' }}>
+                          <th style={{ padding: '6px 10px' }}>Branch Name</th>
+                          <th style={{ padding: '6px 10px' }}>Status</th>
+                          <th style={{ padding: '6px 10px' }}>Activities</th>
+                          <th style={{ padding: '6px 10px' }}>Total Cost (Mn)</th>
+                          <th style={{ padding: '6px 10px' }}>Submitted On</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(amend.branchSubmissions || []).map((b) => (
+                          <tr key={b.branchId} style={{ borderTop: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '6px 10px', fontWeight: 600 }}>{b.branchName}</td>
+                            <td style={{ padding: '6px 10px' }}>
+                              <span style={{
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                background: b.status === 'Submitted' ? '#dcfce7' : b.status === 'Approved' ? '#e0f2fe' : '#fef3c7',
+                                color: b.status === 'Submitted' ? '#166534' : b.status === 'Approved' ? '#0369a1' : '#92400e',
+                              }}>
+                                {b.status}
+                              </span>
+                            </td>
+                            <td style={{ padding: '6px 10px' }}>{b.activityCount} activities</td>
+                            <td style={{ padding: '6px 10px', fontWeight: 700 }}>
+                              {b.totalCost > 0 ? `Rs. ${b.totalCost} Mn` : '-'}
+                            </td>
+                            <td style={{ padding: '6px 10px', color: '#64748b' }}>
+                              {b.submittedAt ? new Date(b.submittedAt).toLocaleDateString() : '—'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Submit Amendment to Planning Branch */}
+      {isSubmitModalOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.55)',
+          backdropFilter: 'blur(3px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            maxWidth: '520px',
+            width: '100%',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              background: '#166534',
+              color: '#ffffff',
+              padding: '1.1rem 1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
+                📤 Submit Amendment 0{selectedAmendmentNumber} to Planning Branch
+              </h3>
+              <button
+                onClick={() => setIsSubmitModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ padding: '1.5rem' }}>
+              {submitSuccessMsg ? (
+                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', color: '#166534', padding: '1rem', borderRadius: '6px', textAlign: 'center', fontWeight: 700 }}>
+                  {submitSuccessMsg}
+                </div>
+              ) : (
+                <>
+                  <p style={{ fontSize: '0.875rem', color: '#374151', margin: '0 0 1rem 0', lineHeight: 1.5 }}>
+                    You are about to officially submit <strong>Amendment 0{selectedAmendmentNumber}</strong> for <strong>{branchInfo?.name || user?.organizationName}</strong> to MOE Planning Branch.
+                  </p>
+
+                  <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0.75rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#475569' }}>
+                    <div>📋 Total Activities: <strong>{activities.length}</strong></div>
+                    <div>💰 Total Estimated Cost: <strong>Rs. {totals.totalEstimatedCost} Mn</strong></div>
+                    <div>🏛️ Target Year: <strong>{selectedYear}</strong></div>
+                  </div>
+
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.3rem' }}>
+                      Submission Notes / Remarks for Planning Branch (Optional)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={submitNotes}
+                      onChange={(e) => setSubmitNotes(e.target.value)}
+                      placeholder="e.g. Revised laptop procurement timeline and added teacher training vote."
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setIsSubmitModalOpen(false)}
+                      style={{ padding: '0.5rem 1rem', border: '1px solid #d1d5db', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSubmitAmendmentToPlanning}
+                      disabled={isSubmittingAmendment}
+                      style={{ padding: '0.5rem 1.25rem', background: '#166534', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
+                    >
+                      {isSubmittingAmendment ? 'Submitting...' : 'Confirm & Submit to Planning'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {isModalOpen && (
         <div style={{
           position: 'fixed',

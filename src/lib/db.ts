@@ -33,6 +33,7 @@ export interface DbSchema {
   notifications: Notification[];
   workshopReschedules: WorkshopReschedule[];
   meta: { lastWorkshopNumber: number };
+  aipAmendments: AipAmendment[];
   aipPlans: AipPlan[];
   aipActivities: AipActivity[];
 }
@@ -251,6 +252,21 @@ export interface Attachment {
 }
 
 
+export interface AipAmendment {
+  id: string;
+  year: string;
+  amendmentNumber: number;
+  title: string;
+  circularRef?: string;
+  deadline?: string;
+  notes?: string;
+  createdBy: string;
+  creatorName: string;
+  status: 'Active' | 'Closed';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AipPlan {
   id: string;
   branchId: string;
@@ -262,6 +278,10 @@ export interface AipPlan {
   mainContactNo: string;
   overallResponsibility: string;
   overallContactNo: string;
+  amendmentNumber?: number;
+  amendmentId?: string;
+  submittedAt?: string;
+  submissionNotes?: string;
   status: 'Draft' | 'Submitted' | 'Approved';
   createdAt: string;
   updatedAt: string;
@@ -273,6 +293,8 @@ export interface AipActivity {
   branchId: string;
   branchName: string;
   year: string;
+  amendmentNumber?: number;
+  amendmentId?: string;
   outputNo: string;
   activityCode: string;
   activity: string;
@@ -339,6 +361,7 @@ function readJsonFile(): DbSchema {
       notifications: [],
       workshopReschedules: [],
       meta: { lastWorkshopNumber: 0 },
+      aipAmendments: [],
       aipPlans: [],
       aipActivities: [],
     };
@@ -351,6 +374,7 @@ function readJsonFile(): DbSchema {
     const parsed = JSON.parse(raw);
     if (!parsed.notifications) parsed.notifications = [];
     if (!parsed.workshopReschedules) parsed.workshopReschedules = [];
+    if (!parsed.aipAmendments) parsed.aipAmendments = [];
     if (!parsed.aipPlans) parsed.aipPlans = [];
     if (!parsed.aipActivities) parsed.aipActivities = [];
     return parsed as DbSchema;

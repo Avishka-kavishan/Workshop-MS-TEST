@@ -879,7 +879,7 @@ export default function AnnualPlanPage() {
                   cursor: 'pointer',
                 }}
               >
-                <option value={0}>📋 Original Plan (Internal Baseline - Not Sent)</option>
+                <option value={0}>📋 Original Plan</option>
                 {amendments.map((a) => (
                   <option key={a.id} value={a.amendmentNumber}>
                     🔄 Amendment 0{a.amendmentNumber}: {a.title} {a.deadline ? `(Due ${a.deadline})` : ''}
@@ -1060,25 +1060,8 @@ export default function AnnualPlanPage() {
         </div>
 
 {/* ─── Version & Amendment Status Context Banner ─── */}
-        <div className="no-print" style={{ marginBottom: '1.25rem' }}>
-          {selectedAmendmentNumber === 0 ? (
-            <div style={{
-              background: '#f8fafc',
-              border: '1px solid #cbd5e1',
-              borderRadius: '8px',
-              padding: '0.75rem 1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              fontSize: '0.85rem',
-              color: '#334155',
-            }}>
-              <span style={{ fontSize: '1.25rem' }}>🔒</span>
-              <div>
-                <strong>Original Baseline Plan:</strong> This version is kept <em>internally in your branch</em> and is <strong>never sent anywhere</strong>. When MOE Planning Branch calls for an Amendment, switch to that amendment version from the dropdown above to adjust targets and submit.
-              </div>
-            </div>
-          ) : (
+        {selectedAmendmentNumber > 0 && (
+          <div className="no-print" style={{ marginBottom: '1.25rem' }}>
             <div style={{
               background: plan?.status === 'Submitted' ? '#f0fdf4' : '#fffbeb',
               border: `1px solid ${plan?.status === 'Submitted' ? '#86efac' : '#fde68a'}`,
@@ -1158,8 +1141,8 @@ export default function AnnualPlanPage() {
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
                 {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem 0', color: '#6b7280' }}>

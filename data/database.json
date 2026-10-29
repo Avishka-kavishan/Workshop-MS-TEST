@@ -2269,7 +2269,7 @@
       "organizationId": "org-moe-data",
       "roleId": "role-admin",
       "isActive": true,
-      "lastLogin": "2026-10-28T09:30:24.122Z",
+      "lastLogin": "2026-10-29T04:33:34.444Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -2295,7 +2295,7 @@
       "organizationId": "org-moe-planning",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-10-15T09:10:23.843Z",
+      "lastLogin": "2026-10-29T04:33:18.278Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -2393,7 +2393,8 @@
       "organizationId": "org-moe-health",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "createdAt": "2026-10-29T04:26:17.180Z"
+      "createdAt": "2026-10-29T04:26:17.180Z",
+      "lastLogin": "2026-10-29T04:31:24.009Z"
     }
   ],
   "userOrgPermissions": [

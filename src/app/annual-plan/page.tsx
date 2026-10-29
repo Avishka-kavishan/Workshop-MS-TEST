@@ -56,7 +56,7 @@ interface MoeBranch {
 const MONTH_NAMES_SHORT = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 
 export default function AnnualPlanPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user = session?.user as any;
 
   const [loading, setLoading] = useState(true);
@@ -106,17 +106,20 @@ export default function AnnualPlanPage() {
   const [formTargetQ3, setFormTargetQ3] = useState('-');
   const [formTargetQ4, setFormTargetQ4] = useState('100%');
 
-  // Load Data
-  const loadPlanData = async (branchIdToLoad?: string) => {
+  // Load Data - dynamically detects branch from authenticated session
+  const loadPlanData = async (targetBranchId?: string) => {
     try {
       setLoading(true);
-      const bId = branchIdToLoad || selectedBranchId || user?.organizationId || 'org-moe-ict';
-      const res = await fetch(`/api/annual-plan?year=${selectedYear}&branchId=${bId}`);
+      const bId = targetBranchId || user?.organizationId;
+      const url = bId 
+        ? `/api/annual-plan?year=${selectedYear}&branchId=${encodeURIComponent(bId)}`
+        : `/api/annual-plan?year=${selectedYear}`;
+      const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
         setBranchInfo(json.branch);
         setMoeBranches(json.moeBranches || []);
-        if (!selectedBranchId && json.branch?.id) {
+        if (json.branch?.id) {
           setSelectedBranchId(json.branch.id);
         }
         setPlan(json.plan);
@@ -139,8 +142,9 @@ export default function AnnualPlanPage() {
   };
 
   useEffect(() => {
-    loadPlanData();
-  }, [selectedYear, selectedBranchId]);
+    if (status === 'loading') return;
+    loadPlanData(user?.organizationId);
+  }, [status, user?.organizationId, selectedYear]);
 
   // Handle branch switch
   const handleBranchChange = (newBranchId: string) => {

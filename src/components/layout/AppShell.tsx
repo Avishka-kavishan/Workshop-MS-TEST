@@ -23,12 +23,19 @@ export default function AppShell({ children }: AppShellProps) {
   const user = session?.user as any;
 
   const demoUsers = [
-    { username: 'planning.officer',  label: 'MOE Planning Branch', level: 'Level 1 – Organizing Branch (Creates Workshops)' },
-    { username: 'admin',             label: 'MOE Data Management Branch', level: 'Level 1 – National Administration' },
-    { username: 'ict.officer',       label: 'MOE ICT Branch', level: 'Level 1 – Organizing Branch (Creates Workshops)' },
-    { username: 'galle.it',          label: 'Galle Zone IT Branch', level: 'Target Place Branch (Receives Notif, Adds Trainees)' },
-    { username: 'galle.coordinator', label: 'Galle Zone Planning Branch', level: 'Level 3 – Zonal Planning Branch' },
-    { username: 'southern.it',       label: 'Southern Province IT Branch', level: 'Level 2 – Provincial IT Branch' },
+    { username: 'planning.officer',  label: 'MOE Planning Branch', level: 'Level 1 - Organizing Branch' },
+    { username: 'admin',             label: 'MOE Data Management Branch', level: 'Level 1 - National Administration' },
+    { username: 'ict.officer',       label: 'MOE ICT Branch', level: 'Level 1 - Organizing Branch' },
+    { username: 'piriven.officer',   label: 'Piriven division', level: 'Level 1 - Organizing Branch' },
+    { username: 'reforms.officer',   label: 'Education Reforms', level: 'Level 1 - Organizing Branch' },
+    { username: 'ncoe.officer',      label: 'National College of Education', level: 'Level 1 - Organizing Branch' },
+    { username: 'agri.officer',      label: 'Agriculture and Environmental', level: 'Level 1 - Organizing Branch' },
+    { username: 'digital.infra',     label: 'Digital Education Infrastructure Development', level: 'Level 1 - Organizing Branch' },
+    { username: 'maths.officer',     label: 'Mathematics', level: 'Level 1 - Organizing Branch' },
+    { username: 'health.officer',    label: 'School Health and Nutrition', level: 'Level 1 - Organizing Branch' },
+    { username: 'galle.it',          label: 'Galle Zone IT Branch', level: 'Target Place Branch' },
+    { username: 'galle.coordinator', label: 'Galle Zone Planning Branch', level: 'Level 3 - Zonal Planning Branch' },
+    { username: 'southern.it',       label: 'Southern Province IT Branch', level: 'Level 2 - Provincial IT Branch' },
     { username: 'colombo.it',        label: 'Colombo Zone IT Branch', level: 'Target Place Branch' },
   ];
 

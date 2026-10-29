@@ -23,8 +23,9 @@ export async function GET(request: NextRequest) {
       .filter((o) => o.typeId === 'ot-moe' && o.id !== 'org-moe')
       .map((o) => ({ id: o.id, name: o.name, code: o.code }));
 
-    // Automatically identify branch from user, or query param, or default to ICT
-    let branchId = reqBranchId || user?.organizationId;
+    // Automatically identify branch from authenticated user session!
+    // If a specific reqBranchId was passed, use it; otherwise use the logged in user's branch
+    let branchId = user?.organizationId || reqBranchId;
     if (!branchId) {
       branchId = 'org-moe-ict';
     }

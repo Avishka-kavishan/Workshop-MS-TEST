@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       targetQ3: body.targetQ3 ? String(body.targetQ3).trim() : '-',
       targetQ4: body.targetQ4 ? String(body.targetQ4).trim() : '100%',
       responsibleOfficer: body.responsibleOfficer ? String(body.responsibleOfficer).trim() : '',
+      remarks: body.remarks ? String(body.remarks).trim() : '',
       createdBy: user?.id || 'user',
       creatorName: user?.name || branchName,
       createdAt: new Date().toISOString(),
@@ -130,6 +131,7 @@ export async function PUT(request: NextRequest) {
           targetQ3: body.targetQ3 !== undefined ? String(body.targetQ3).trim() : current.targetQ3,
           targetQ4: body.targetQ4 !== undefined ? String(body.targetQ4).trim() : current.targetQ4,
           responsibleOfficer: body.responsibleOfficer !== undefined ? String(body.responsibleOfficer).trim() : current.responsibleOfficer,
+          remarks: body.remarks !== undefined ? String(body.remarks).trim() : (current.remarks || ''),
           updatedAt: new Date().toISOString(),
         };
         updatedActivity = data.aipActivities[idx];

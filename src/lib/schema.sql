@@ -295,6 +295,7 @@ CREATE TABLE IF NOT EXISTS aip_activities (
   target_q3 VARCHAR(50),
   target_q4 VARCHAR(50),
   responsible_officer VARCHAR(255),
+  remarks TEXT,
   created_by VARCHAR(100) REFERENCES users(id) ON DELETE SET NULL,
   creator_name VARCHAR(255),
   created_at TIMESTAMPTZ DEFAULT NOW(),

@@ -311,6 +311,7 @@ export function rowToAipActivity(r: any): AipActivity {
     targetQ3: r.target_q3 || '-',
     targetQ4: r.target_q4 || '-',
     responsibleOfficer: r.responsible_officer || '',
+    remarks: r.remarks || '',
     createdBy: r.created_by || undefined,
     creatorName: r.creator_name || undefined,
     createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),

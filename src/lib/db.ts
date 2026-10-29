@@ -289,6 +289,7 @@ export interface AipActivity {
   targetQ3: string;
   targetQ4: string;
   responsibleOfficer: string;
+  remarks?: string;
   createdBy?: string;
   creatorName?: string;
   createdAt: string;

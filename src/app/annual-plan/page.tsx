@@ -42,6 +42,7 @@ interface AipActivity {
   targetQ3: string;
   targetQ4: string;
   responsibleOfficer: string;
+  remarks?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,6 +91,7 @@ export default function AnnualPlanPage() {
   const [formVoteNumber, setFormVoteNumber] = useState('-');
   const [formEstimatedCost, setFormEstimatedCost] = useState('');
   const [formResponsibleOfficer, setFormResponsibleOfficer] = useState('');
+  const [formRemarks, setFormRemarks] = useState('');
 
   const [formFinancialMonths, setFormFinancialMonths] = useState<number[]>(Array(12).fill(0));
   const [formPhysicalMonths, setFormPhysicalMonths] = useState<string[]>(Array(12).fill('-'));
@@ -242,6 +244,7 @@ export default function AnnualPlanPage() {
     setFormVoteNumber('-');
     setFormEstimatedCost('');
     setFormResponsibleOfficer('');
+    setFormRemarks('');
     setFormFinancialMonths(Array(12).fill(0));
     setFormPhysicalMonths(Array(12).fill('-'));
     setFormFinancialQ1(0);
@@ -265,6 +268,7 @@ export default function AnnualPlanPage() {
     setFormVoteNumber(act.voteNumber || '-');
     setFormEstimatedCost(act.estimatedCost !== undefined && act.estimatedCost !== null ? String(act.estimatedCost) : '');
     setFormResponsibleOfficer(act.responsibleOfficer || '');
+    setFormRemarks(act.remarks || '');
 
     const fin = act.financialMonths && act.financialMonths.length === 12
       ? [...act.financialMonths]
@@ -352,6 +356,7 @@ export default function AnnualPlanPage() {
         voteNumber: formVoteNumber,
         estimatedCost: parseFloat(formEstimatedCost) || 0,
         responsibleOfficer: formResponsibleOfficer,
+        remarks: formRemarks,
         financialMonths: formFinancialMonths,
         physicalMonths: formPhysicalMonths,
         financialQ1: formFinancialQ1,
@@ -408,7 +413,7 @@ export default function AnnualPlanPage() {
       'Main Activities',
       'Vote Number',
       'Allocation/Estimated Cost (Mn)',
-      'Target Type',
+      'Remarks',
       'J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D',
       'Q1 (Cumulative)', 'Q2 (Cumulative)', 'Q3 (Cumulative)', 'Q4 (Cumulative)',
       'Responsibility'
@@ -854,7 +859,7 @@ export default function AnnualPlanPage() {
                     <th rowSpan={3} style={{ minWidth: '280px', maxWidth: '380px' }}>Main Activities</th>
                     <th rowSpan={3} style={{ width: '130px' }}>Vote Number</th>
                     <th rowSpan={3} style={{ width: '90px' }}>Allocation / Estimated Cost (Mn)</th>
-                    <th rowSpan={3} style={{ width: '115px' }}>Target Type</th>
+                    <th rowSpan={3} style={{ width: '120px' }}>Remarks</th>
                     <th
                       colSpan={17}
                       style={{
@@ -943,7 +948,14 @@ export default function AnnualPlanPage() {
                             </td>
 
                             {/* Sub-row 1 Label: Financial */}
-                            <td className="type-financial">Financial (Rs. Mn)</td>
+                            <td className="type-financial">
+                              <div>Financial (Rs. Mn)</div>
+                              {act.remarks ? (
+                                <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500, marginTop: '2px', fontStyle: 'italic' }}>
+                                  {act.remarks}
+                                </div>
+                              ) : null}
+                            </td>
 
                             {/* 12 Months Financial */}
                             {finMonths.map((val, mIdx) => (
@@ -1231,17 +1243,31 @@ export default function AnnualPlanPage() {
                   />
                 </div>
 
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.2rem' }}>
-                    Responsibility per Activity
-                  </label>
-                  <input
-                    type="text"
-                    value={formResponsibleOfficer}
-                    onChange={(e) => setFormResponsibleOfficer(e.target.value)}
-                    placeholder="e.g. Mrs. H.A.S.P. Senarathne (DDE) or Mrs. E.T.W. Silva (AD-ICT)"
-                    style={{ width: '100%', padding: '0.45rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.2rem' }}>
+                      Responsibility per Activity
+                    </label>
+                    <input
+                      type="text"
+                      value={formResponsibleOfficer}
+                      onChange={(e) => setFormResponsibleOfficer(e.target.value)}
+                      placeholder="e.g. Mrs. H.A.S.P. Senarathne (DDE) or Mrs. E.T.W. Silva (AD-ICT)"
+                      style={{ width: '100%', padding: '0.45rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.2rem' }}>
+                      Remarks
+                    </label>
+                    <input
+                      type="text"
+                      value={formRemarks}
+                      onChange={(e) => setFormRemarks(e.target.value)}
+                      placeholder="e.g. Procurement notes, vote details, or special remarks"
+                      style={{ width: '100%', padding: '0.45rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
+                    />
+                  </div>
                 </div>
 
                 {/* Section 2: Monthly Financial & Physical Targets */}
@@ -1256,7 +1282,7 @@ export default function AnnualPlanPage() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', border: '1px solid #cbd5e1' }}>
                     <thead>
                       <tr style={{ background: '#f8fafc' }}>
-                        <th style={{ padding: '6px 8px', border: '1px solid #cbd5e1', textAlign: 'left', width: '140px' }}>Target Type</th>
+                        <th style={{ padding: '6px 8px', border: '1px solid #cbd5e1', textAlign: 'left', width: '140px' }}>Remarks</th>
                         {MONTH_NAMES_SHORT.map((m, idx) => (
                           <th key={`hd-${idx}`} style={{ padding: '6px 4px', border: '1px solid #cbd5e1', textAlign: 'center', width: '60px' }}>
                             {m} ({idx + 1})

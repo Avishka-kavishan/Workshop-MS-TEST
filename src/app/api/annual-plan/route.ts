@@ -252,6 +252,8 @@ export async function POST(request: NextRequest) {
           mainContactNo: body.mainContactNo !== undefined ? body.mainContactNo : data.aipPlans[existingIdx].mainContactNo,
           overallResponsibility: body.overallResponsibility !== undefined ? body.overallResponsibility : data.aipPlans[existingIdx].overallResponsibility,
           overallContactNo: body.overallContactNo !== undefined ? body.overallContactNo : data.aipPlans[existingIdx].overallContactNo,
+          progressStartDate: body.progressStartDate !== undefined ? body.progressStartDate : data.aipPlans[existingIdx].progressStartDate,
+          progressEndDate: body.progressEndDate !== undefined ? body.progressEndDate : data.aipPlans[existingIdx].progressEndDate,
           updatedAt: new Date().toISOString(),
         };
         savedPlan = data.aipPlans[existingIdx];
@@ -268,6 +270,8 @@ export async function POST(request: NextRequest) {
           mainContactNo: body.mainContactNo || '',
           overallResponsibility: body.overallResponsibility || '',
           overallContactNo: body.overallContactNo || '',
+          progressStartDate: body.progressStartDate || '2026.01.01',
+          progressEndDate: body.progressEndDate || '2026.10.31',
           status: 'Draft',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

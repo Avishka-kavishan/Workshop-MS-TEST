@@ -36,6 +36,8 @@ interface AipPlan {
   mainContactNo: string;
   overallResponsibility: string;
   overallContactNo: string;
+  progressStartDate?: string;
+  progressEndDate?: string;
   amendmentNumber?: number;
   amendmentId?: string;
   submittedAt?: string;
@@ -68,6 +70,10 @@ interface AipActivity {
   targetQ4: string;
   responsibleOfficer: string;
   remarks?: string;
+  physicalProgress?: string;
+  physicalProgressPct?: string;
+  financialProgress?: number;
+  financialProgressPct?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -123,6 +129,12 @@ export default function AnnualPlanPage() {
   const [overallContact, setOverallContact] = useState('');
   const [formPhaseTitle, setFormPhaseTitle] = useState('3. Implementation Phase');
   const [formTargetTitle, setFormTargetTitle] = useState('');
+  const [progressRangeStart, setProgressRangeStart] = useState('2026.01.01');
+  const [progressRangeEnd, setProgressRangeEnd] = useState('2026.10.31');
+  const [formPhysicalProgress, setFormPhysicalProgress] = useState('');
+  const [formPhysicalProgressPct, setFormPhysicalProgressPct] = useState('');
+  const [formFinancialProgress, setFormFinancialProgress] = useState('');
+  const [formFinancialProgressPct, setFormFinancialProgressPct] = useState('');
   const [isSavingHeader, setIsSavingHeader] = useState(false);
   const [headerSavedSuccess, setHeaderSavedSuccess] = useState(false);
 
@@ -183,6 +195,8 @@ export default function AnnualPlanPage() {
           setOverallContact(json.plan.overallContactNo || '');
           setFormPhaseTitle(json.plan.phaseTitle || '3. Implementation Phase');
           setFormTargetTitle(json.plan.targetTitle || '');
+          setProgressRangeStart(json.plan.progressStartDate || `${selectedYear}.01.01`);
+          setProgressRangeEnd(json.plan.progressEndDate || `${selectedYear}.10.31`);
         }
       }
     } catch (err) {
@@ -222,6 +236,8 @@ export default function AnnualPlanPage() {
           overallContactNo: overallContact,
           phaseTitle: formPhaseTitle,
           targetTitle: formTargetTitle,
+          progressStartDate: progressRangeStart,
+          progressEndDate: progressRangeEnd,
         }),
       });
       if (res.ok) {
@@ -282,12 +298,39 @@ export default function AnnualPlanPage() {
     const q4Phys = activities.length > 0 ? 100 : 0;
     const quarterlyPhysical = [q1Phys, q2Phys, q3Phys, q4Phys];
 
+    // 6. Progress Totals
+    const totalFinancialProgress = Math.round(
+      activities.reduce((sum, a) => sum + (Number(a.financialProgress) || 0), 0) * 1000
+    ) / 1000;
+    const overallFinancialProgressPct = totalEstimatedCost > 0
+      ? `${Math.round((totalFinancialProgress / totalEstimatedCost) * 1000) / 10}%`
+      : '';
+
+    let physicalProgressSum = 0;
+    let physicalProgressCount = 0;
+    activities.forEach((a) => {
+      if (a.physicalProgressPct) {
+        const num = parseFloat(String(a.physicalProgressPct).replace('%', '').trim());
+        if (!isNaN(num)) {
+          physicalProgressSum += num;
+          physicalProgressCount++;
+        }
+      }
+    });
+    const overallPhysicalProgressPct = physicalProgressCount > 0
+      ? `${Math.round((physicalProgressSum / physicalProgressCount) * 10) / 10}%`
+      : '';
+
     return {
       totalEstimatedCost: Math.round(totalEstimatedCost * 1000) / 1000,
       monthlyFinancial: monthlyFinancial.map((f) => Math.round(f * 1000) / 1000),
       quarterlyFinancial: quarterlyFinancial.map((f) => Math.round(f * 1000) / 1000),
       monthlyPhysical,
       quarterlyPhysical,
+      totalFinancialProgress,
+      overallFinancialProgressPct,
+      totalPhysicalProgress: '',
+      overallPhysicalProgressPct,
     };
   }, [activities]);
 
@@ -311,6 +354,10 @@ export default function AnnualPlanPage() {
     setFormTargetQ2('-');
     setFormTargetQ3('-');
     setFormTargetQ4('100%');
+    setFormPhysicalProgress('');
+    setFormPhysicalProgressPct('');
+    setFormFinancialProgress('');
+    setFormFinancialProgressPct('');
     setFormError('');
     setIsModalOpen(true);
   };
@@ -345,6 +392,10 @@ export default function AnnualPlanPage() {
     setFormTargetQ2(act.targetQ2 || '-');
     setFormTargetQ3(act.targetQ3 || '-');
     setFormTargetQ4(act.targetQ4 || '100%');
+    setFormPhysicalProgress(act.physicalProgress || '');
+    setFormPhysicalProgressPct(act.physicalProgressPct || '');
+    setFormFinancialProgress(act.financialProgress !== undefined && act.financialProgress !== null ? String(act.financialProgress) : '');
+    setFormFinancialProgressPct(act.financialProgressPct || '');
 
     setFormError('');
     setIsModalOpen(true);
@@ -425,6 +476,10 @@ export default function AnnualPlanPage() {
         targetQ2: formTargetQ2,
         targetQ3: formTargetQ3,
         targetQ4: formTargetQ4,
+        physicalProgress: formPhysicalProgress,
+        physicalProgressPct: formPhysicalProgressPct,
+        financialProgress: formFinancialProgress !== '' ? parseFloat(formFinancialProgress) : undefined,
+        financialProgressPct: formFinancialProgressPct,
       };
 
       const res = await fetch('/api/annual-plan/activities', {
@@ -1186,12 +1241,13 @@ export default function AnnualPlanPage() {
                   <tr>
                     <th rowSpan={3} style={{ width: '60px' }}>Outcome / Output No</th>
                     <th rowSpan={3} style={{ width: '55px' }}>Activity No</th>
-                    <th rowSpan={3} style={{ minWidth: '280px', maxWidth: '380px' }}>Main Activities</th>
+                    <th rowSpan={3} style={{ minWidth: '260px', maxWidth: '360px' }}>Main Activities</th>
                     <th rowSpan={3} style={{ width: '130px' }}>Vote Number</th>
                     <th rowSpan={3} style={{ width: '90px' }}>Allocation / Estimated Cost (Mn)</th>
-                    <th rowSpan={3} style={{ width: '120px' }}>Remarks</th>
+                    <th rowSpan={3} style={{ width: '75px' }}>Remark</th>
+                    <th rowSpan={3} style={{ width: '115px' }}>Indicator</th>
                     <th
-                      colSpan={17}
+                      colSpan={16}
                       style={{
                         background: '#7a1c2d',
                         color: '#ffffff',
@@ -1204,7 +1260,7 @@ export default function AnnualPlanPage() {
                       }}
                     >
                       <input
-                        value={formTargetTitle !== undefined && formTargetTitle !== '' ? formTargetTitle : `Overall Physical and Financial Targets ${selectedYear}`}
+                        value={formTargetTitle !== undefined && formTargetTitle !== '' ? formTargetTitle : `Overall Physical and Financial Targets: ${selectedYear}`}
                         onChange={(e) => setFormTargetTitle(e.target.value)}
                         style={{
                           background: 'transparent',
@@ -1221,10 +1277,60 @@ export default function AnnualPlanPage() {
                         title="Click to edit target heading"
                       />
                     </th>
-                    <th rowSpan={3} className="no-print" style={{ width: '80px' }}>Actions</th>
+                    <th rowSpan={3} style={{ minWidth: '160px' }}>Responsibility</th>
+                    <th
+                      colSpan={4}
+                      style={{
+                        background: '#274e13',
+                        color: '#ffffff',
+                        padding: '6px 10px',
+                        textAlign: 'center',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        border: '1px solid #1e3f10',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                        <span>Progress from</span>
+                        <input
+                          value={progressRangeStart}
+                          onChange={(e) => setProgressRangeStart(e.target.value)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: '1px dashed rgba(255,255,255,0.7)',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.82rem',
+                            textAlign: 'center',
+                            width: '85px',
+                            outline: 'none',
+                          }}
+                          title="Click to edit progress start date"
+                        />
+                        <span>to</span>
+                        <input
+                          value={progressRangeEnd}
+                          onChange={(e) => setProgressRangeEnd(e.target.value)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: '1px dashed rgba(255,255,255,0.7)',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.82rem',
+                            textAlign: 'center',
+                            width: '85px',
+                            outline: 'none',
+                          }}
+                          title="Click to edit progress end date"
+                        />
+                      </div>
+                    </th>
+                    <th rowSpan={3} className="no-print" style={{ width: '75px' }}>Actions</th>
                   </tr>
 
-                  {/* Row 2: Monthly, Quarterly and Responsibility Section Headers */}
+                  {/* Row 2: Monthly & Quarterly Group Headers */}
                   <tr>
                     <th colSpan={12} className="header-sub-group">
                       January to December - Monthly basis (Non-Cumulative)
@@ -1232,10 +1338,9 @@ export default function AnnualPlanPage() {
                     <th colSpan={4} className="header-sub-group" style={{ background: '#fef3c7', color: '#92400e' }}>
                       Q1 to Q4 - Quarterly basis (Cumulative)
                     </th>
-                    <th rowSpan={2} style={{ minWidth: '180px' }}>Responsibility</th>
                   </tr>
 
-                  {/* Row 3: Sub Header Months & Quarters */}
+                  {/* Row 3: Sub Header Months & Quarters & 4 Progress Columns */}
                   <tr>
                     {MONTH_NAMES_SHORT.map((m, i) => (
                       <th key={`m-${i}`} style={{ width: '38px', fontSize: '0.75rem' }}>
@@ -1246,13 +1351,26 @@ export default function AnnualPlanPage() {
                     <th style={{ width: '45px', background: '#fef3c7', color: '#92400e' }}>Q2</th>
                     <th style={{ width: '45px', background: '#fef3c7', color: '#92400e' }}>Q3</th>
                     <th style={{ width: '45px', background: '#fef3c7', color: '#92400e' }}>Q4</th>
+
+                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '85px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                      Physical Progress
+                    </th>
+                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '95px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                      Physical Progress - %
+                    </th>
+                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '85px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                      Financial Progress
+                    </th>
+                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '95px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                      Financial Progress - %
+                    </th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {activities.length === 0 ? (
                     <tr>
-                      <td colSpan={24} style={{ padding: '3.5rem 1rem', color: '#6b7280', fontSize: '0.9rem' }}>
+                      <td colSpan={29} style={{ padding: '3.5rem 1rem', color: '#6b7280', fontSize: '0.9rem' }}>
                         No activities added yet. Click <strong>"➕ Add Activity"</strong> to insert your first activity.
                       </td>
                     </tr>
@@ -1276,15 +1394,14 @@ export default function AnnualPlanPage() {
                                 ? Number(act.estimatedCost).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 3 })
                                 : '-'}
                             </td>
+                            {/* Column 6: Remark (e.g. CF) */}
+                            <td rowSpan={2} style={{ fontSize: '0.78rem', fontWeight: 700, color: '#374151', textAlign: 'center', background: '#fafafa' }}>
+                              {act.remarks || '-'}
+                            </td>
 
-                            {/* Sub-row 1 Label: Financial */}
-                            <td className="type-financial">
-                              <div>Financial (Rs. Mn)</div>
-                              {act.remarks ? (
-                                <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500, marginTop: '2px', fontStyle: 'italic' }}>
-                                  {act.remarks}
-                                </div>
-                              ) : null}
+                            {/* Sub-row 1 Indicator: Financial */}
+                            <td className="type-financial" style={{ fontWeight: 600, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                              Financial (Rs. Mn)
                             </td>
 
                             {/* 12 Months Financial */}
@@ -1300,8 +1417,19 @@ export default function AnnualPlanPage() {
                             <td style={{ background: '#fef9c3', fontWeight: 600 }}>{act.financialQ3 || 0}</td>
                             <td style={{ background: '#fef9c3', fontWeight: 700, color: '#7a1c2d' }}>{act.financialQ4 || 0}</td>
 
+                            {/* Responsibility */}
                             <td rowSpan={2} className="text-left" style={{ fontSize: '0.78rem', lineHeight: '1.3' }}>
                               {act.responsibleOfficer || '-'}
+                            </td>
+
+                            {/* 4 Progress Columns (Sub-row 1: Financial) */}
+                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
+                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
+                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
+                              {act.financialProgress !== undefined && act.financialProgress !== 0 ? act.financialProgress : ''}
+                            </td>
+                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                              {act.financialProgressPct || ''}
                             </td>
 
                             {/* Action Buttons */}
@@ -1345,7 +1473,9 @@ export default function AnnualPlanPage() {
 
                           {/* Sub-row 2: Physical */}
                           <tr>
-                            <td className="type-physical">Physical (%)</td>
+                            <td className="type-physical" style={{ fontWeight: 600, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                              Physical (%)
+                            </td>
 
                             {/* 12 Months Physical */}
                             {physMonths.map((val, mIdx) => (
@@ -1359,6 +1489,16 @@ export default function AnnualPlanPage() {
                             <td style={{ background: '#f0fdf4', fontWeight: 600 }}>{act.targetQ2 || '-'}</td>
                             <td style={{ background: '#f0fdf4', fontWeight: 600 }}>{act.targetQ3 || '-'}</td>
                             <td style={{ background: '#f0fdf4', fontWeight: 700, color: '#166534' }}>{act.targetQ4 || '100%'}</td>
+
+                            {/* 4 Progress Columns (Sub-row 2: Physical) */}
+                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
+                              {act.physicalProgress || ''}
+                            </td>
+                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                              {act.physicalProgressPct || ''}
+                            </td>
+                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
+                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
                           </tr>
                         </React.Fragment>
                       );
@@ -1371,13 +1511,14 @@ export default function AnnualPlanPage() {
                   <tfoot>
                     {/* Financial Cumulative Total Row */}
                     <tr className="total-row-fin">
-                      <td colSpan={4} style={{ textAlign: 'right', fontWeight: 800, fontSize: '0.9rem', paddingRight: '1rem' }}>
+                      <td colSpan={4} rowSpan={2} style={{ textAlign: 'center', fontWeight: 800, fontSize: '1rem', background: '#f8fafc', verticalAlign: 'middle', borderRight: '1px solid #cbd5e1' }}>
                         Total
                       </td>
-                      <td className="text-right" style={{ fontWeight: 800, fontSize: '0.9rem' }}>
-                        {totals.totalEstimatedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
+                      <td rowSpan={2} className="text-right" style={{ fontWeight: 800, fontSize: '0.9rem', background: '#f8fafc', verticalAlign: 'middle', borderRight: '1px solid #cbd5e1' }}>
+                        {totals.totalEstimatedCost.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 3 })}
                       </td>
-                      <td style={{ fontWeight: 700 }}>Financial (Rs. Mn) Cumulative</td>
+                      <td rowSpan={2} style={{ background: '#f8fafc', borderRight: '1px solid #cbd5e1' }}></td>
+                      <td style={{ fontWeight: 700, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Financial (Rs. Mn)</td>
 
                       {/* Monthly financial totals */}
                       {totals.monthlyFinancial.map((mVal, idx) => (
@@ -1393,15 +1534,24 @@ export default function AnnualPlanPage() {
                         </td>
                       ))}
 
-                      <td></td>
-                      <td className="no-print"></td>
+                      <td rowSpan={2} style={{ background: '#f8fafc', borderRight: '1px solid #cbd5e1' }}></td>
+
+                      {/* Progress Financial Totals */}
+                      <td style={{ background: '#b6d7a8', border: '1px solid #8cb37d' }}></td>
+                      <td style={{ background: '#fce5cd', border: '1px solid #e6b8af' }}></td>
+                      <td style={{ background: '#b6d7a8', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#14532d', border: '1px solid #8cb37d' }}>
+                        {totals.totalFinancialProgress > 0 ? totals.totalFinancialProgress : ''}
+                      </td>
+                      <td style={{ background: '#fce5cd', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                        {totals.overallFinancialProgressPct || ''}
+                      </td>
+
+                      <td rowSpan={2} className="no-print" style={{ background: '#f8fafc' }}></td>
                     </tr>
 
                     {/* Physical Cumulative Total Row */}
                     <tr className="total-row-phys">
-                      <td colSpan={4}></td>
-                      <td></td>
-                      <td style={{ fontWeight: 700 }}>Physical (%) Cumulative</td>
+                      <td style={{ fontWeight: 700, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Physical (%) Cumulative</td>
 
                       {/* Monthly physical average contribution */}
                       {totals.monthlyPhysical.map((pVal, idx) => (
@@ -1417,8 +1567,15 @@ export default function AnnualPlanPage() {
                         </td>
                       ))}
 
-                      <td></td>
-                      <td className="no-print"></td>
+                      {/* Progress Physical Totals */}
+                      <td style={{ background: '#b6d7a8', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#14532d', border: '1px solid #8cb37d' }}>
+                        {totals.totalPhysicalProgress || ''}
+                      </td>
+                      <td style={{ background: '#fce5cd', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                        {totals.overallPhysicalProgressPct || ''}
+                      </td>
+                      <td style={{ background: '#b6d7a8', border: '1px solid #8cb37d' }}></td>
+                      <td style={{ background: '#fce5cd', border: '1px solid #e6b8af' }}></td>
                     </tr>
                   </tfoot>
                 )}
@@ -2108,6 +2265,70 @@ export default function AnnualPlanPage() {
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Section 4: Progress Tracking (Actual Progress) */}
+                <h4 style={{ margin: '1.25rem 0 0.5rem 0', fontSize: '0.9rem', color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  4. Progress Tracking (Actual Progress)
+                </h4>
+                <div style={{
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '8px',
+                  padding: '0.85rem 1rem',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '1rem',
+                }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                      Physical Progress (Quantity / Details)
+                    </label>
+                    <input
+                      type="text"
+                      value={formPhysicalProgress}
+                      onChange={(e) => setFormPhysicalProgress(e.target.value)}
+                      placeholder="e.g. Phase 1 Done or 50"
+                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #86efac', borderRadius: '4px', background: '#ffffff' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                      Physical Progress - %
+                    </label>
+                    <input
+                      type="text"
+                      value={formPhysicalProgressPct}
+                      onChange={(e) => setFormPhysicalProgressPct(e.target.value)}
+                      placeholder="e.g. 84%"
+                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #fca5a5', borderRadius: '4px', background: '#ffffff' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                      Financial Progress (Rs. Mn)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={formFinancialProgress}
+                      onChange={(e) => setFormFinancialProgress(e.target.value)}
+                      placeholder="e.g. 42.0"
+                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #86efac', borderRadius: '4px', background: '#ffffff' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                      Financial Progress - %
+                    </label>
+                    <input
+                      type="text"
+                      value={formFinancialProgressPct}
+                      onChange={(e) => setFormFinancialProgressPct(e.target.value)}
+                      placeholder="e.g. 50%"
+                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #fca5a5', borderRadius: '4px', background: '#ffffff' }}
+                    />
                   </div>
                 </div>
 

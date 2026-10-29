@@ -68,6 +68,10 @@ export async function POST(request: NextRequest) {
       targetQ4: body.targetQ4 ? String(body.targetQ4).trim() : '100%',
       responsibleOfficer: body.responsibleOfficer ? String(body.responsibleOfficer).trim() : '',
       remarks: body.remarks ? String(body.remarks).trim() : '',
+      physicalProgress: body.physicalProgress ? String(body.physicalProgress).trim() : '',
+      physicalProgressPct: body.physicalProgressPct ? String(body.physicalProgressPct).trim() : '',
+      financialProgress: body.financialProgress !== undefined && body.financialProgress !== '' ? Number(body.financialProgress) : undefined,
+      financialProgressPct: body.financialProgressPct ? String(body.financialProgressPct).trim() : '',
       createdBy: user?.id || 'user',
       creatorName: user?.name || branchName,
       createdAt: new Date().toISOString(),
@@ -136,6 +140,10 @@ export async function PUT(request: NextRequest) {
           targetQ4: body.targetQ4 !== undefined ? String(body.targetQ4).trim() : current.targetQ4,
           responsibleOfficer: body.responsibleOfficer !== undefined ? String(body.responsibleOfficer).trim() : current.responsibleOfficer,
           remarks: body.remarks !== undefined ? String(body.remarks).trim() : (current.remarks || ''),
+          physicalProgress: body.physicalProgress !== undefined ? String(body.physicalProgress).trim() : current.physicalProgress,
+          physicalProgressPct: body.physicalProgressPct !== undefined ? String(body.physicalProgressPct).trim() : current.physicalProgressPct,
+          financialProgress: body.financialProgress !== undefined ? (body.financialProgress === '' ? undefined : Number(body.financialProgress)) : current.financialProgress,
+          financialProgressPct: body.financialProgressPct !== undefined ? String(body.financialProgressPct).trim() : current.financialProgressPct,
           updatedAt: new Date().toISOString(),
         };
         updatedActivity = data.aipActivities[idx];

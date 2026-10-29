@@ -280,6 +280,8 @@ export interface AipPlan {
   overallContactNo: string;
   amendmentNumber?: number;
   amendmentId?: string;
+  progressStartDate?: string;
+  progressEndDate?: string;
   submittedAt?: string;
   submissionNotes?: string;
   status: 'Draft' | 'Submitted' | 'Approved';
@@ -312,6 +314,10 @@ export interface AipActivity {
   targetQ4: string;
   responsibleOfficer: string;
   remarks?: string;
+  physicalProgress?: string;
+  physicalProgressPct?: string;
+  financialProgress?: number;
+  financialProgressPct?: string;
   createdBy?: string;
   creatorName?: string;
   createdAt: string;

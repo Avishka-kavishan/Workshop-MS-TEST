@@ -93,7 +93,12 @@ export default function AppShell({ children }: AppShellProps) {
       });
       fetchNotifications();
     }
-    if (notif.workshopId) {
+    if (notif.workshopId === 'aip-amendment') {
+      // AIP amendment notification: navigate to annual-plan with the amendment number
+      const amendmentMatch = notif.message?.match(/Amendment\s+(\d+)/i);
+      const amendmentNumber = amendmentMatch ? parseInt(amendmentMatch[1], 10) : 1;
+      router.push(`/annual-plan?amendmentNumber=${amendmentNumber}`);
+    } else if (notif.workshopId) {
       router.push(`/workshops/${notif.workshopId}`);
     }
   };
@@ -362,6 +367,7 @@ export default function AppShell({ children }: AppShellProps) {
                   : pathname.startsWith('/resource-persons') ? 'Resource Persons'
                   : pathname === '/organizations' ? 'Organizations'
                   : pathname === '/reports' ? 'Reports'
+                  : pathname.startsWith('/annual-plan') ? 'Annual Implementation Plan'
                   : pathname.startsWith('/workshops/') ? 'Workshop Details'
                   : 'Overview'}
               </span>
@@ -499,7 +505,7 @@ export default function AppShell({ children }: AppShellProps) {
                                 {new Date(n.createdAt).toLocaleDateString()}
                               </span>
                               <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600 }}>
-                                View & Assign Participants →
+                                {n.workshopId === 'aip-amendment' ? 'Open & Fill AIP →' : 'View & Assign Participants →'}
                               </span>
                             </div>
                           </div>

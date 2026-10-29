@@ -1278,55 +1278,57 @@ export default function AnnualPlanPage() {
                       />
                     </th>
                     <th rowSpan={3} style={{ minWidth: '160px' }}>Responsibility</th>
-                    <th
-                      colSpan={4}
-                      style={{
-                        background: '#274e13',
-                        color: '#ffffff',
-                        padding: '6px 10px',
-                        textAlign: 'center',
-                        fontWeight: 700,
-                        fontSize: '0.82rem',
-                        border: '1px solid #1e3f10',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-                        <span>Progress from</span>
-                        <input
-                          value={progressRangeStart}
-                          onChange={(e) => setProgressRangeStart(e.target.value)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            borderBottom: '1px dashed rgba(255,255,255,0.7)',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.82rem',
-                            textAlign: 'center',
-                            width: '85px',
-                            outline: 'none',
-                          }}
-                          title="Click to edit progress start date"
-                        />
-                        <span>to</span>
-                        <input
-                          value={progressRangeEnd}
-                          onChange={(e) => setProgressRangeEnd(e.target.value)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            borderBottom: '1px dashed rgba(255,255,255,0.7)',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.82rem',
-                            textAlign: 'center',
-                            width: '85px',
-                            outline: 'none',
-                          }}
-                          title="Click to edit progress end date"
-                        />
-                      </div>
-                    </th>
+                    {selectedAmendmentNumber > 0 && (
+                      <th
+                        colSpan={4}
+                        style={{
+                          background: '#274e13',
+                          color: '#ffffff',
+                          padding: '6px 10px',
+                          textAlign: 'center',
+                          fontWeight: 700,
+                          fontSize: '0.82rem',
+                          border: '1px solid #1e3f10',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                          <span>Progress from</span>
+                          <input
+                            value={progressRangeStart}
+                            onChange={(e) => setProgressRangeStart(e.target.value)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              borderBottom: '1px dashed rgba(255,255,255,0.7)',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.82rem',
+                              textAlign: 'center',
+                              width: '85px',
+                              outline: 'none',
+                            }}
+                            title="Click to edit progress start date"
+                          />
+                          <span>to</span>
+                          <input
+                            value={progressRangeEnd}
+                            onChange={(e) => setProgressRangeEnd(e.target.value)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              borderBottom: '1px dashed rgba(255,255,255,0.7)',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.82rem',
+                              textAlign: 'center',
+                              width: '85px',
+                              outline: 'none',
+                            }}
+                            title="Click to edit progress end date"
+                          />
+                        </div>
+                      </th>
+                    )}
                     <th rowSpan={3} className="no-print" style={{ width: '75px' }}>Actions</th>
                   </tr>
 
@@ -1352,25 +1354,29 @@ export default function AnnualPlanPage() {
                     <th style={{ width: '45px', background: '#fef3c7', color: '#92400e' }}>Q3</th>
                     <th style={{ width: '45px', background: '#fef3c7', color: '#92400e' }}>Q4</th>
 
-                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '85px', textAlign: 'center', border: '1px solid #0284c7' }}>
-                      Physical Progress
-                    </th>
-                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '95px', textAlign: 'center', border: '1px solid #0284c7' }}>
-                      Physical Progress - %
-                    </th>
-                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '85px', textAlign: 'center', border: '1px solid #0284c7' }}>
-                      Financial Progress
-                    </th>
-                    <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '95px', textAlign: 'center', border: '1px solid #0284c7' }}>
-                      Financial Progress - %
-                    </th>
+                    {selectedAmendmentNumber > 0 && (
+                      <>
+                        <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '85px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                          Physical Progress
+                        </th>
+                        <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '95px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                          Physical Progress - %
+                        </th>
+                        <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '85px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                          Financial Progress
+                        </th>
+                        <th style={{ background: '#00b0f0', color: '#000000', fontWeight: 700, fontSize: '0.72rem', minWidth: '95px', textAlign: 'center', border: '1px solid #0284c7' }}>
+                          Financial Progress - %
+                        </th>
+                      </>
+                    )}
                   </tr>
                 </thead>
 
                 <tbody>
                   {activities.length === 0 ? (
                     <tr>
-                      <td colSpan={29} style={{ padding: '3.5rem 1rem', color: '#6b7280', fontSize: '0.9rem' }}>
+                      <td colSpan={selectedAmendmentNumber > 0 ? 29 : 25} style={{ padding: '3.5rem 1rem', color: '#6b7280', fontSize: '0.9rem' }}>
                         No activities added yet. Click <strong>"➕ Add Activity"</strong> to insert your first activity.
                       </td>
                     </tr>
@@ -1422,15 +1428,19 @@ export default function AnnualPlanPage() {
                               {act.responsibleOfficer || '-'}
                             </td>
 
-                            {/* 4 Progress Columns (Sub-row 1: Financial) */}
-                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
-                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
-                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
-                              {act.financialProgress !== undefined && act.financialProgress !== 0 ? act.financialProgress : ''}
-                            </td>
-                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
-                              {act.financialProgressPct || ''}
-                            </td>
+                            {/* 4 Progress Columns (Sub-row 1: Financial) - Only in Amendments */}
+                            {selectedAmendmentNumber > 0 && (
+                              <>
+                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
+                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
+                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
+                                  {act.financialProgress !== undefined && act.financialProgress !== 0 ? act.financialProgress : ''}
+                                </td>
+                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                                  {act.financialProgressPct || ''}
+                                </td>
+                              </>
+                            )}
 
                             {/* Action Buttons */}
                             <td rowSpan={2} className="no-print">
@@ -1490,15 +1500,19 @@ export default function AnnualPlanPage() {
                             <td style={{ background: '#f0fdf4', fontWeight: 600 }}>{act.targetQ3 || '-'}</td>
                             <td style={{ background: '#f0fdf4', fontWeight: 700, color: '#166534' }}>{act.targetQ4 || '100%'}</td>
 
-                            {/* 4 Progress Columns (Sub-row 2: Physical) */}
-                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
-                              {act.physicalProgress || ''}
-                            </td>
-                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
-                              {act.physicalProgressPct || ''}
-                            </td>
-                            <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
-                            <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
+                            {/* 4 Progress Columns (Sub-row 2: Physical) - Only in Amendments */}
+                            {selectedAmendmentNumber > 0 && (
+                              <>
+                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
+                                  {act.physicalProgress || ''}
+                                </td>
+                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                                  {act.physicalProgressPct || ''}
+                                </td>
+                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
+                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
+                              </>
+                            )}
                           </tr>
                         </React.Fragment>
                       );
@@ -1536,15 +1550,19 @@ export default function AnnualPlanPage() {
 
                       <td rowSpan={2} style={{ background: '#f8fafc', borderRight: '1px solid #cbd5e1' }}></td>
 
-                      {/* Progress Financial Totals */}
-                      <td style={{ background: '#b6d7a8', border: '1px solid #8cb37d' }}></td>
-                      <td style={{ background: '#fce5cd', border: '1px solid #e6b8af' }}></td>
-                      <td style={{ background: '#b6d7a8', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#14532d', border: '1px solid #8cb37d' }}>
-                        {totals.totalFinancialProgress > 0 ? totals.totalFinancialProgress : ''}
-                      </td>
-                      <td style={{ background: '#fce5cd', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#7c2d12', border: '1px solid #e6b8af' }}>
-                        {totals.overallFinancialProgressPct || ''}
-                      </td>
+                      {/* Progress Financial Totals - Only in Amendments */}
+                      {selectedAmendmentNumber > 0 && (
+                        <>
+                          <td style={{ background: '#b6d7a8', border: '1px solid #8cb37d' }}></td>
+                          <td style={{ background: '#fce5cd', border: '1px solid #e6b8af' }}></td>
+                          <td style={{ background: '#b6d7a8', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#14532d', border: '1px solid #8cb37d' }}>
+                            {totals.totalFinancialProgress > 0 ? totals.totalFinancialProgress : ''}
+                          </td>
+                          <td style={{ background: '#fce5cd', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                            {totals.overallFinancialProgressPct || ''}
+                          </td>
+                        </>
+                      )}
 
                       <td rowSpan={2} className="no-print" style={{ background: '#f8fafc' }}></td>
                     </tr>
@@ -1567,15 +1585,19 @@ export default function AnnualPlanPage() {
                         </td>
                       ))}
 
-                      {/* Progress Physical Totals */}
-                      <td style={{ background: '#b6d7a8', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#14532d', border: '1px solid #8cb37d' }}>
-                        {totals.totalPhysicalProgress || ''}
-                      </td>
-                      <td style={{ background: '#fce5cd', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#7c2d12', border: '1px solid #e6b8af' }}>
-                        {totals.overallPhysicalProgressPct || ''}
-                      </td>
-                      <td style={{ background: '#b6d7a8', border: '1px solid #8cb37d' }}></td>
-                      <td style={{ background: '#fce5cd', border: '1px solid #e6b8af' }}></td>
+                      {/* Progress Physical Totals - Only in Amendments */}
+                      {selectedAmendmentNumber > 0 && (
+                        <>
+                          <td style={{ background: '#b6d7a8', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#14532d', border: '1px solid #8cb37d' }}>
+                            {totals.totalPhysicalProgress || ''}
+                          </td>
+                          <td style={{ background: '#fce5cd', textAlign: 'center', fontWeight: 800, fontSize: '0.8rem', color: '#7c2d12', border: '1px solid #e6b8af' }}>
+                            {totals.overallPhysicalProgressPct || ''}
+                          </td>
+                          <td style={{ background: '#b6d7a8', border: '1px solid #8cb37d' }}></td>
+                          <td style={{ background: '#fce5cd', border: '1px solid #e6b8af' }}></td>
+                        </>
+                      )}
                     </tr>
                   </tfoot>
                 )}
@@ -2268,69 +2290,73 @@ export default function AnnualPlanPage() {
                   </div>
                 </div>
 
-                {/* Section 4: Progress Tracking (Actual Progress) */}
-                <h4 style={{ margin: '1.25rem 0 0.5rem 0', fontSize: '0.9rem', color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  4. Progress Tracking (Actual Progress)
-                </h4>
-                <div style={{
-                  background: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  borderRadius: '8px',
-                  padding: '0.85rem 1rem',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '1rem',
-                }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
-                      Physical Progress (Quantity / Details)
-                    </label>
-                    <input
-                      type="text"
-                      value={formPhysicalProgress}
-                      onChange={(e) => setFormPhysicalProgress(e.target.value)}
-                      placeholder="e.g. Phase 1 Done or 50"
-                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #86efac', borderRadius: '4px', background: '#ffffff' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
-                      Physical Progress - %
-                    </label>
-                    <input
-                      type="text"
-                      value={formPhysicalProgressPct}
-                      onChange={(e) => setFormPhysicalProgressPct(e.target.value)}
-                      placeholder="e.g. 84%"
-                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #fca5a5', borderRadius: '4px', background: '#ffffff' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
-                      Financial Progress (Rs. Mn)
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={formFinancialProgress}
-                      onChange={(e) => setFormFinancialProgress(e.target.value)}
-                      placeholder="e.g. 42.0"
-                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #86efac', borderRadius: '4px', background: '#ffffff' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
-                      Financial Progress - %
-                    </label>
-                    <input
-                      type="text"
-                      value={formFinancialProgressPct}
-                      onChange={(e) => setFormFinancialProgressPct(e.target.value)}
-                      placeholder="e.g. 50%"
-                      style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #fca5a5', borderRadius: '4px', background: '#ffffff' }}
-                    />
-                  </div>
-                </div>
+                {/* Section 4: Progress Tracking (Actual Progress) - Only for Amendments */}
+                {selectedAmendmentNumber > 0 && (
+                  <>
+                    <h4 style={{ margin: '1.25rem 0 0.5rem 0', fontSize: '0.9rem', color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      4. Progress Tracking (Actual Progress for Amendment 0{selectedAmendmentNumber})
+                    </h4>
+                    <div style={{
+                      background: '#f0fdf4',
+                      border: '1px solid #bbf7d0',
+                      borderRadius: '8px',
+                      padding: '0.85rem 1rem',
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: '1rem',
+                    }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                          Physical Progress (Quantity / Details)
+                        </label>
+                        <input
+                          type="text"
+                          value={formPhysicalProgress}
+                          onChange={(e) => setFormPhysicalProgress(e.target.value)}
+                          placeholder="e.g. Phase 1 Done or 50"
+                          style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #86efac', borderRadius: '4px', background: '#ffffff' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                          Physical Progress - %
+                        </label>
+                        <input
+                          type="text"
+                          value={formPhysicalProgressPct}
+                          onChange={(e) => setFormPhysicalProgressPct(e.target.value)}
+                          placeholder="e.g. 84%"
+                          style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #fca5a5', borderRadius: '4px', background: '#ffffff' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                          Financial Progress (Rs. Mn)
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={formFinancialProgress}
+                          onChange={(e) => setFormFinancialProgress(e.target.value)}
+                          placeholder="e.g. 42.0"
+                          style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #86efac', borderRadius: '4px', background: '#ffffff' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                          Financial Progress - %
+                        </label>
+                        <input
+                          type="text"
+                          value={formFinancialProgressPct}
+                          onChange={(e) => setFormFinancialProgressPct(e.target.value)}
+                          placeholder="e.g. 50%"
+                          style={{ width: '100%', padding: '0.45rem', fontSize: '0.85rem', border: '1px solid #fca5a5', borderRadius: '4px', background: '#ffffff' }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
               </div>
 

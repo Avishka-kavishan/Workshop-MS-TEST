@@ -94,10 +94,10 @@ export default function AppShell({ children }: AppShellProps) {
       fetchNotifications();
     }
     if (notif.workshopId === 'aip-amendment') {
-      // AIP amendment notification: navigate to annual-plan with the amendment number
+      // AIP amendment notification: open the annual plan in a new window
       const amendmentMatch = notif.message?.match(/Amendment\s+(\d+)/i);
       const amendmentNumber = amendmentMatch ? parseInt(amendmentMatch[1], 10) : 1;
-      router.push(`/annual-plan?amendmentNumber=${amendmentNumber}`);
+      window.open(`/annual-plan?amendmentNumber=${amendmentNumber}`, '_blank', 'noopener,noreferrer');
     } else if (notif.workshopId) {
       router.push(`/workshops/${notif.workshopId}`);
     }

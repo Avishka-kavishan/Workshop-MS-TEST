@@ -99,6 +99,27 @@ export async function PUT(request: NextRequest) {
     const user = session?.user as any;
     const body = await request.json();
 
+    // Batch update support for progress entries
+    if (Array.isArray(body.activities)) {
+      await updateDb((data) => {
+        if (!data.aipActivities) data.aipActivities = [];
+        body.activities.forEach((item: any) => {
+          const idx = data.aipActivities.findIndex((a) => a.id === item.id);
+          if (idx !== -1) {
+            data.aipActivities[idx] = {
+              ...data.aipActivities[idx],
+              physicalProgress: item.physicalProgress !== undefined ? String(item.physicalProgress).trim() : data.aipActivities[idx].physicalProgress,
+              physicalProgressPct: item.physicalProgressPct !== undefined ? String(item.physicalProgressPct).trim() : data.aipActivities[idx].physicalProgressPct,
+              financialProgress: item.financialProgress !== undefined ? (item.financialProgress === '' ? undefined : Number(item.financialProgress)) : data.aipActivities[idx].financialProgress,
+              financialProgressPct: item.financialProgressPct !== undefined ? String(item.financialProgressPct).trim() : data.aipActivities[idx].financialProgressPct,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+        });
+      });
+      return NextResponse.json({ success: true, count: body.activities.length });
+    }
+
     if (!body.id) {
       return NextResponse.json({ error: 'Activity ID is required' }, { status: 400 });
     }

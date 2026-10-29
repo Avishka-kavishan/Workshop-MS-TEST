@@ -260,6 +260,8 @@ export interface AipAmendment {
   circularRef?: string;
   deadline?: string;
   notes?: string;
+  progressStartDate?: string;
+  progressEndDate?: string;
   createdBy: string;
   creatorName: string;
   status: 'Active' | 'Closed';

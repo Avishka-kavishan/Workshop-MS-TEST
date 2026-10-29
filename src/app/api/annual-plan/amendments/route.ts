@@ -128,6 +128,8 @@ export async function POST(request: NextRequest) {
         circularRef: circularRef || undefined,
         deadline: deadline || undefined,
         notes: notes || undefined,
+        progressStartDate: body.progressStartDate ? String(body.progressStartDate).trim() : `${year}.01.01`,
+        progressEndDate: body.progressEndDate ? String(body.progressEndDate).trim() : `${year}.10.31`,
         createdBy: user.id,
         creatorName: user.name || 'MOE Planning Branch',
         status: 'Active',

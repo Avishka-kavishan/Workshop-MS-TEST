@@ -12,6 +12,8 @@ interface AipAmendment {
   circularRef?: string;
   deadline?: string;
   notes?: string;
+  progressStartDate?: string;
+  progressEndDate?: string;
   status: 'Active' | 'Closed';
   totalBranches?: number;
   submittedBranchesCount?: number;
@@ -88,7 +90,7 @@ const MONTH_NAMES_SHORT = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N'
 
 export default function AnnualPlanPage() {
   const { data: session, status } = useSession();
-  const user = session?.user as any;
+    const user = session?.user as any;
 
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState('2027');
@@ -109,6 +111,10 @@ export default function AnnualPlanPage() {
   const [callCircular, setCallCircular] = useState('');
   const [callDeadline, setCallDeadline] = useState('');
   const [callNotes, setCallNotes] = useState('');
+  const [callProgressStart, setCallProgressStart] = useState('2027.01.01');
+  const [callProgressEnd, setCallProgressEnd] = useState('2027.10.31');
+  const [isSavingProgress, setIsSavingProgress] = useState(false);
+  const [progressSavedSuccess, setProgressSavedSuccess] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
   const [callSuccessMsg, setCallSuccessMsg] = useState('');
 
@@ -206,6 +212,20 @@ export default function AnnualPlanPage() {
     }
   };
 
+  // Sync with URL query parameter ?amendmentNumber=X without requiring Suspense
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const qNum = params.get('amendmentNumber');
+      if (qNum !== null) {
+        const parsed = parseInt(qNum, 10);
+        if (!isNaN(parsed) && parsed !== selectedAmendmentNumber) {
+          setSelectedAmendmentNumber(parsed);
+        }
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (status === 'loading') return;
     loadPlanData(user?.organizationId, selectedAmendmentNumber);
@@ -215,6 +235,46 @@ export default function AnnualPlanPage() {
   const handleBranchChange = (newBranchId: string) => {
     setSelectedBranchId(newBranchId);
     loadPlanData(newBranchId);
+  };
+
+  // Handle inline progress changes in the amendment table
+  const handleProgressChange = (
+    actId: string,
+    field: 'physicalProgress' | 'physicalProgressPct' | 'financialProgress' | 'financialProgressPct',
+    val: any
+  ) => {
+    setActivities((prev) =>
+      prev.map((a) => (a.id === actId ? { ...a, [field]: val } : a))
+    );
+  };
+
+  // Batch save all progress numbers for the current amendment
+  const handleSaveAllProgress = async () => {
+    try {
+      setIsSavingProgress(true);
+      const payload = {
+        activities: activities.map((a) => ({
+          id: a.id,
+          physicalProgress: a.physicalProgress || '',
+          physicalProgressPct: a.physicalProgressPct || '',
+          financialProgress: a.financialProgress !== undefined && !isNaN(Number(a.financialProgress)) ? Number(a.financialProgress) : undefined,
+          financialProgressPct: a.financialProgressPct || '',
+        })),
+      };
+      const res = await fetch('/api/annual-plan/activities', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setProgressSavedSuccess(true);
+        setTimeout(() => setProgressSavedSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to save progress updates:', err);
+    } finally {
+      setIsSavingProgress(false);
+    }
   };
 
   // Save directly editable fields in the sheet
@@ -543,6 +603,8 @@ export default function AnnualPlanPage() {
           circularRef: callCircular,
           deadline: callDeadline,
           notes: callNotes,
+          progressStartDate: callProgressStart,
+          progressEndDate: callProgressEnd,
         }),
       });
       const json = await res.json();
@@ -1054,22 +1116,46 @@ export default function AnnualPlanPage() {
               </div>
 
               {plan?.status !== 'Submitted' && (
-                <button
-                  onClick={() => setIsSubmitModalOpen(true)}
-                  style={{
-                    background: '#166534',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.5rem 1.15rem',
-                    borderRadius: '6px',
-                    fontWeight: 700,
-                    fontSize: '0.82rem',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 4px rgba(22, 101, 52, 0.2)',
-                  }}
-                >
-                  📤 Submit Amendment 0{selectedAmendmentNumber} to Planning Branch
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <button
+                    type="button"
+                    onClick={handleSaveAllProgress}
+                    disabled={isSavingProgress}
+                    style={{
+                      background: progressSavedSuccess ? '#15803d' : '#ffffff',
+                      color: progressSavedSuccess ? '#ffffff' : '#15803d',
+                      border: '2px solid #15803d',
+                      padding: '0.5rem 1.1rem',
+                      borderRadius: '6px',
+                      fontWeight: 700,
+                      fontSize: '0.82rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                    title="Save all actual progress numbers entered in the green and peach columns"
+                  >
+                    {progressSavedSuccess ? '✅ Progress Saved!' : isSavingProgress ? '⏳ Saving...' : '💾 Save Progress Updates'}
+                  </button>
+
+                  <button
+                    onClick={() => setIsSubmitModalOpen(true)}
+                    style={{
+                      background: '#166534',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '0.5rem 1.15rem',
+                      borderRadius: '6px',
+                      fontWeight: 700,
+                      fontSize: '0.82rem',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 4px rgba(22, 101, 52, 0.2)',
+                    }}
+                  >
+                    📤 Submit Amendment 0{selectedAmendmentNumber} to Planning Branch
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -1428,16 +1514,55 @@ export default function AnnualPlanPage() {
                               {act.responsibleOfficer || '-'}
                             </td>
 
-                            {/* 4 Progress Columns (Sub-row 1: Financial) - Only in Amendments */}
+                            {/* 4 Progress Columns (Sub-row 1: Financial) - Directly Editable in Amendments */}
                             {selectedAmendmentNumber > 0 && (
                               <>
-                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
-                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
-                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
-                                  {act.financialProgress !== undefined && act.financialProgress !== 0 ? act.financialProgress : ''}
+                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d', color: '#6b7280' }}>-</td>
+                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af', color: '#6b7280' }}>-</td>
+                                <td style={{ background: '#b6d7a8', padding: '2px 3px', border: '1px solid #8cb37d' }}>
+                                  <input
+                                    type="number"
+                                    step="any"
+                                    disabled={plan?.status === 'Submitted'}
+                                    value={act.financialProgress !== undefined && act.financialProgress !== null ? act.financialProgress : ''}
+                                    onChange={(e) => handleProgressChange(act.id, 'financialProgress', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                    placeholder="0.0"
+                                    style={{
+                                      width: '100%',
+                                      background: 'transparent',
+                                      border: 'none',
+                                      borderBottom: plan?.status === 'Submitted' ? 'none' : '1px dashed rgba(20, 83, 45, 0.5)',
+                                      textAlign: 'center',
+                                      fontWeight: 700,
+                                      fontSize: '0.78rem',
+                                      color: '#14532d',
+                                      outline: 'none',
+                                      padding: '2px 0',
+                                    }}
+                                    title="Enter actual Financial Progress (Rs. Mn)"
+                                  />
                                 </td>
-                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
-                                  {act.financialProgressPct || ''}
+                                <td style={{ background: '#fce5cd', padding: '2px 3px', border: '1px solid #e6b8af' }}>
+                                  <input
+                                    type="text"
+                                    disabled={plan?.status === 'Submitted'}
+                                    value={act.financialProgressPct || ''}
+                                    onChange={(e) => handleProgressChange(act.id, 'financialProgressPct', e.target.value)}
+                                    placeholder="0%"
+                                    style={{
+                                      width: '100%',
+                                      background: 'transparent',
+                                      border: 'none',
+                                      borderBottom: plan?.status === 'Submitted' ? 'none' : '1px dashed rgba(124, 45, 18, 0.5)',
+                                      textAlign: 'center',
+                                      fontWeight: 700,
+                                      fontSize: '0.78rem',
+                                      color: '#7c2d12',
+                                      outline: 'none',
+                                      padding: '2px 0',
+                                    }}
+                                    title="Enter actual Financial Progress %"
+                                  />
                                 </td>
                               </>
                             )}
@@ -1500,17 +1625,55 @@ export default function AnnualPlanPage() {
                             <td style={{ background: '#f0fdf4', fontWeight: 600 }}>{act.targetQ3 || '-'}</td>
                             <td style={{ background: '#f0fdf4', fontWeight: 700, color: '#166534' }}>{act.targetQ4 || '100%'}</td>
 
-                            {/* 4 Progress Columns (Sub-row 2: Physical) - Only in Amendments */}
+                            {/* 4 Progress Columns (Sub-row 2: Physical) - Directly Editable in Amendments */}
                             {selectedAmendmentNumber > 0 && (
                               <>
-                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#14532d', border: '1px solid #8cb37d' }}>
-                                  {act.physicalProgress || ''}
+                                <td style={{ background: '#b6d7a8', padding: '2px 3px', border: '1px solid #8cb37d' }}>
+                                  <input
+                                    type="text"
+                                    disabled={plan?.status === 'Submitted'}
+                                    value={act.physicalProgress || ''}
+                                    onChange={(e) => handleProgressChange(act.id, 'physicalProgress', e.target.value)}
+                                    placeholder="Units / Note"
+                                    style={{
+                                      width: '100%',
+                                      background: 'transparent',
+                                      border: 'none',
+                                      borderBottom: plan?.status === 'Submitted' ? 'none' : '1px dashed rgba(20, 83, 45, 0.5)',
+                                      textAlign: 'center',
+                                      fontWeight: 700,
+                                      fontSize: '0.78rem',
+                                      color: '#14532d',
+                                      outline: 'none',
+                                      padding: '2px 0',
+                                    }}
+                                    title="Enter actual Physical Progress (Quantity / description)"
+                                  />
                                 </td>
-                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#7c2d12', border: '1px solid #e6b8af' }}>
-                                  {act.physicalProgressPct || ''}
+                                <td style={{ background: '#fce5cd', padding: '2px 3px', border: '1px solid #e6b8af' }}>
+                                  <input
+                                    type="text"
+                                    disabled={plan?.status === 'Submitted'}
+                                    value={act.physicalProgressPct || ''}
+                                    onChange={(e) => handleProgressChange(act.id, 'physicalProgressPct', e.target.value)}
+                                    placeholder="0%"
+                                    style={{
+                                      width: '100%',
+                                      background: 'transparent',
+                                      border: 'none',
+                                      borderBottom: plan?.status === 'Submitted' ? 'none' : '1px dashed rgba(124, 45, 18, 0.5)',
+                                      textAlign: 'center',
+                                      fontWeight: 700,
+                                      fontSize: '0.78rem',
+                                      color: '#7c2d12',
+                                      outline: 'none',
+                                      padding: '2px 0',
+                                    }}
+                                    title="Enter actual Physical Progress %"
+                                  />
                                 </td>
-                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d' }}>-</td>
-                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af' }}>-</td>
+                                <td style={{ background: '#b6d7a8', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #8cb37d', color: '#6b7280' }}>-</td>
+                                <td style={{ background: '#fce5cd', textAlign: 'center', fontSize: '0.75rem', border: '1px solid #e6b8af', color: '#6b7280' }}>-</td>
                               </>
                             )}
                           </tr>
@@ -1693,6 +1856,33 @@ export default function AnnualPlanPage() {
                     value={callDeadline}
                     onChange={(e) => setCallDeadline(e.target.value)}
                     style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.85rem' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem', background: '#f0fdf4', padding: '0.75rem', borderRadius: '6px', border: '1px solid #bbf7d0' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                    Progress Period: Start Date (YYYY.MM.DD)
+                  </label>
+                  <input
+                    type="text"
+                    value={callProgressStart}
+                    onChange={(e) => setCallProgressStart(e.target.value)}
+                    placeholder="2027.01.01"
+                    style={{ width: '100%', padding: '0.4rem', border: '1px solid #86efac', borderRadius: '4px', fontSize: '0.85rem' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#166534', marginBottom: '0.25rem' }}>
+                    Progress Period: End Date (YYYY.MM.DD)
+                  </label>
+                  <input
+                    type="text"
+                    value={callProgressEnd}
+                    onChange={(e) => setCallProgressEnd(e.target.value)}
+                    placeholder="2027.10.31"
+                    style={{ width: '100%', padding: '0.4rem', border: '1px solid #86efac', borderRadius: '4px', fontSize: '0.85rem' }}
                   />
                 </div>
               </div>

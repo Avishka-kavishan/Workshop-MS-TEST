@@ -2454,7 +2454,7 @@ export default function AnnualPlanPage() {
               </div>
 
               <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>
-                🔔 <strong>Broadcast Notification:</strong> Submitting this will automatically send an in-app notification to all 8+ MOE branches, creating their amendment template so they can fill and submit back.
+                ℹ️ <strong>Amendment Setup:</strong> Creating this amendment opens the amendment workbook tabs for Planning Branch to pre-populate targets. No notifications will be sent to branches at this stage. Notifications are only sent when you click <strong>"Send Amendment to Responsible Branch"</strong> on each branch sheet.
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
@@ -2479,7 +2479,7 @@ export default function AnnualPlanPage() {
                     fontSize: '0.85rem',
                   }}
                 >
-                  {isCalling ? 'Sending...' : callSendMode === 'selected' ? `📤 Send Amendment to ${callTargetBranchIds.length} Branch(es)` : '📢 Broadcast to All Branches'}
+                  {isCalling ? 'Creating...' : callSendMode === 'selected' ? `Create Amendment for ${callTargetBranchIds.length} Branch(es)` : '✨ Create Amendment Revision'}
                 </button>
               </div>
             </form>

@@ -158,36 +158,12 @@ export async function POST(request: NextRequest) {
       };
 
       data.aipAmendments.push(createdAmendment);
-
-      // Broadcast In-App Notification to selected target branches (or ALL if none specified)
-      const allMoeBranches = (data.organizations || []).filter(
-        (o) => o.typeId === 'ot-moe' && o.id !== 'org-moe'
-      );
-
-      const targetBranches = targetBranchIds.length > 0
-        ? allMoeBranches.filter((b) => targetBranchIds.includes(b.id))
-        : allMoeBranches;
-
-      targetBranches.forEach((branch) => {
-        const notif: Notification = {
-          id: `notif-aip-${randomUUID()}`,
-          recipientOrgId: branch.id,
-          workshopId: 'aip-amendment',
-          title: `📢 MOE Planning: ${title}`,
-          message: `MOE Planning Branch has called for ${title} (${year}).${deadline ? ` Submission deadline: ${deadline}.` : ''} Please open the amendment form, make your changes, and submit.`,
-          isRead: false,
-          createdAt: now,
-        };
-        data.notifications.push(notif);
-      });
     });
 
     return NextResponse.json({
       success: true,
       amendment: createdAmendment,
-      message: targetBranchIds.length > 0 
-        ? `Amendment successfully created and sent to ${targetBranchIds.length} branch(es)!`
-        : 'Amendment successfully created and broadcasted to all MOE branches!',
+      message: `${title} created successfully! You can now pre-populate branch targets and send to responsible branches individually.`,
     });
   } catch (error: any) {
     console.error('Error in POST /api/annual-plan/amendments:', error);

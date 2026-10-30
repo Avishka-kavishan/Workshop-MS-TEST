@@ -265,6 +265,16 @@ export interface AipAmendment {
   createdBy: string;
   creatorName: string;
   status: 'Active' | 'Closed';
+  totalBranches?: number;
+  submittedBranchesCount?: number;
+  branchSubmissions?: Array<{
+    branchId: string;
+    branchName: string;
+    status: string;
+    submittedAt?: string | null;
+    activityCount: number;
+    totalCost: number;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

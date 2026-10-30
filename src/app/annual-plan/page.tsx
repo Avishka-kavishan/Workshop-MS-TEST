@@ -176,7 +176,8 @@ export default function AnnualPlanPage() {
   const loadPlanData = async (targetBranchId?: string, targetAmendmentNum?: number) => {
     try {
       setLoading(true);
-      const bId = targetBranchId || user?.organizationId;
+      const isPrivileged = user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin';
+      const bId = targetBranchId || (isPrivileged && selectedBranchId ? selectedBranchId : user?.organizationId);
       const amendNum = targetAmendmentNum !== undefined ? targetAmendmentNum : selectedAmendmentNumber;
       const url = bId 
         ? `/api/annual-plan?year=${selectedYear}&branchId=${encodeURIComponent(bId)}&amendmentNumber=${amendNum}`
@@ -228,13 +229,15 @@ export default function AnnualPlanPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    loadPlanData(user?.organizationId, selectedAmendmentNumber);
+    const isPrivileged = user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin';
+    const bId = (isPrivileged && selectedBranchId) ? selectedBranchId : user?.organizationId;
+    loadPlanData(bId, selectedAmendmentNumber);
   }, [status, user?.organizationId, selectedYear, selectedAmendmentNumber]);
 
   // Handle branch switch
   const handleBranchChange = (newBranchId: string) => {
     setSelectedBranchId(newBranchId);
-    loadPlanData(newBranchId);
+    loadPlanData(newBranchId, selectedAmendmentNumber);
   };
 
   // Handle inline progress changes in the amendment table
@@ -1035,6 +1038,109 @@ export default function AnnualPlanPage() {
           </div>
         </div>
 
+        {/* ── Google Sheets-Style Branch Sheet Tab Bar (Planning Branch & Admin Master Mode) ── */}
+        {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') && (
+          <div className="no-print" style={{
+            background: '#ffffff',
+            border: '1px solid #cbd5e1',
+            borderRadius: '10px',
+            marginBottom: '1rem',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+            overflow: 'hidden',
+          }}>
+            {/* Header / Sub-title bar */}
+            <div style={{
+              background: '#f8fafc',
+              padding: '0.6rem 1rem',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1rem' }}>📑</span>
+                <span style={{ fontWeight: 800, fontSize: '0.875rem', color: '#1e293b' }}>
+                  Branch Sheets (Workbook Tabs)
+                </span>
+                <span style={{
+                  fontSize: '0.72rem',
+                  color: '#475569',
+                  background: '#e2e8f0',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                }}>
+                  {moeBranches.length} Branches
+                </span>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                💡 Click a sheet tab to view, pre-populate targets, or monitor progress across MOE branches
+              </div>
+            </div>
+
+            {/* Scrollable sheet tabs row */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'stretch',
+              overflowX: 'auto',
+              background: '#f1f5f9',
+              padding: '0.4rem 0.6rem 0 0.6rem',
+              gap: '0.35rem',
+            }}>
+              {moeBranches.map((br) => {
+                const isActive = (branchInfo?.id || selectedBranchId) === br.id;
+                const amendSubmission = currentAmendment?.branchSubmissions?.find((s) => s.branchId === br.id);
+                const isSubmitted = amendSubmission?.status === 'Submitted' || amendSubmission?.status === 'Approved';
+
+                return (
+                  <button
+                    key={br.id}
+                    type="button"
+                    onClick={() => handleBranchChange(br.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.45rem',
+                      padding: '0.55rem 0.95rem',
+                      fontSize: '0.82rem',
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? '#7a1c2d' : '#475569',
+                      background: isActive ? '#ffffff' : 'transparent',
+                      borderTop: isActive ? '3px solid #7a1c2d' : '3px solid transparent',
+                      borderLeft: isActive ? '1px solid #cbd5e1' : '1px solid transparent',
+                      borderRight: isActive ? '1px solid #cbd5e1' : '1px solid transparent',
+                      borderBottom: isActive ? '1px solid #ffffff' : '1px solid transparent',
+                      borderRadius: '6px 6px 0 0',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isActive ? '0 -2px 5px rgba(0,0,0,0.05)' : 'none',
+                    }}
+                    title={`Switch to sheet for ${br.name}`}
+                  >
+                    <span>{isActive ? '📂' : '📄'}</span>
+                    <span>{br.name.replace(/^MOE\s+/i, '')}</span>
+                    {selectedAmendmentNumber > 0 && (
+                      <span style={{
+                        fontSize: '0.68rem',
+                        fontWeight: 700,
+                        padding: '1px 6px',
+                        borderRadius: '10px',
+                        background: isSubmitted ? '#dcfce7' : '#fef3c7',
+                        color: isSubmitted ? '#166534' : '#92400e',
+                      }}>
+                        {isSubmitted ? '✓ Done' : 'Draft'}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ── Branch Indicator Banner ── */}
         <div className="no-print" style={{
           background: 'linear-gradient(135deg, rgba(122, 28, 45, 0.06), rgba(90, 16, 30, 0.03))',
@@ -1049,13 +1155,19 @@ export default function AnnualPlanPage() {
           gap: '0.5rem',
         }}>
           <div>
-            <span style={{ fontSize: '0.8125rem', color: '#6b7280', fontWeight: 600 }}>Active User Branch: </span>
+            <span style={{ fontSize: '0.8125rem', color: '#6b7280', fontWeight: 600 }}>
+              {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin')
+                ? 'Active Branch Sheet: '
+                : 'Active User Branch: '}
+            </span>
             <strong style={{ color: '#7a1c2d', fontSize: '0.95rem' }}>
               {branchInfo?.name || user?.organizationName || 'MOE ICT Branch'}
             </strong>
           </div>
           <div style={{ fontSize: '0.8125rem', color: '#4b5563' }}>
-            🔒 Branch automatically identified from authenticated account
+            {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin')
+              ? '👑 Planning Master Mode — Switch between branch sheets using the tabs above or the Submissions Tracker'
+              : '🔒 Branch automatically identified from authenticated account'}
           </div>
         </div>
 
@@ -1995,6 +2107,7 @@ export default function AnnualPlanPage() {
                           <th style={{ padding: '6px 10px' }}>Activities</th>
                           <th style={{ padding: '6px 10px' }}>Total Cost (Mn)</th>
                           <th style={{ padding: '6px 10px' }}>Submitted On</th>
+                          <th style={{ padding: '6px 10px', textAlign: 'center' }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2019,6 +2132,31 @@ export default function AnnualPlanPage() {
                             </td>
                             <td style={{ padding: '6px 10px', color: '#64748b' }}>
                               {b.submittedAt ? new Date(b.submittedAt).toLocaleDateString() : '—'}
+                            </td>
+                            <td style={{ padding: '6px 10px', textAlign: 'center' }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleBranchChange(b.branchId);
+                                  setIsTrackerModalOpen(false);
+                                }}
+                                style={{
+                                  padding: '4px 10px',
+                                  background: '#7a1c2d',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  borderRadius: '5px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                                title={`Open and review sheet for ${b.branchName}`}
+                              >
+                                <span>📄</span> Open Sheet
+                              </button>
                             </td>
                           </tr>
                         ))}

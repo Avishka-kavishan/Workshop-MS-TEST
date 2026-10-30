@@ -24,11 +24,14 @@ export async function GET(request: NextRequest) {
       .filter((o) => o.typeId === 'ot-moe' && o.id !== 'org-moe')
       .map((o) => ({ id: o.id, name: o.name, code: o.code }));
 
-    // Automatically identify branch from authenticated user session!
-    let branchId = user?.organizationId || reqBranchId;
-    if (!branchId) {
-      branchId = 'org-moe-ict';
-    }
+    // Identify branch: Privileged accounts (Planning Branch / Admin) can switch between any branch
+    const isPrivileged =
+      user?.organizationId === 'org-moe-planning' ||
+      user?.organizationId === 'org-moe-data' ||
+      user?.roleId === 'role-admin' ||
+      user?.roleId === 'admin';
+
+    let branchId = (isPrivileged && reqBranchId) ? reqBranchId : (user?.organizationId || reqBranchId || 'org-moe-ict');
 
     const currentBranch = organizations.find((o) => o.id === branchId) || {
       id: branchId,
@@ -192,6 +195,34 @@ export async function GET(request: NextRequest) {
     const q4Phys = activities.length > 0 ? 100 : 0;
     const quarterlyPhysicalCumulative = [q1Phys, q2Phys, q3Phys, q4Phys];
 
+    // Compute live submission stats for all amendments
+    const amendmentsWithSubmissions = allAmendments.map((amend) => {
+      const branchSubmissions = moeBranches.map((br) => {
+        const brPlan = allPlans.find(
+          (p) => p.branchId === br.id && p.year === year && Number(p.amendmentNumber || 0) === amend.amendmentNumber
+        );
+        const brActs = (freshData.aipActivities || []).filter(
+          (a) => a.branchId === br.id && (a.year === year || !a.year) && Number(a.amendmentNumber || 0) === amend.amendmentNumber
+        );
+        const totalCost = brActs.reduce((sum, a) => sum + (Number(a.estimatedCost) || 0), 0);
+        return {
+          branchId: br.id,
+          branchName: br.name,
+          status: brPlan?.status || 'Draft',
+          submittedAt: brPlan?.submittedAt || null,
+          activityCount: brActs.length,
+          totalCost: Math.round(totalCost * 100) / 100,
+        };
+      });
+      const submittedCount = branchSubmissions.filter((b) => b.status === 'Submitted' || b.status === 'Approved').length;
+      return {
+        ...amend,
+        totalBranches: moeBranches.length,
+        submittedBranchesCount: submittedCount,
+        branchSubmissions,
+      };
+    });
+
     return NextResponse.json({
       success: true,
       hasPlan: true,
@@ -201,7 +232,7 @@ export async function GET(request: NextRequest) {
       year,
       amendmentNumber,
       currentAmendment,
-      amendments: allAmendments,
+      amendments: amendmentsWithSubmissions,
       activities,
       totals: {
         totalEstimatedCost: Math.round(totalEstimatedCost * 1000) / 1000,

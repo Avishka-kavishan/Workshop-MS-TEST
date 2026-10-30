@@ -724,7 +724,7 @@ export default function AnnualPlanPage() {
   const handleDispatchAmendmentToBranch = async () => {
     if (selectedAmendmentNumber === 0) return;
     const branchName = branchInfo?.name || 'this branch';
-    const confirmMsg = `Send Amendment 0${selectedAmendmentNumber} to ${branchName}?\n\nPlanning Branch has prepared the activities & baseline targets. Once sent, ${branchName} will be notified to enter their actual progress (green & peach columns) and submit back.`;
+    const confirmMsg = `Send Amendment 0${selectedAmendmentNumber} to Responsible Branch (${branchName})?\n\nPlanning Branch has prepared the activities & baseline targets. Once sent, ${branchName} will be notified to enter their actual progress (green & peach columns) and submit back.`;
     if (!window.confirm(confirmMsg)) return;
 
     try {
@@ -1054,8 +1054,8 @@ export default function AnnualPlanPage() {
                       {isDispatching 
                         ? 'Sending...' 
                         : plan?.isDispatchedToBranch 
-                        ? `Re-send to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}` 
-                        : `Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}`}
+                        ? `Re-send to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})` 
+                        : `Send Amendment to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})`}
                     </span>
                   </button>
                 )}
@@ -1437,7 +1437,11 @@ export default function AnnualPlanPage() {
                       : plan?.status === 'Submitted'
                       ? `Submitted to Planning Branch on ${new Date(plan.submittedAt || '').toLocaleString()}. Under review.`
                       : selectedAmendmentNumber > 0
-                      ? 'Amendment Draft: Fill actual progress in the green & peach columns. Click "Save Progress Updates" then submit to Planning Branch.'
+                      ? (isPrivileged
+                        ? (plan?.isDispatchedToBranch
+                          ? `Amendment dispatched to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Responsible Branch'} on ${new Date(plan.dispatchedAt || '').toLocaleDateString()}. Waiting for branch to fill actual progress and submit back.`
+                          : `Planning Mode: Enter baseline targets & allocations for ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Responsible Branch'}, then click "Send Amendment to Responsible Branch".`)
+                        : 'Amendment Draft: Fill actual progress in the green & peach columns. Click "Save Progress Updates" then submit to Planning Branch.')
                       : 'Draft Original Plan: Add your branch activities and targets, then click "Submit Original Plan for Approval" to send to Planning Branch.'}
                   </div>
                   {plan?.approvalNotes && (
@@ -1506,8 +1510,8 @@ export default function AnnualPlanPage() {
                       {isDispatching 
                         ? 'Sending...' 
                         : plan?.isDispatchedToBranch 
-                        ? `Re-send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}` 
-                        : `Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}`}
+                        ? `Re-send to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})` 
+                        : `Send Amendment to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})`}
                     </span>
                   </button>
                 )}

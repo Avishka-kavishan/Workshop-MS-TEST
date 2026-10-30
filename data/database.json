@@ -4612,6 +4612,132 @@
       "message": "MOE - Planning Branch has scheduled \"School Census & Digital Attendance Management\" at Colombo Zone IT Branch for 2 days in 2025.",
       "isRead": false,
       "createdAt": "2026-09-28T06:03:41.165Z"
+    },
+    {
+      "id": "notif-aip-f2154982-1a15-46ac-8864-f927be93e42d",
+      "recipientOrgId": "org-moe-curriculum",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-6ba1827e-57fa-4393-a966-96fe411a8796",
+      "recipientOrgId": "org-moe-data",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-128f7027-cf6f-49a5-b0ce-fdd9ea218515",
+      "recipientOrgId": "org-moe-finance",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-ada490bb-4652-4410-867e-03443c5b64f7",
+      "recipientOrgId": "org-moe-hr",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-b20dc4b0-d7bf-4c84-96d3-0bf56d0d6daf",
+      "recipientOrgId": "org-moe-ict",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-01a766f4-1d29-43ce-9392-1c7d4bdbf0d8",
+      "recipientOrgId": "org-moe-planning",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-1befa4fd-a94d-4aab-b846-3766d6000f75",
+      "recipientOrgId": "org-moe-quality",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-33f958f9-e7c6-44f0-ad28-d4233c372aad",
+      "recipientOrgId": "org-moe-piriven",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-d58e44e5-0dfa-4356-b970-c3200bb931c4",
+      "recipientOrgId": "org-moe-reforms",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-62ce3e62-5577-4c17-a064-b809da0800db",
+      "recipientOrgId": "org-moe-ncoe",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-85bc6d5d-e254-4787-a162-bff0d56b9849",
+      "recipientOrgId": "org-moe-agri",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-66dfee13-d766-4a69-af33-487353d9bfb6",
+      "recipientOrgId": "org-moe-digital-infra",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-2c6c56e6-b020-4d47-8c49-800cc7d8e202",
+      "recipientOrgId": "org-moe-maths",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
+    },
+    {
+      "id": "notif-aip-24d02283-a9e6-4191-893e-e93d71d86f1b",
+      "recipientOrgId": "org-moe-health",
+      "workshopId": "aip-amendment",
+      "title": "📢 MOE Planning: Amendment 01 - Budget & Target Revision",
+      "message": "MOE Planning Branch has called for Amendment 01 - Budget & Target Revision (2027). Please open the amendment form, make your changes, and submit.",
+      "isRead": false,
+      "createdAt": "2026-10-30T09:52:52.163Z"
     }
   ],
   "workshopReschedules": [
@@ -4883,8 +5009,39 @@
       "status": "Draft",
       "createdAt": "2026-10-29T04:26:17.180Z",
       "updatedAt": "2026-10-29T04:26:17.180Z"
+    },
+    {
+      "id": "plan-org-moe-planning-2027-amend-1",
+      "branchId": "org-moe-planning",
+      "branchName": "MOE Planning Branch",
+      "year": "2027",
+      "amendmentNumber": 1,
+      "amendmentId": "amend-2027-1-16f158",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 1)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-30T09:52:52.235Z",
+      "updatedAt": "2026-10-30T09:52:52.235Z"
     }
   ],
   "aipActivities": [],
-  "aipAmendments": []
+  "aipAmendments": [
+    {
+      "id": "amend-2027-1-16f158",
+      "year": "2027",
+      "amendmentNumber": 1,
+      "title": "Amendment 01 - Budget & Target Revision",
+      "progressStartDate": "2027.01.01",
+      "progressEndDate": "2027.10.31",
+      "createdBy": "user-planning-officer",
+      "creatorName": "MOE Planning Branch",
+      "status": "Active",
+      "createdAt": "2026-10-30T09:52:52.163Z",
+      "updatedAt": "2026-10-30T09:52:52.163Z"
+    }
+  ]
 }

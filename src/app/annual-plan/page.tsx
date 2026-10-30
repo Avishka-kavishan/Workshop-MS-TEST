@@ -132,6 +132,8 @@ export default function AnnualPlanPage() {
   const [submitSuccessMsg, setSubmitSuccessMsg] = useState('');
   const [branchInfo, setBranchInfo] = useState<{ id: string; name: string } | null>(null);
 
+  const isPrivileged = user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin';
+
   // Directly editable fields in the sheet
   const [mainResp, setMainResp] = useState('');
   const [mainContact, setMainContact] = useState('');
@@ -1100,25 +1102,28 @@ export default function AnnualPlanPage() {
               )
             )}
 
-            <button
-              onClick={handleOpenAddModal}
-              style={{
-                background: '#7a1c2d',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.55rem 1.15rem',
-                borderRadius: '8px',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                boxShadow: '0 2px 6px rgba(122, 28, 45, 0.25)',
-              }}
-            >
-              <span>➕</span> Add Activity
-            </button>
+            {/* Add Activity: In Original Plan, open to branch. In Amendments, only Planning/Admin can add new activity items */}
+            {(selectedAmendmentNumber === 0 ? plan?.status !== 'Approved' : isPrivileged) && (
+              <button
+                onClick={handleOpenAddModal}
+                style={{
+                  background: '#7a1c2d',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0.55rem 1.15rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: '0 2px 6px rgba(122, 28, 45, 0.25)',
+                }}
+              >
+                <span>➕</span> Add Activity
+              </button>
+            )}
 
             <button
               onClick={handleExportCSV}
@@ -1523,6 +1528,7 @@ export default function AnnualPlanPage() {
                   </label>
                   <input
                     type="text"
+                    disabled={selectedAmendmentNumber > 0 && !isPrivileged}
                     value={mainResp}
                     onChange={(e) => setMainResp(e.target.value)}
                     placeholder="Enter main responsibility officer..."
@@ -1540,6 +1546,7 @@ export default function AnnualPlanPage() {
                     <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600 }}>Contact No:</span>
                     <input
                       type="text"
+                      disabled={selectedAmendmentNumber > 0 && !isPrivileged}
                       value={mainContact}
                       onChange={(e) => setMainContact(e.target.value)}
                       placeholder="e.g. 714929279"
@@ -1562,6 +1569,7 @@ export default function AnnualPlanPage() {
                   </label>
                   <input
                     type="text"
+                    disabled={selectedAmendmentNumber > 0 && !isPrivileged}
                     value={overallResp}
                     onChange={(e) => setOverallResp(e.target.value)}
                     placeholder="Enter overall responsibility director..."
@@ -1579,6 +1587,7 @@ export default function AnnualPlanPage() {
                     <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 600 }}>Contact No:</span>
                     <input
                       type="text"
+                      disabled={selectedAmendmentNumber > 0 && !isPrivileged}
                       value={overallContact}
                       onChange={(e) => setOverallContact(e.target.value)}
                       placeholder="e.g. 714325568"
@@ -1602,23 +1611,25 @@ export default function AnnualPlanPage() {
                     ✅ Responsibilities saved successfully
                   </span>
                 )}
-                <button
-                  type="button"
-                  onClick={handleSaveHeaderFields}
-                  disabled={isSavingHeader}
-                  style={{
-                    background: '#ffffff',
-                    border: '1px solid #7a1c2d',
-                    color: '#7a1c2d',
-                    padding: '0.35rem 0.85rem',
-                    borderRadius: '6px',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {isSavingHeader ? 'Saving...' : '💾 Save Responsibility Details'}
-                </button>
+                {(selectedAmendmentNumber === 0 ? plan?.status !== 'Approved' : isPrivileged) && (
+                  <button
+                    type="button"
+                    onClick={handleSaveHeaderFields}
+                    disabled={isSavingHeader}
+                    style={{
+                      background: '#ffffff',
+                      border: '1px solid #7a1c2d',
+                      color: '#7a1c2d',
+                      padding: '0.35rem 0.85rem',
+                      borderRadius: '6px',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {isSavingHeader ? 'Saving...' : '💾 Save Responsibility Details'}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1873,38 +1884,46 @@ export default function AnnualPlanPage() {
                             {/* Action Buttons */}
                             <td rowSpan={2} className="no-print">
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEditModal(act)}
-                                  style={{
-                                    background: '#f1f5f9',
-                                    border: '1px solid #cbd5e1',
-                                    color: '#1e293b',
-                                    padding: '3px 6px',
-                                    borderRadius: '4px',
-                                    fontSize: '0.7rem',
-                                    cursor: 'pointer',
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  ✏️ Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteActivity(act.id, act.activityCode)}
-                                  style={{
-                                    background: '#fef2f2',
-                                    border: '1px solid #fecaca',
-                                    color: '#b91c1c',
-                                    padding: '3px 6px',
-                                    borderRadius: '4px',
-                                    fontSize: '0.7rem',
-                                    cursor: 'pointer',
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  🗑️ Del
-                                </button>
+                                {(selectedAmendmentNumber === 0 ? (plan?.status !== 'Approved' || isPrivileged) : isPrivileged) ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditModal(act)}
+                                      style={{
+                                        background: '#f1f5f9',
+                                        border: '1px solid #cbd5e1',
+                                        color: '#1e293b',
+                                        padding: '3px 6px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.7rem',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      ✏️ Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteActivity(act.id, act.activityCode)}
+                                      style={{
+                                        background: '#fef2f2',
+                                        border: '1px solid #fecaca',
+                                        color: '#b91c1c',
+                                        padding: '3px 6px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.7rem',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      🗑️ Del
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span style={{ fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
+                                    🔒 Baseline Locked
+                                  </span>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -2624,12 +2643,36 @@ export default function AnnualPlanPage() {
             </div>
 
             {/* Modal Body */}
+            {(() => {
+              const isBaselineLocked = (selectedAmendmentNumber > 0 && !isPrivileged) || (selectedAmendmentNumber === 0 && plan?.status === 'Approved' && !isPrivileged);
+              return (
             <form onSubmit={handleSaveActivity} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1 }}>
               <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1 }}>
 
                 {formError && (
                   <div style={{ background: '#fef2f2', borderLeft: '4px solid #ef4444', padding: '0.75rem', marginBottom: '1rem', borderRadius: '4px', color: '#991b1b', fontSize: '0.85rem' }}>
                     {formError}
+                  </div>
+                )}
+
+                {isBaselineLocked && (
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #cbd5e1',
+                    borderLeft: '4px solid #0284c7',
+                    padding: '0.75rem 1rem',
+                    marginBottom: '1rem',
+                    borderRadius: '4px',
+                    fontSize: '0.82rem',
+                    color: '#0f172a',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}>
+                    <span style={{ fontSize: '1.1rem' }}>🔒</span>
+                    <div>
+                      <strong>Baseline Targets & Activities Locked:</strong> In Amendment revisions, baseline activities, votes, and monthly targets are set by Planning Branch. Responsible branches enter <strong>Section 4: Progress Tracking only</strong>.
+                    </div>
                   </div>
                 )}
 
@@ -2645,6 +2688,7 @@ export default function AnnualPlanPage() {
                     </label>
                     <input
                       type="text"
+                      disabled={isBaselineLocked}
                       value={formOutputNo}
                       onChange={(e) => setFormOutputNo(e.target.value)}
                       placeholder="e.g. 1"
@@ -2659,6 +2703,7 @@ export default function AnnualPlanPage() {
                     <input
                       type="text"
                       required
+                      disabled={isBaselineLocked}
                       value={formActivityCode}
                       onChange={(e) => setFormActivityCode(e.target.value)}
                       placeholder="e.g. 1"
@@ -2672,6 +2717,7 @@ export default function AnnualPlanPage() {
                     </label>
                     <input
                       type="text"
+                      disabled={isBaselineLocked}
                       value={formVoteNumber}
                       onChange={(e) => setFormVoteNumber(e.target.value)}
                       placeholder="e.g. 126-01-2-0-2401 or -"
@@ -2686,6 +2732,7 @@ export default function AnnualPlanPage() {
                     <input
                       type="number"
                       step="any"
+                      disabled={isBaselineLocked}
                       value={formEstimatedCost}
                       onChange={(e) => setFormEstimatedCost(e.target.value)}
                       placeholder="e.g. 80.0 or 0.2"
@@ -2701,6 +2748,7 @@ export default function AnnualPlanPage() {
                   <textarea
                     required
                     rows={2}
+                    disabled={isBaselineLocked}
                     value={formActivity}
                     onChange={(e) => setFormActivity(e.target.value)}
                     placeholder="Enter detailed activity description..."
@@ -2715,6 +2763,7 @@ export default function AnnualPlanPage() {
                     </label>
                     <input
                       type="text"
+                      disabled={isBaselineLocked}
                       value={formResponsibleOfficer}
                       onChange={(e) => setFormResponsibleOfficer(e.target.value)}
                       placeholder="e.g. Mrs. H.A.S.P. Senarathne (DDE) or Mrs. E.T.W. Silva (AD-ICT)"
@@ -2727,6 +2776,7 @@ export default function AnnualPlanPage() {
                     </label>
                     <input
                       type="text"
+                      disabled={isBaselineLocked}
                       value={formRemarks}
                       onChange={(e) => setFormRemarks(e.target.value)}
                       placeholder="e.g. Procurement notes, vote details, or special remarks"
@@ -3015,6 +3065,8 @@ export default function AnnualPlanPage() {
                 </button>
               </div>
             </form>
+              );
+            })()}
           </div>
         </div>
       )}

@@ -1884,45 +1884,103 @@ export default function AnnualPlanPage() {
                             {/* Action Buttons */}
                             <td rowSpan={2} className="no-print">
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {(selectedAmendmentNumber === 0 ? (plan?.status !== 'Approved' || isPrivileged) : isPrivileged) ? (
-                                  <>
+                                {selectedAmendmentNumber === 0 ? (
+                                  (plan?.status !== 'Approved' || isPrivileged) ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenEditModal(act)}
+                                        style={{
+                                          background: '#f1f5f9',
+                                          border: '1px solid #cbd5e1',
+                                          color: '#1e293b',
+                                          padding: '3px 6px',
+                                          borderRadius: '4px',
+                                          fontSize: '0.7rem',
+                                          cursor: 'pointer',
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        ✏️ Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteActivity(act.id, act.activityCode)}
+                                        style={{
+                                          background: '#fef2f2',
+                                          border: '1px solid #fecaca',
+                                          color: '#b91c1c',
+                                          padding: '3px 6px',
+                                          borderRadius: '4px',
+                                          fontSize: '0.7rem',
+                                          cursor: 'pointer',
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        🗑️ Del
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <span style={{ fontSize: '0.7rem', color: '#166534', textAlign: 'center', fontWeight: 600 }}>
+                                      🔒 Approved Baseline
+                                    </span>
+                                  )
+                                ) : (
+                                  isPrivileged ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenEditModal(act)}
+                                        style={{
+                                          background: '#f1f5f9',
+                                          border: '1px solid #cbd5e1',
+                                          color: '#1e293b',
+                                          padding: '3px 6px',
+                                          borderRadius: '4px',
+                                          fontSize: '0.7rem',
+                                          cursor: 'pointer',
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        ✏️ Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteActivity(act.id, act.activityCode)}
+                                        style={{
+                                          background: '#fef2f2',
+                                          border: '1px solid #fecaca',
+                                          color: '#b91c1c',
+                                          padding: '3px 6px',
+                                          borderRadius: '4px',
+                                          fontSize: '0.7rem',
+                                          cursor: 'pointer',
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        🗑️ Del
+                                      </button>
+                                    </>
+                                  ) : (
                                     <button
                                       type="button"
+                                      disabled={plan?.status === 'Submitted'}
                                       onClick={() => handleOpenEditModal(act)}
                                       style={{
-                                        background: '#f1f5f9',
-                                        border: '1px solid #cbd5e1',
-                                        color: '#1e293b',
-                                        padding: '3px 6px',
+                                        background: plan?.status === 'Submitted' ? '#f1f5f9' : '#f0fdf4',
+                                        border: `1px solid ${plan?.status === 'Submitted' ? '#cbd5e1' : '#86efac'}`,
+                                        color: plan?.status === 'Submitted' ? '#94a3b8' : '#166534',
+                                        padding: '4px 6px',
                                         borderRadius: '4px',
                                         fontSize: '0.7rem',
-                                        cursor: 'pointer',
-                                        fontWeight: 600,
+                                        cursor: plan?.status === 'Submitted' ? 'not-allowed' : 'pointer',
+                                        fontWeight: 700,
                                       }}
+                                      title="Enter actual progress numbers for this activity"
                                     >
-                                      ✏️ Edit
+                                      📊 Progress
                                     </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteActivity(act.id, act.activityCode)}
-                                      style={{
-                                        background: '#fef2f2',
-                                        border: '1px solid #fecaca',
-                                        color: '#b91c1c',
-                                        padding: '3px 6px',
-                                        borderRadius: '4px',
-                                        fontSize: '0.7rem',
-                                        cursor: 'pointer',
-                                        fontWeight: 600,
-                                      }}
-                                    >
-                                      🗑️ Del
-                                    </button>
-                                  </>
-                                ) : (
-                                  <span style={{ fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
-                                    🔒 Baseline Locked
-                                  </span>
+                                  )
                                 )}
                               </div>
                             </td>
@@ -2584,7 +2642,9 @@ export default function AnnualPlanPage() {
         </div>
       )}
 
-      {isModalOpen && (
+      {isModalOpen && (() => {
+        const isBaselineLocked = (selectedAmendmentNumber > 0 && !isPrivileged) || (selectedAmendmentNumber === 0 && plan?.status === 'Approved' && !isPrivileged);
+        return (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -2620,7 +2680,7 @@ export default function AnnualPlanPage() {
             }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>
-                  {editingActivity ? `✏️ Edit Activity (Code: ${editingActivity.activityCode})` : '➕ Add Activity (Official MOE Format)'}
+                  {editingActivity ? (isBaselineLocked ? `📊 Enter Progress Updates (Activity ${editingActivity.activityCode})` : `✏️ Edit Activity (Code: ${editingActivity.activityCode})`) : '➕ Add Activity (Official MOE Format)'}
                 </h3>
                 <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
                   {selectedYear} Annual Implementation Plan • {branchInfo?.name || 'MOE Branch'}
@@ -2643,9 +2703,6 @@ export default function AnnualPlanPage() {
             </div>
 
             {/* Modal Body */}
-            {(() => {
-              const isBaselineLocked = (selectedAmendmentNumber > 0 && !isPrivileged) || (selectedAmendmentNumber === 0 && plan?.status === 'Approved' && !isPrivileged);
-              return (
             <form onSubmit={handleSaveActivity} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1 }}>
               <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1 }}>
 
@@ -2659,24 +2716,29 @@ export default function AnnualPlanPage() {
                   <div style={{
                     background: '#f8fafc',
                     border: '1px solid #cbd5e1',
-                    borderLeft: '4px solid #0284c7',
-                    padding: '0.75rem 1rem',
-                    marginBottom: '1rem',
-                    borderRadius: '4px',
-                    fontSize: '0.82rem',
-                    color: '#0f172a',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    marginBottom: '1.25rem',
+                    fontSize: '0.85rem',
                   }}>
-                    <span style={{ fontSize: '1.1rem' }}>🔒</span>
-                    <div>
-                      <strong>Baseline Targets & Activities Locked:</strong> In Amendment revisions, baseline activities, votes, and monthly targets are set by Planning Branch. Responsible branches enter <strong>Section 4: Progress Tracking only</strong>.
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1e293b', fontWeight: 700, marginBottom: '0.35rem' }}>
+                      <span>🔒</span>
+                      <span>Baseline Activity (Filled by Planning Branch):</span>
+                    </div>
+                    <div style={{ color: '#334155', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                      {formOutputNo ? `[Output ${formOutputNo}] ` : ''}{formActivity || 'Activity Details'}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748b', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                      <span>Vote: <strong>{formVoteNumber || '-'}</strong></span>
+                      <span>Allocation: <strong>Rs. {formEstimatedCost || 0} Mn</strong></span>
+                      <span>Responsibility: <strong>{formResponsibleOfficer || '-'}</strong></span>
                     </div>
                   </div>
                 )}
 
-                {/* Section 1: Identification & Basic Info */}
+                {!isBaselineLocked && (
+                  <>
+{/* Section 1: Identification & Basic Info */}
                 <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#7a1c2d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   1. Activity Details
                 </h4>
@@ -2962,7 +3024,9 @@ export default function AnnualPlanPage() {
                   </div>
                 </div>
 
-                {/* Section 4: Progress Tracking (Actual Progress) - Only for Amendments */}
+                                  </>
+                )}
+{/* Section 4: Progress Tracking (Actual Progress) - Only for Amendments */}
                 {selectedAmendmentNumber > 0 && (
                   <>
                     <h4 style={{ margin: '1.25rem 0 0.5rem 0', fontSize: '0.9rem', color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -3075,11 +3139,10 @@ export default function AnnualPlanPage() {
                 </button>
               </div>
             </form>
-              );
-            })()}
           </div>
         </div>
-      )}
+        );
+      })()}
 
     </AppShell>
   );

@@ -5198,6 +5198,57 @@
       "status": "Draft",
       "createdAt": "2026-10-30T10:04:31.019Z",
       "updatedAt": "2026-10-30T10:04:31.019Z"
+    },
+    {
+      "id": "plan-org-moe-planning-2027-amend-3",
+      "branchId": "org-moe-planning",
+      "branchName": "MOE Planning Branch",
+      "year": "2027",
+      "amendmentNumber": 3,
+      "amendmentId": "amend-2027-3-04a6d9",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 3)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-30T10:13:33.331Z",
+      "updatedAt": "2026-10-30T10:13:33.331Z"
+    },
+    {
+      "id": "plan-org-moe-planning-2027-amend-4",
+      "branchId": "org-moe-planning",
+      "branchName": "MOE Planning Branch",
+      "year": "2027",
+      "amendmentNumber": 4,
+      "amendmentId": "amend-2027-4-9fa11a",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 4)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-10-30T10:16:34.643Z",
+      "updatedAt": "2026-10-30T10:16:34.643Z"
+    },
+    {
+      "id": "plan-org-moe-ict-2027-amend-4",
+      "branchId": "org-moe-ict",
+      "branchName": "MOE ICT Branch",
+      "year": "2027",
+      "amendmentNumber": 4,
+      "amendmentId": "amend-2027-4-9fa11a",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 4)",
+      "mainResponsibility": "Mrs. Udara T. Dikkumbura, Add.Sec.(Information Technology and Digital Education)",
+      "mainContactNo": "714929279",
+      "overallResponsibility": "Mrs. S. Dakshina Kasthuriarachchi (Director of Education)",
+      "overallContactNo": "714325568",
+      "status": "Draft",
+      "createdAt": "2026-10-30T10:17:15.352Z",
+      "updatedAt": "2026-10-30T10:17:15.352Z"
     }
   ],
   "aipActivities": [
@@ -5287,6 +5338,32 @@
       "status": "Active",
       "createdAt": "2026-10-30T10:04:30.943Z",
       "updatedAt": "2026-10-30T10:04:30.943Z"
+    },
+    {
+      "id": "amend-2027-3-04a6d9",
+      "year": "2027",
+      "amendmentNumber": 3,
+      "title": "Amendment 03 - Budget & Target Revision",
+      "progressStartDate": "2027.01.01",
+      "progressEndDate": "2027.10.31",
+      "createdBy": "user-planning-officer",
+      "creatorName": "MOE Planning Branch",
+      "status": "Active",
+      "createdAt": "2026-10-30T10:13:32.217Z",
+      "updatedAt": "2026-10-30T10:13:32.217Z"
+    },
+    {
+      "id": "amend-2027-4-9fa11a",
+      "year": "2027",
+      "amendmentNumber": 4,
+      "title": "Amendment 04 - Budget & Target Revision",
+      "progressStartDate": "2027.01.01",
+      "progressEndDate": "2027.10.31",
+      "createdBy": "user-planning-officer",
+      "creatorName": "MOE Planning Branch",
+      "status": "Active",
+      "createdAt": "2026-10-30T10:16:34.508Z",
+      "updatedAt": "2026-10-30T10:16:34.508Z"
     }
   ]
 }

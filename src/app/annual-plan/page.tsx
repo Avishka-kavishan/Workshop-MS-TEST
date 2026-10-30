@@ -724,7 +724,7 @@ export default function AnnualPlanPage() {
   const handleDispatchAmendmentToBranch = async () => {
     if (selectedAmendmentNumber === 0) return;
     const branchName = branchInfo?.name || 'this branch';
-    const confirmMsg = `Send Amendment 0${selectedAmendmentNumber} to Responsible Branch (${branchName})?\n\nPlanning Branch has prepared the activities & baseline targets. Once sent, ${branchName} will be notified to enter their actual progress (green & peach columns) and submit back.`;
+    const confirmMsg = `Send Amendment 0${selectedAmendmentNumber} to ${branchName}?\n\nPlanning Branch has prepared the activities & baseline targets. Once sent, ${branchName} will be notified to enter their actual progress (green & peach columns) and submit back.`;
     if (!window.confirm(confirmMsg)) return;
 
     try {
@@ -1054,8 +1054,8 @@ export default function AnnualPlanPage() {
                       {isDispatching 
                         ? 'Sending...' 
                         : plan?.isDispatchedToBranch 
-                        ? `Re-send to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})` 
-                        : `Send Amendment to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})`}
+                        ? `Re-send to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}` 
+                        : `Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}`}
                     </span>
                   </button>
                 )}
@@ -1439,8 +1439,8 @@ export default function AnnualPlanPage() {
                       : selectedAmendmentNumber > 0
                       ? (isPrivileged
                         ? (plan?.isDispatchedToBranch
-                          ? `Amendment dispatched to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Responsible Branch'} on ${new Date(plan.dispatchedAt || '').toLocaleDateString()}. Waiting for branch to fill actual progress and submit back.`
-                          : `Planning Mode: Enter baseline targets & allocations for ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Responsible Branch'}, then click "Send Amendment to Responsible Branch".`)
+                          ? `Amendment dispatched to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'} on ${new Date(plan.dispatchedAt || '').toLocaleDateString()}. Waiting for branch to fill actual progress and submit back.`
+                          : `Planning Mode: Enter baseline targets & allocations for ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}, then click "Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}".`)
                         : 'Amendment Draft: Fill actual progress in the green & peach columns. Click "Save Progress Updates" then submit to Planning Branch.')
                       : 'Draft Original Plan: Add your branch activities and targets, then click "Submit Original Plan for Approval" to send to Planning Branch.'}
                   </div>
@@ -1510,8 +1510,8 @@ export default function AnnualPlanPage() {
                       {isDispatching 
                         ? 'Sending...' 
                         : plan?.isDispatchedToBranch 
-                        ? `Re-send to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})` 
-                        : `Send Amendment to Responsible Branch (${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'})`}
+                        ? `Re-send to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}` 
+                        : `Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}`}
                     </span>
                   </button>
                 )}
@@ -2454,7 +2454,7 @@ export default function AnnualPlanPage() {
               </div>
 
               <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', fontSize: '0.78rem', color: '#64748b', marginBottom: '1.25rem' }}>
-                ℹ️ <strong>Amendment Setup:</strong> Creating this amendment opens the amendment workbook tabs for Planning Branch to pre-populate targets. No notifications will be sent to branches at this stage. Notifications are only sent when you click <strong>"Send Amendment to Responsible Branch"</strong> on each branch sheet.
+                ℹ️ <strong>Amendment Setup:</strong> Creating this amendment opens the amendment workbook tabs for Planning Branch to pre-populate targets. No notifications will be sent to branches at this stage. Notifications are only sent when you click <strong>"Send Amendment to Branch"</strong> on each branch sheet.
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>

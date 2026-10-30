@@ -216,8 +216,20 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    const amendmentsWithSubmissions = allAmendments.map((amend) => {
-      const branchSubmissions = moeBranches.map((br) => {
+    // If regular branch user, filter amendments to only ones targeted to their branch (or all branches)
+    let visibleAmendments = allAmendments;
+    if (!isPrivileged && user?.organizationId) {
+      visibleAmendments = allAmendments.filter(
+        (a) => !a.targetBranchIds || a.targetBranchIds.length === 0 || a.targetBranchIds.includes(user.organizationId)
+      );
+    }
+
+    const amendmentsWithSubmissions = visibleAmendments.map((amend) => {
+      const relevantBranches = amend.targetBranchIds && amend.targetBranchIds.length > 0
+        ? moeBranches.filter((b) => amend.targetBranchIds!.includes(b.id))
+        : moeBranches;
+
+      const branchSubmissions = relevantBranches.map((br) => {
         const brPlan = allPlans.find(
           (p) => p.branchId === br.id && p.year === year && Number(p.amendmentNumber || 0) === amend.amendmentNumber
         );
@@ -239,7 +251,7 @@ export async function GET(request: NextRequest) {
       const submittedCount = branchSubmissions.filter((b) => b.status === 'Submitted' || b.status === 'Approved').length;
       return {
         ...amend,
-        totalBranches: moeBranches.length,
+        totalBranches: relevantBranches.length,
         submittedBranchesCount: submittedCount,
         branchSubmissions,
       };

@@ -15,7 +15,18 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year') || '2027';
 
     const data = await getDb();
-    const allAmendments = (data.aipAmendments || []).filter((a) => a.year === year);
+    const isPlanningOrAdmin =
+      user?.organizationId === 'org-moe-planning' ||
+      user?.organizationId === 'org-moe-data' ||
+      user?.roleId === 'role-admin' ||
+      user?.roleId === 'admin';
+
+    let allAmendments = (data.aipAmendments || []).filter((a) => a.year === year);
+
+    // If regular branch user, show only amendments that apply to their branch (or all branches)
+    if (!isPlanningOrAdmin && user?.organizationId) {
+      allAmendments = allAmendments.filter((a) => !a.targetBranchIds || a.targetBranchIds.length === 0 || a.targetBranchIds.includes(user.organizationId));
+    }
     allAmendments.sort((a, b) => a.amendmentNumber - b.amendmentNumber);
 
     // List of MOE branches
@@ -28,7 +39,11 @@ export async function GET(request: NextRequest) {
     const allActivities = data.aipActivities || [];
 
     const amendmentsWithStats = allAmendments.map((amend) => {
-      const branchSubmissions = moeBranches.map((branch) => {
+      const relevantBranches = amend.targetBranchIds && amend.targetBranchIds.length > 0
+        ? moeBranches.filter((b) => amend.targetBranchIds!.includes(b.id))
+        : moeBranches;
+
+      const branchSubmissions = relevantBranches.map((branch) => {
         const plan = allPlans.find(
           (p) =>
             p.branchId === branch.id &&
@@ -59,7 +74,7 @@ export async function GET(request: NextRequest) {
 
       return {
         ...amend,
-        totalBranches: moeBranches.length,
+        totalBranches: relevantBranches.length,
         submittedBranchesCount: submittedCount,
         branchSubmissions,
       };
@@ -105,6 +120,10 @@ export async function POST(request: NextRequest) {
     const circularRef = (body.circularRef || '').trim();
     const deadline = body.deadline || '';
     const notes = (body.notes || '').trim();
+    // targetBranchIds: array of specific branch IDs, or empty/omitted to send to all branches
+    const targetBranchIds: string[] = Array.isArray(body.targetBranchIds) && body.targetBranchIds.length > 0 
+      ? body.targetBranchIds 
+      : [];
 
     if (!title) {
       return NextResponse.json({ error: 'Amendment title is required' }, { status: 400 });
@@ -130,6 +149,7 @@ export async function POST(request: NextRequest) {
         notes: notes || undefined,
         progressStartDate: body.progressStartDate ? String(body.progressStartDate).trim() : `${year}.01.01`,
         progressEndDate: body.progressEndDate ? String(body.progressEndDate).trim() : `${year}.10.31`,
+        targetBranchIds: targetBranchIds.length > 0 ? targetBranchIds : undefined,
         createdBy: user.id,
         creatorName: user.name || 'MOE Planning Branch',
         status: 'Active',
@@ -139,12 +159,16 @@ export async function POST(request: NextRequest) {
 
       data.aipAmendments.push(createdAmendment);
 
-      // Broadcast In-App Notification to ALL MOE Branches
-      const moeBranches = (data.organizations || []).filter(
+      // Broadcast In-App Notification to selected target branches (or ALL if none specified)
+      const allMoeBranches = (data.organizations || []).filter(
         (o) => o.typeId === 'ot-moe' && o.id !== 'org-moe'
       );
 
-      moeBranches.forEach((branch) => {
+      const targetBranches = targetBranchIds.length > 0
+        ? allMoeBranches.filter((b) => targetBranchIds.includes(b.id))
+        : allMoeBranches;
+
+      targetBranches.forEach((branch) => {
         const notif: Notification = {
           id: `notif-aip-${randomUUID()}`,
           recipientOrgId: branch.id,
@@ -161,7 +185,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       amendment: createdAmendment,
-      message: `Amendment successfully created and broadcasted to all MOE branches!`,
+      message: targetBranchIds.length > 0 
+        ? `Amendment successfully created and sent to ${targetBranchIds.length} branch(es)!`
+        : 'Amendment successfully created and broadcasted to all MOE branches!',
     });
   } catch (error: any) {
     console.error('Error in POST /api/annual-plan/amendments:', error);

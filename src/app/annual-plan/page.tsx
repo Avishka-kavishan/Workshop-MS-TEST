@@ -117,6 +117,8 @@ export default function AnnualPlanPage() {
   const [callNotes, setCallNotes] = useState('');
   const [callProgressStart, setCallProgressStart] = useState('2027.01.01');
   const [callProgressEnd, setCallProgressEnd] = useState('2027.10.31');
+  const [callTargetBranchIds, setCallTargetBranchIds] = useState<string[]>([]);
+  const [callSendMode, setCallSendMode] = useState<'all' | 'selected'>('all');
   const [isSavingProgress, setIsSavingProgress] = useState(false);
   const [progressSavedSuccess, setProgressSavedSuccess] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
@@ -598,6 +600,8 @@ export default function AnnualPlanPage() {
     setCallDeadline('');
     setCallNotes('');
     setCallSuccessMsg('');
+    setCallSendMode('all');
+    setCallTargetBranchIds([]);
     setIsCallModalOpen(true);
   };
 
@@ -617,6 +621,7 @@ export default function AnnualPlanPage() {
           notes: callNotes,
           progressStartDate: callProgressStart,
           progressEndDate: callProgressEnd,
+          targetBranchIds: callSendMode === 'selected' ? callTargetBranchIds : [],
         }),
       });
       const json = await res.json();
@@ -2267,6 +2272,64 @@ export default function AnnualPlanPage() {
                 </div>
               </div>
 
+              {/* Branch Target Selector: Send to All or One by One */}
+              <div style={{ marginBottom: '1.25rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.85rem 1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.4rem' }}>
+                  🏢 Target Branches (Recipients)
+                </label>
+                <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontWeight: callSendMode === 'all' ? 700 : 500 }}>
+                    <input
+                      type="radio"
+                      name="callSendMode"
+                      checked={callSendMode === 'all'}
+                      onChange={() => setCallSendMode('all')}
+                    />
+                    <span>📢 All Branches ({moeBranches.length})</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontWeight: callSendMode === 'selected' ? 700 : 500 }}>
+                    <input
+                      type="radio"
+                      name="callSendMode"
+                      checked={callSendMode === 'selected'}
+                      onChange={() => setCallSendMode('selected')}
+                    />
+                    <span>🎯 Selected Branch(es) only</span>
+                  </label>
+                </div>
+
+                {callSendMode === 'selected' && (
+                  <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '0.6rem 0.75rem', maxHeight: '160px', overflowY: 'auto' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.4rem' }}>
+                      {moeBranches.map((br) => {
+                        const isChecked = callTargetBranchIds.includes(br.id);
+                        return (
+                          <label key={br.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', cursor: 'pointer', padding: '2px 0' }}>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setCallTargetBranchIds([...callTargetBranchIds, br.id]);
+                                } else {
+                                  setCallTargetBranchIds(callTargetBranchIds.filter((id) => id !== br.id));
+                                }
+                              }}
+                            />
+                            <span>{br.name.replace(/^MOE\s+/i, '')}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {callTargetBranchIds.length === 0 && (
+                      <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: '#dc2626', fontWeight: 600 }}>
+                        ⚠️ Please select at least one branch to send this amendment to.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div style={{ marginBottom: '1.25rem' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#374151', marginBottom: '0.3rem' }}>
                   Guidance Notes / Instructions to Branches
@@ -2294,10 +2357,19 @@ export default function AnnualPlanPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isCalling}
-                  style={{ padding: '0.5rem 1.25rem', background: '#8D153A', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
+                  disabled={isCalling || (callSendMode === 'selected' && callTargetBranchIds.length === 0)}
+                  style={{
+                    padding: '0.5rem 1.25rem',
+                    background: callSendMode === 'selected' && callTargetBranchIds.length === 0 ? '#9ca3af' : '#8D153A',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    cursor: callSendMode === 'selected' && callTargetBranchIds.length === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.85rem',
+                  }}
                 >
-                  {isCalling ? 'Broadcasting...' : '📢 Broadcast to All Branches'}
+                  {isCalling ? 'Sending...' : callSendMode === 'selected' ? `📤 Send Amendment to ${callTargetBranchIds.length} Branch(es)` : '📢 Broadcast to All Branches'}
                 </button>
               </div>
             </form>

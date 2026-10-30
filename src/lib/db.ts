@@ -265,6 +265,7 @@ export interface AipAmendment {
   createdBy: string;
   creatorName: string;
   status: 'Active' | 'Closed';
+  targetBranchIds?: string[]; // If specified, amendment applies only to these branches. If empty/undefined, applies to all branches
   totalBranches?: number;
   submittedBranchesCount?: number;
   branchSubmissions?: Array<{

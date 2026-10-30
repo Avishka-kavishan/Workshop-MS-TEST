@@ -296,6 +296,9 @@ export interface AipPlan {
   progressEndDate?: string;
   submittedAt?: string;
   submissionNotes?: string;
+  approvedAt?: string;
+  approvedBy?: string;
+  approvalNotes?: string;
   status: 'Draft' | 'Submitted' | 'Approved';
   createdAt: string;
   updatedAt: string;

@@ -22,45 +22,42 @@ export async function POST(request: NextRequest) {
     const amendmentNumber = Number(body.amendmentNumber) || 0;
     const submissionNotes = (body.notes || '').trim();
 
-    if (amendmentNumber === 0) {
-      return NextResponse.json(
-        { error: 'Original baseline plan is kept internally in your branch and cannot be submitted. Only Amendments can be submitted to Planning Branch.' },
-        { status: 400 }
-      );
-    }
-
     const now = new Date().toISOString();
     let updatedPlan: any = null;
 
-    await updateDb((data) => {
-      if (!data.aipPlans) data.aipPlans = [];
-      if (!data.notifications) data.notifications = [];
+    const data = await getDb();
+    const branchOrg = (data.organizations || []).find((o) => o.id === branchId);
+    const branchName = branchOrg?.name || user?.organizationName || 'MOE Branch';
 
-      const planIdx = data.aipPlans.findIndex(
+    await updateDb((dbData) => {
+      if (!dbData.aipPlans) dbData.aipPlans = [];
+      if (!dbData.notifications) dbData.notifications = [];
+
+      const planIdx = dbData.aipPlans.findIndex(
         (p) =>
           (planId && p.id === planId) ||
-          (p.branchId === branchId && p.year === year && Number(p.amendmentNumber) === amendmentNumber)
+          (p.branchId === branchId && p.year === year && Number(p.amendmentNumber || 0) === amendmentNumber)
       );
 
       if (planIdx !== -1) {
-        data.aipPlans[planIdx] = {
-          ...data.aipPlans[planIdx],
+        dbData.aipPlans[planIdx] = {
+          ...dbData.aipPlans[planIdx],
           status: 'Submitted',
           submittedAt: now,
           submissionNotes,
           updatedAt: now,
         };
-        updatedPlan = data.aipPlans[planIdx];
+        updatedPlan = dbData.aipPlans[planIdx];
       } else {
         // Create as submitted
         const newPlan = {
-          id: planId || `plan-${branchId}-${year}-amend-${amendmentNumber}`,
+          id: planId || `plan-${branchId}-${year}${amendmentNumber > 0 ? `-amend-${amendmentNumber}` : ''}`,
           branchId,
-          branchName: user.organizationName || 'MOE Branch',
+          branchName,
           year,
           amendmentNumber,
           phaseTitle: '3. Implementation Phase',
-          targetTitle: `Overall Physical and Financial Targets ${year}`,
+          targetTitle: `Overall Physical and Financial Targets ${year}${amendmentNumber > 0 ? ` (Amendment ${amendmentNumber})` : ''}`,
           mainResponsibility: '',
           mainContactNo: '',
           overallResponsibility: '',
@@ -71,34 +68,44 @@ export async function POST(request: NextRequest) {
           createdAt: now,
           updatedAt: now,
         };
-        data.aipPlans.push(newPlan);
+        dbData.aipPlans.push(newPlan);
         updatedPlan = newPlan;
       }
 
       // Notify MOE Planning Branch
+      const titlePrefix = amendmentNumber === 0 
+        ? `📋 Original Plan Submitted: ${branchName}` 
+        : `🔄 Amendment 0${amendmentNumber} Submitted: ${branchName}`;
+      const msgDesc = amendmentNumber === 0
+        ? `${branchName} has submitted their Original Implementation Plan (${year}) for Planning Branch approval.`
+        : `${branchName} has submitted their Amendment 0${amendmentNumber} progress update (${year}) for review.`;
+
       const notifToPlanning: Notification = {
         id: `notif-aip-sub-${randomUUID()}`,
         recipientOrgId: 'org-moe-planning',
-        workshopId: 'aip-amendment',
-        title: `📤 Amendment ${amendmentNumber} Submitted: ${user.organizationName || 'MOE Branch'}`,
-        message: `${user.organizationName || 'A branch'} has submitted their 2027 Amendment ${amendmentNumber} for review.${submissionNotes ? ` Note: "${submissionNotes}"` : ''}`,
+        workshopId: 'aip-plan',
+        title: titlePrefix,
+        message: `${msgDesc}${submissionNotes ? ` Note: "${submissionNotes}"` : ''}`,
         isRead: false,
         createdAt: now,
       };
-      data.notifications.push(notifToPlanning);
+      dbData.notifications.push(notifToPlanning);
     });
+
+    const successMsg = amendmentNumber === 0
+      ? 'Original Implementation Plan successfully submitted to MOE Planning Branch for approval!'
+      : `Amendment 0${amendmentNumber} successfully submitted to MOE Planning Branch!`;
 
     return NextResponse.json({
       success: true,
       plan: updatedPlan,
-      message: `Amendment ${amendmentNumber} successfully submitted to MOE Planning Branch!`,
+      message: successMsg,
     });
   } catch (error: any) {
-    console.error('Error submitting amendment:', error);
+    console.error('Error submitting plan:', error);
     return NextResponse.json(
-      { error: 'Failed to submit amendment', details: error.message },
+      { error: 'Failed to submit plan', details: error.message },
       { status: 500 }
     );
   }
 }
-

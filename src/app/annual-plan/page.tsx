@@ -44,6 +44,9 @@ interface AipPlan {
   amendmentId?: string;
   submittedAt?: string;
   submissionNotes?: string;
+  approvedAt?: string;
+  approvedBy?: string;
+  approvalNotes?: string;
   status: 'Draft' | 'Submitted' | 'Approved';
   createdAt: string;
   updatedAt: string;
@@ -102,6 +105,7 @@ export default function AnnualPlanPage() {
 
   // Amendment states
   const [amendments, setAmendments] = useState<AipAmendment[]>([]);
+  const [originalPlanSubmissions, setOriginalPlanSubmissions] = useState<any[]>([]);
   const [selectedAmendmentNumber, setSelectedAmendmentNumber] = useState<number>(0);
   const [currentAmendment, setCurrentAmendment] = useState<AipAmendment | null>(null);
 
@@ -193,6 +197,9 @@ export default function AnnualPlanPage() {
         setPlan(json.plan);
         setActivities(json.activities || []);
         setAmendments(json.amendments || []);
+        if (json.originalPlanSubmissions) {
+          setOriginalPlanSubmissions(json.originalPlanSubmissions);
+        }
         setCurrentAmendment(json.currentAmendment || null);
 
         if (json.plan) {
@@ -631,9 +638,8 @@ export default function AnnualPlanPage() {
     }
   };
 
-  // Submit Amendment to Planning Branch (Branch Officers)
-  const handleSubmitAmendmentToPlanning = async () => {
-    if (selectedAmendmentNumber === 0) return;
+  // Submit Plan (Original or Amendment) to Planning Branch (Branch Officers)
+  const handleSubmitPlanToPlanning = async () => {
     try {
       setIsSubmittingAmendment(true);
       const res = await fetch('/api/annual-plan/submit', {
@@ -649,19 +655,55 @@ export default function AnnualPlanPage() {
       });
       const json = await res.json();
       if (res.ok) {
-        setSubmitSuccessMsg(json.message || 'Amendment submitted successfully!');
+        setSubmitSuccessMsg(json.message || 'Submitted successfully!');
         setTimeout(() => {
           setIsSubmitModalOpen(false);
           setSubmitSuccessMsg('');
         }, 2000);
         await loadPlanData();
       } else {
-        alert(json.error || 'Failed to submit amendment');
+        alert(json.error || 'Failed to submit plan');
       }
     } catch (err: any) {
-      alert(err.message || 'Error submitting amendment');
+      alert(err.message || 'Error submitting plan');
     } finally {
       setIsSubmittingAmendment(false);
+    }
+  };
+
+  // Approve or Return Plan (Planning Branch & Admin)
+  const [isApproving, setIsApproving] = useState(false);
+  const handleApproveOrReturnPlan = async (action: 'Approve' | 'Return', notesPrompt?: string) => {
+    const planLabel = selectedAmendmentNumber === 0 ? 'Original Implementation Plan' : `Amendment 0${selectedAmendmentNumber}`;
+    const confirmMsg = action === 'Approve'
+      ? `Approve this ${planLabel} for ${branchInfo?.name}?`
+      : `Return this ${planLabel} to ${branchInfo?.name} for revision?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setIsApproving(true);
+      const res = await fetch('/api/annual-plan/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          branchId: branchInfo?.id || selectedBranchId,
+          year: selectedYear,
+          amendmentNumber: selectedAmendmentNumber,
+          action,
+          notes: notesPrompt || '',
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        alert(json.message);
+        await loadPlanData();
+      } else {
+        alert(json.error || 'Failed to process approval');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error processing approval');
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -937,9 +979,56 @@ export default function AnnualPlanPage() {
               </>
             )}
 
-            {/* Branch Officer Submit Button (Enabled only when viewing an Amendment) */}
-            {selectedAmendmentNumber > 0 && (
+            {/* Planning Branch Approval Actions */}
+            {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') ? (
               plan?.status === 'Submitted' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button
+                    onClick={() => handleApproveOrReturnPlan('Approve')}
+                    disabled={isApproving}
+                    style={{
+                      background: '#166534',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '0.55rem 1.15rem',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      boxShadow: '0 2px 6px rgba(22, 101, 52, 0.3)',
+                    }}
+                    title="Approve this implementation plan"
+                  >
+                    <span>✅</span> {isApproving ? 'Approving...' : 'Approve Plan'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const notes = prompt('Enter remarks/reason for returning this plan for revision:');
+                      if (notes !== null) handleApproveOrReturnPlan('Return', notes);
+                    }}
+                    disabled={isApproving}
+                    style={{
+                      background: '#fff',
+                      color: '#b91c1c',
+                      border: '1px solid #b91c1c',
+                      padding: '0.55rem 0.9rem',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                    }}
+                    title="Return plan to branch for revision"
+                  >
+                    <span>↩️</span> Return for Revision
+                  </button>
+                </div>
+              ) : plan?.status === 'Approved' ? (
                 <div style={{
                   background: '#dcfce7',
                   color: '#166534',
@@ -952,7 +1041,40 @@ export default function AnnualPlanPage() {
                   alignItems: 'center',
                   gap: '0.35rem',
                 }}>
-                  <span>✅</span> Submitted to Planning Branch
+                  <span>✅</span> Approved Plan
+                </div>
+              ) : null
+            ) : (
+              /* Branch Officer Submit Button (Enabled for both Original Plan and Amendments) */
+              plan?.status === 'Approved' ? (
+                <div style={{
+                  background: '#dcfce7',
+                  color: '#166534',
+                  border: '1px solid #86efac',
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}>
+                  <span>✅</span> Approved by Planning Branch
+                </div>
+              ) : plan?.status === 'Submitted' ? (
+                <div style={{
+                  background: '#fef3c7',
+                  color: '#92400e',
+                  border: '1px solid #fde68a',
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}>
+                  <span>⏳</span> Submitted (Pending Approval)
                 </div>
               ) : (
                 <button
@@ -971,9 +1093,9 @@ export default function AnnualPlanPage() {
                     gap: '0.4rem',
                     boxShadow: '0 2px 6px rgba(22, 101, 52, 0.3)',
                   }}
-                  title="Submit this amendment to MOE Planning Branch"
+                  title={selectedAmendmentNumber === 0 ? "Submit Original Implementation Plan to Planning Branch for Approval" : "Submit Amendment to MOE Planning Branch"}
                 >
-                  <span>📤</span> Submit Amendment 0{selectedAmendmentNumber}
+                  <span>📤</span> {selectedAmendmentNumber === 0 ? 'Submit Original Plan for Approval' : `Submit Amendment 0${selectedAmendmentNumber}`}
                 </button>
               )
             )}
@@ -1122,7 +1244,7 @@ export default function AnnualPlanPage() {
                   >
                     <span>{isActive ? '📂' : '📄'}</span>
                     <span>{br.name.replace(/^MOE\s+/i, '')}</span>
-                    {selectedAmendmentNumber > 0 && (
+                    {selectedAmendmentNumber > 0 ? (
                       <span style={{
                         fontSize: '0.68rem',
                         fontWeight: 700,
@@ -1133,6 +1255,25 @@ export default function AnnualPlanPage() {
                       }}>
                         {isSubmitted ? '✓ Done' : 'Draft'}
                       </span>
+                    ) : (
+                      (() => {
+                        const origSub = (originalPlanSubmissions || []).find((s: any) => s.branchId === br.id);
+                        const isAppr = origSub?.status === 'Approved';
+                        const isSubm = origSub?.status === 'Submitted';
+                        if (!isAppr && !isSubm) return null;
+                        return (
+                          <span style={{
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            padding: '1px 6px',
+                            borderRadius: '10px',
+                            background: isAppr ? '#dcfce7' : '#fef3c7',
+                            color: isAppr ? '#166534' : '#92400e',
+                          }}>
+                            {isAppr ? '✓ Approved' : 'Submitted'}
+                          </span>
+                        );
+                      })()
                     )}
                   </button>
                 );
@@ -1172,11 +1313,11 @@ export default function AnnualPlanPage() {
         </div>
 
 {/* ─── Version & Amendment Status Context Banner ─── */}
-        {selectedAmendmentNumber > 0 && (
+        {(selectedAmendmentNumber > 0 || plan?.status === 'Submitted' || plan?.status === 'Approved') && (
           <div className="no-print" style={{ marginBottom: '1.25rem' }}>
             <div style={{
-              background: plan?.status === 'Submitted' ? '#f0fdf4' : '#fffbeb',
-              border: `1px solid ${plan?.status === 'Submitted' ? '#86efac' : '#fde68a'}`,
+              background: plan?.status === 'Approved' ? '#f0fdf4' : plan?.status === 'Submitted' ? '#fefce8' : '#fffbeb',
+              border: `1px solid ${plan?.status === 'Approved' ? '#86efac' : plan?.status === 'Submitted' ? '#fde047' : '#fde68a'}`,
               borderRadius: '8px',
               padding: '0.75rem 1.25rem',
               display: 'flex',
@@ -1187,10 +1328,20 @@ export default function AnnualPlanPage() {
               fontSize: '0.85rem',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.35rem' }}>{plan?.status === 'Submitted' ? '✅' : '🔄'}</span>
+                <span style={{ fontSize: '1.35rem' }}>{plan?.status === 'Approved' ? '✅' : plan?.status === 'Submitted' ? '⏳' : '🔄'}</span>
                 <div>
-                  <div style={{ fontWeight: 800, color: plan?.status === 'Submitted' ? '#166534' : '#92400e', fontSize: '0.95rem' }}>
-                    {currentAmendment?.title || `Amendment 0${selectedAmendmentNumber}`}
+                  <div style={{ fontWeight: 800, color: plan?.status === 'Approved' ? '#166534' : plan?.status === 'Submitted' ? '#854d0e' : '#92400e', fontSize: '0.95rem' }}>
+                    {selectedAmendmentNumber === 0 ? 'Original Implementation Plan' : (currentAmendment?.title || `Amendment 0${selectedAmendmentNumber}`)}
+                    {plan?.status === 'Approved' && (
+                      <span style={{ marginLeft: '0.5rem', fontWeight: 700, fontSize: '0.78rem', color: '#166534', background: '#dcfce7', padding: '2px 8px', borderRadius: '12px' }}>
+                        Approved
+                      </span>
+                    )}
+                    {plan?.status === 'Submitted' && (
+                      <span style={{ marginLeft: '0.5rem', fontWeight: 700, fontSize: '0.78rem', color: '#854d0e', background: '#fef3c7', padding: '2px 8px', borderRadius: '12px' }}>
+                        Pending Planning Approval
+                      </span>
+                    )}
                     {currentAmendment?.deadline && (
                       <span style={{ marginLeft: '0.5rem', fontWeight: 500, fontSize: '0.8rem', color: '#6b7280' }}>
                         (Submission Deadline: {currentAmendment.deadline})
@@ -1198,11 +1349,20 @@ export default function AnnualPlanPage() {
                     )}
                   </div>
                   <div style={{ color: '#4b5563', fontSize: '0.78rem', marginTop: '2px' }}>
-                    {plan?.status === 'Submitted'
-                      ? `Submitted to Planning Branch on ${new Date(plan.submittedAt || '').toLocaleString()}. Changes are recorded under this amendment.`
-                      : 'Draft revision: Update activities or votes as requested. Once ready, click "Submit Amendment to Planning Branch" to transmit your revision.'}
+                    {plan?.status === 'Approved'
+                      ? `Officially Approved by Planning Branch${plan.approvedAt ? ` on ${new Date(plan.approvedAt).toLocaleDateString()}` : ''}. Targets are locked.`
+                      : plan?.status === 'Submitted'
+                      ? `Submitted to Planning Branch on ${new Date(plan.submittedAt || '').toLocaleString()}. Under review.`
+                      : selectedAmendmentNumber > 0
+                      ? 'Amendment Draft: Fill actual progress in the green & peach columns. Click "Save Progress Updates" then submit to Planning Branch.'
+                      : 'Draft Original Plan: Add your branch activities and targets, then click "Submit Original Plan for Approval" to send to Planning Branch.'}
                   </div>
-                  {currentAmendment?.notes && (
+                  {plan?.approvalNotes && (
+                    <div style={{ marginTop: '4px', fontSize: '0.76rem', color: '#166534', background: '#dcfce7', padding: '2px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                      <strong>Planning Approval Note:</strong> {plan.approvalNotes}
+                    </div>
+                  )}
+                  {currentAmendment?.notes && selectedAmendmentNumber > 0 && (
                     <div style={{ marginTop: '4px', fontSize: '0.76rem', color: '#78350f', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: '4px', display: 'inline-block' }}>
                       <strong>Planning Note:</strong> {currentAmendment.notes}
                     </div>
@@ -1210,8 +1370,9 @@ export default function AnnualPlanPage() {
                 </div>
               </div>
 
-              {plan?.status !== 'Submitted' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              {/* Action buttons on the right side of banner */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                {selectedAmendmentNumber > 0 && plan?.status !== 'Submitted' && plan?.status !== 'Approved' && (
                   <button
                     type="button"
                     onClick={handleSaveAllProgress}
@@ -1233,7 +1394,54 @@ export default function AnnualPlanPage() {
                   >
                     {progressSavedSuccess ? '✅ Progress Saved!' : isSavingProgress ? '⏳ Saving...' : '💾 Save Progress Updates'}
                   </button>
+                )}
 
+                {/* Planning Branch Approval buttons directly inside the banner */}
+                {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') && plan?.status === 'Submitted' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleApproveOrReturnPlan('Approve')}
+                      disabled={isApproving}
+                      style={{
+                        background: '#166534',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '0.5rem 1.15rem',
+                        borderRadius: '6px',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(22, 101, 52, 0.2)',
+                      }}
+                    >
+                      ✅ {isApproving ? 'Approving...' : 'Approve Plan'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const notes = prompt('Enter remarks/reason for returning this plan for revision:');
+                        if (notes !== null) handleApproveOrReturnPlan('Return', notes);
+                      }}
+                      disabled={isApproving}
+                      style={{
+                        background: '#ffffff',
+                        color: '#b91c1c',
+                        border: '1px solid #b91c1c',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '6px',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ↩️ Return for Revision
+                    </button>
+                  </>
+                )}
+
+                {/* Branch Officer Submit button */}
+                {!(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') && plan?.status !== 'Submitted' && plan?.status !== 'Approved' && (
                   <button
                     onClick={() => setIsSubmitModalOpen(true)}
                     style={{
@@ -1248,10 +1456,10 @@ export default function AnnualPlanPage() {
                       boxShadow: '0 2px 4px rgba(22, 101, 52, 0.2)',
                     }}
                   >
-                    📤 Submit Amendment 0{selectedAmendmentNumber} to Planning Branch
+                    📤 {selectedAmendmentNumber === 0 ? 'Submit Original Plan for Approval' : `Submit Amendment 0${selectedAmendmentNumber} to Planning Branch`}
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -2069,8 +2277,101 @@ export default function AnnualPlanPage() {
             </div>
 
             <div style={{ padding: '1.25rem', overflowY: 'auto', flex: 1 }}>
+              {/* Original Plan Submissions Block */}
+              <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', marginBottom: '1.5rem', overflow: 'hidden' }}>
+                <div style={{
+                  background: '#f8fafc',
+                  padding: '0.75rem 1rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: '1px solid #cbd5e1',
+                }}>
+                  <div>
+                    <strong style={{ color: '#1e293b', fontSize: '0.95rem' }}>
+                      📋 Original Implementation Plans ({selectedYear} Baseline)
+                    </strong>
+                    <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
+                      Initial branch draft plans submitted for Planning approval
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, padding: '2px 8px', borderRadius: '12px', background: '#e0f2fe', color: '#0369a1' }}>
+                    {(originalPlanSubmissions || []).filter((b: any) => b.status === 'Submitted' || b.status === 'Approved').length} / {moeBranches.length} Branches Submitted
+                  </span>
+                </div>
+
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ background: '#f1f5f9', color: '#475569', textAlign: 'left' }}>
+                      <th style={{ padding: '6px 10px' }}>Branch Name</th>
+                      <th style={{ padding: '6px 10px' }}>Status</th>
+                      <th style={{ padding: '6px 10px' }}>Activities</th>
+                      <th style={{ padding: '6px 10px' }}>Total Cost (Mn)</th>
+                      <th style={{ padding: '6px 10px' }}>Submitted On</th>
+                      <th style={{ padding: '6px 10px', textAlign: 'center' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(originalPlanSubmissions || []).map((b: any) => (
+                      <tr key={b.branchId} style={{ borderTop: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '6px 10px', fontWeight: 600 }}>{b.branchName}</td>
+                        <td style={{ padding: '6px 10px' }}>
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            background: b.status === 'Approved' ? '#dcfce7' : b.status === 'Submitted' ? '#fef3c7' : '#f1f5f9',
+                            color: b.status === 'Approved' ? '#166534' : b.status === 'Submitted' ? '#92400e' : '#64748b',
+                          }}>
+                            {b.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '6px 10px' }}>{b.activityCount} activities</td>
+                        <td style={{ padding: '6px 10px', fontWeight: 700 }}>
+                          {b.totalCost > 0 ? `Rs. ${b.totalCost} Mn` : '-'}
+                        </td>
+                        <td style={{ padding: '6px 10px', color: '#64748b' }}>
+                          {b.submittedAt ? new Date(b.submittedAt).toLocaleDateString() : '—'}
+                        </td>
+                        <td style={{ padding: '6px 10px', textAlign: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedAmendmentNumber(0);
+                              handleBranchChange(b.branchId);
+                              setIsTrackerModalOpen(false);
+                            }}
+                            style={{
+                              padding: '4px 10px',
+                              background: '#1e293b',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: '5px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                            title={`Open Original Plan for ${b.branchName}`}
+                          >
+                            <span>📄</span> Open Plan
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Amendments Block */}
+              <div style={{ marginBottom: '0.5rem', fontWeight: 700, color: '#7a1c2d', fontSize: '0.9rem' }}>
+                🔄 Amendment Revision Cycles
+              </div>
               {amendments.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#6b7280' }}>
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#6b7280', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
                   No amendments called yet for year {selectedYear}. Click "Call for Amendment" to initiate the first amendment cycle.
                 </div>
               ) : (
@@ -2200,7 +2501,7 @@ export default function AnnualPlanPage() {
               alignItems: 'center',
             }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
-                📤 Submit Amendment 0{selectedAmendmentNumber} to Planning Branch
+                📤 {selectedAmendmentNumber === 0 ? 'Submit Original Implementation Plan to Planning Branch' : `Submit Amendment 0${selectedAmendmentNumber} to Planning Branch`}
               </h3>
               <button
                 onClick={() => setIsSubmitModalOpen(false)}
@@ -2218,7 +2519,7 @@ export default function AnnualPlanPage() {
               ) : (
                 <>
                   <p style={{ fontSize: '0.875rem', color: '#374151', margin: '0 0 1rem 0', lineHeight: 1.5 }}>
-                    You are about to officially submit <strong>Amendment 0{selectedAmendmentNumber}</strong> for <strong>{branchInfo?.name || user?.organizationName}</strong> to MOE Planning Branch.
+                    You are about to officially submit <strong>{selectedAmendmentNumber === 0 ? 'Original Implementation Plan' : `Amendment 0${selectedAmendmentNumber}`}</strong> for <strong>{branchInfo?.name || user?.organizationName}</strong> to MOE Planning Branch for review & approval.
                   </p>
 
                   <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0.75rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#475569' }}>
@@ -2250,7 +2551,7 @@ export default function AnnualPlanPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={handleSubmitAmendmentToPlanning}
+                      onClick={handleSubmitPlanToPlanning}
                       disabled={isSubmittingAmendment}
                       style={{ padding: '0.5rem 1.25rem', background: '#166534', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}
                     >

@@ -195,7 +195,27 @@ export async function GET(request: NextRequest) {
     const q4Phys = activities.length > 0 ? 100 : 0;
     const quarterlyPhysicalCumulative = [q1Phys, q2Phys, q3Phys, q4Phys];
 
-    // Compute live submission stats for all amendments
+    // Compute live submission stats for all amendments + original plan 0
+    const originalPlanSubmissions = moeBranches.map((br) => {
+      const brPlan = allPlans.find(
+        (p) => p.branchId === br.id && p.year === year && Number(p.amendmentNumber || 0) === 0
+      );
+      const brActs = (freshData.aipActivities || []).filter(
+        (a) => a.branchId === br.id && (a.year === year || !a.year) && Number(a.amendmentNumber || 0) === 0
+      );
+      const totalCost = brActs.reduce((sum, a) => sum + (Number(a.estimatedCost) || 0), 0);
+      return {
+        branchId: br.id,
+        branchName: br.name,
+        status: brPlan?.status || 'Draft',
+        submittedAt: brPlan?.submittedAt || null,
+        approvedAt: brPlan?.approvedAt || null,
+        approvedBy: brPlan?.approvedBy || null,
+        activityCount: brActs.length,
+        totalCost: Math.round(totalCost * 100) / 100,
+      };
+    });
+
     const amendmentsWithSubmissions = allAmendments.map((amend) => {
       const branchSubmissions = moeBranches.map((br) => {
         const brPlan = allPlans.find(
@@ -210,6 +230,8 @@ export async function GET(request: NextRequest) {
           branchName: br.name,
           status: brPlan?.status || 'Draft',
           submittedAt: brPlan?.submittedAt || null,
+          approvedAt: brPlan?.approvedAt || null,
+          approvedBy: brPlan?.approvedBy || null,
           activityCount: brActs.length,
           totalCost: Math.round(totalCost * 100) / 100,
         };
@@ -233,6 +255,7 @@ export async function GET(request: NextRequest) {
       amendmentNumber,
       currentAmendment,
       amendments: amendmentsWithSubmissions,
+      originalPlanSubmissions,
       activities,
       totals: {
         totalEstimatedCost: Math.round(totalEstimatedCost * 1000) / 1000,

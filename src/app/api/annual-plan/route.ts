@@ -244,6 +244,8 @@ export async function GET(request: NextRequest) {
           submittedAt: brPlan?.submittedAt || null,
           approvedAt: brPlan?.approvedAt || null,
           approvedBy: brPlan?.approvedBy || null,
+          isDispatchedToBranch: Boolean(brPlan?.isDispatchedToBranch),
+          dispatchedAt: brPlan?.dispatchedAt || null,
           activityCount: brActs.length,
           totalCost: Math.round(totalCost * 100) / 100,
         };

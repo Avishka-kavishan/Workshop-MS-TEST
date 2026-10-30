@@ -24,6 +24,8 @@ interface AipAmendment {
     submittedAt: string | null;
     activityCount: number;
     totalCost: number;
+    isDispatchedToBranch?: boolean;
+    dispatchedAt?: string | null;
   }>;
 }
 
@@ -47,6 +49,9 @@ interface AipPlan {
   approvedAt?: string;
   approvedBy?: string;
   approvalNotes?: string;
+  dispatchedAt?: string;
+  dispatchedBy?: string;
+  isDispatchedToBranch?: boolean;
   status: 'Draft' | 'Submitted' | 'Approved';
   createdAt: string;
   updatedAt: string;
@@ -714,6 +719,39 @@ export default function AnnualPlanPage() {
     }
   };
 
+  // Planning Branch: Send Amendment to This Branch
+  const [isDispatching, setIsDispatching] = useState(false);
+  const handleDispatchAmendmentToBranch = async () => {
+    if (selectedAmendmentNumber === 0) return;
+    const branchName = branchInfo?.name || 'this branch';
+    const confirmMsg = `Send Amendment 0${selectedAmendmentNumber} to ${branchName}?\n\nPlanning Branch has prepared the activities & baseline targets. Once sent, ${branchName} will be notified to enter their actual progress (green & peach columns) and submit back.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setIsDispatching(true);
+      const res = await fetch('/api/annual-plan/dispatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          branchId: branchInfo?.id || selectedBranchId,
+          year: selectedYear,
+          amendmentNumber: selectedAmendmentNumber,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        alert(json.message);
+        await loadPlanData();
+      } else {
+        alert(json.error || 'Failed to send amendment to branch');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error sending amendment to branch');
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
   // Export to CSV matching MOE Matrix
   const handleExportCSV = () => {
     const headers = [
@@ -988,69 +1026,104 @@ export default function AnnualPlanPage() {
 
             {/* Planning Branch Approval Actions */}
             {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') ? (
-              plan?.status === 'Submitted' ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {/* Send Amendment Button directly on this Branch's sheet */}
+                {selectedAmendmentNumber > 0 && (
                   <button
-                    onClick={() => handleApproveOrReturnPlan('Approve')}
-                    disabled={isApproving}
+                    type="button"
+                    onClick={handleDispatchAmendmentToBranch}
+                    disabled={isDispatching}
                     style={{
-                      background: '#166534',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '0.55rem 1.15rem',
+                      background: plan?.isDispatchedToBranch ? '#ffffff' : '#0284c7',
+                      color: plan?.isDispatchedToBranch ? '#0369a1' : '#ffffff',
+                      border: plan?.isDispatchedToBranch ? '1.5px solid #0284c7' : 'none',
+                      padding: '0.55rem 1.1rem',
                       borderRadius: '8px',
                       fontWeight: 700,
                       fontSize: '0.85rem',
-                      cursor: 'pointer',
+                      cursor: isDispatching ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.4rem',
-                      boxShadow: '0 2px 6px rgba(22, 101, 52, 0.3)',
+                      boxShadow: plan?.isDispatchedToBranch ? 'none' : '0 2px 6px rgba(2, 132, 199, 0.3)',
                     }}
-                    title="Approve this implementation plan"
+                    title={`Send prepared Amendment 0${selectedAmendmentNumber} to ${branchInfo?.name || 'this branch'} so they can fill actual progress`}
                   >
-                    <span>✅</span> {isApproving ? 'Approving...' : 'Approve Plan'}
+                    <span>{plan?.isDispatchedToBranch ? '📨' : '📤'}</span>
+                    <span>
+                      {isDispatching 
+                        ? 'Sending...' 
+                        : plan?.isDispatchedToBranch 
+                        ? `Re-send to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}` 
+                        : `Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}`}
+                    </span>
                   </button>
-                  <button
-                    onClick={() => {
-                      const notes = prompt('Enter remarks/reason for returning this plan for revision:');
-                      if (notes !== null) handleApproveOrReturnPlan('Return', notes);
-                    }}
-                    disabled={isApproving}
-                    style={{
-                      background: '#fff',
-                      color: '#b91c1c',
-                      border: '1px solid #b91c1c',
-                      padding: '0.55rem 0.9rem',
-                      borderRadius: '8px',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                    }}
-                    title="Return plan to branch for revision"
-                  >
-                    <span>↩️</span> Return for Revision
-                  </button>
-                </div>
-              ) : plan?.status === 'Approved' ? (
-                <div style={{
-                  background: '#dcfce7',
-                  color: '#166534',
-                  border: '1px solid #86efac',
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: '8px',
-                  fontWeight: 700,
-                  fontSize: '0.82rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                }}>
-                  <span>✅</span> Approved Plan
-                </div>
-              ) : null
+                )}
+
+                {plan?.status === 'Submitted' ? (
+                  <>
+                    <button
+                      onClick={() => handleApproveOrReturnPlan('Approve')}
+                      disabled={isApproving}
+                      style={{
+                        background: '#166534',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '0.55rem 1.15rem',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        boxShadow: '0 2px 6px rgba(22, 101, 52, 0.3)',
+                      }}
+                      title="Approve this implementation plan"
+                    >
+                      <span>✅</span> {isApproving ? 'Approving...' : 'Approve Plan'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const notes = prompt('Enter remarks/reason for returning this plan for revision:');
+                        if (notes !== null) handleApproveOrReturnPlan('Return', notes);
+                      }}
+                      disabled={isApproving}
+                      style={{
+                        background: '#fff',
+                        color: '#b91c1c',
+                        border: '1px solid #b91c1c',
+                        padding: '0.55rem 0.9rem',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                      }}
+                      title="Return plan to branch for revision"
+                    >
+                      <span>↩️</span> Return for Revision
+                    </button>
+                  </>
+                ) : plan?.status === 'Approved' ? (
+                  <div style={{
+                    background: '#dcfce7',
+                    color: '#166534',
+                    border: '1px solid #86efac',
+                    padding: '0.5rem 0.9rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                  }}>
+                    <span>✅</span> Approved Plan
+                  </div>
+                ) : null}
+              </div>
             ) : (
               /* Branch Officer Submit Button (Enabled for both Original Plan and Amendments) */
               plan?.status === 'Approved' ? (
@@ -1260,10 +1333,10 @@ export default function AnnualPlanPage() {
                         fontWeight: 700,
                         padding: '1px 6px',
                         borderRadius: '10px',
-                        background: isSubmitted ? '#dcfce7' : '#fef3c7',
-                        color: isSubmitted ? '#166534' : '#92400e',
+                        background: isSubmitted ? '#dcfce7' : amendSubmission?.isDispatchedToBranch ? '#e0f2fe' : '#fef3c7',
+                        color: isSubmitted ? '#166534' : amendSubmission?.isDispatchedToBranch ? '#0369a1' : '#92400e',
                       }}>
-                        {isSubmitted ? '✓ Done' : 'Draft'}
+                        {isSubmitted ? '✓ Done' : amendSubmission?.isDispatchedToBranch ? 'Sent to Branch' : 'Draft'}
                       </span>
                     ) : (
                       (() => {
@@ -1403,6 +1476,39 @@ export default function AnnualPlanPage() {
                     title="Save all actual progress numbers entered in the green and peach columns"
                   >
                     {progressSavedSuccess ? '✅ Progress Saved!' : isSavingProgress ? '⏳ Saving...' : '💾 Save Progress Updates'}
+                  </button>
+                )}
+
+                {/* Planning Branch: Send Amendment to this branch button directly in banner */}
+                {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') && selectedAmendmentNumber > 0 && plan?.status !== 'Submitted' && (
+                  <button
+                    type="button"
+                    onClick={handleDispatchAmendmentToBranch}
+                    disabled={isDispatching}
+                    style={{
+                      background: plan?.isDispatchedToBranch ? '#ffffff' : '#0284c7',
+                      color: plan?.isDispatchedToBranch ? '#0369a1' : '#ffffff',
+                      border: plan?.isDispatchedToBranch ? '1.5px solid #0284c7' : 'none',
+                      padding: '0.5rem 1.15rem',
+                      borderRadius: '6px',
+                      fontWeight: 700,
+                      fontSize: '0.82rem',
+                      cursor: isDispatching ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      boxShadow: plan?.isDispatchedToBranch ? 'none' : '0 2px 4px rgba(2, 132, 199, 0.25)',
+                    }}
+                    title={`Send prepared Amendment 0${selectedAmendmentNumber} to ${branchInfo?.name || 'this branch'} so they can fill actual progress`}
+                  >
+                    <span>{plan?.isDispatchedToBranch ? '📨' : '📤'}</span>
+                    <span>
+                      {isDispatching 
+                        ? 'Sending...' 
+                        : plan?.isDispatchedToBranch 
+                        ? `Re-send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}` 
+                        : `Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}`}
+                    </span>
                   </button>
                 )}
 
@@ -2565,16 +2671,23 @@ export default function AnnualPlanPage() {
                           <tr key={b.branchId} style={{ borderTop: '1px solid #f1f5f9' }}>
                             <td style={{ padding: '6px 10px', fontWeight: 600 }}>{b.branchName}</td>
                             <td style={{ padding: '6px 10px' }}>
-                              <span style={{
-                                padding: '2px 8px',
-                                borderRadius: '12px',
-                                fontSize: '0.72rem',
-                                fontWeight: 700,
-                                background: b.status === 'Submitted' ? '#dcfce7' : b.status === 'Approved' ? '#e0f2fe' : '#fef3c7',
-                                color: b.status === 'Submitted' ? '#166534' : b.status === 'Approved' ? '#0369a1' : '#92400e',
-                              }}>
-                                {b.status}
-                              </span>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start' }}>
+                                <span style={{
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  background: b.status === 'Submitted' ? '#dcfce7' : b.status === 'Approved' ? '#e0f2fe' : '#fef3c7',
+                                  color: b.status === 'Submitted' ? '#166534' : b.status === 'Approved' ? '#0369a1' : '#92400e',
+                                }}>
+                                  {b.status}
+                                </span>
+                                {b.isDispatchedToBranch && (
+                                  <span style={{ fontSize: '0.68rem', color: '#0369a1', fontWeight: 600 }}>
+                                    📨 Sent to Branch
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td style={{ padding: '6px 10px' }}>{b.activityCount} activities</td>
                             <td style={{ padding: '6px 10px', fontWeight: 700 }}>

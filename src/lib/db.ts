@@ -300,6 +300,9 @@ export interface AipPlan {
   approvedAt?: string;
   approvedBy?: string;
   approvalNotes?: string;
+  dispatchedAt?: string;
+  dispatchedBy?: string;
+  isDispatchedToBranch?: boolean;
   status: 'Draft' | 'Submitted' | 'Approved';
   createdAt: string;
   updatedAt: string;

@@ -2816,10 +2816,11 @@ export default function AnnualPlanPage() {
                             <input
                               type="number"
                               step="any"
+                              disabled={isBaselineLocked}
                               value={val === 0 ? '' : val}
                               placeholder="0"
                               onChange={(e) => handleFinancialMonthChange(idx, e.target.value)}
-                              style={{ width: '100%', padding: '3px', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center', fontSize: '0.75rem' }}
+                              style={{ width: '100%', padding: '3px', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center', fontSize: '0.75rem', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                             />
                           </td>
                         ))}
@@ -2834,10 +2835,11 @@ export default function AnnualPlanPage() {
                           <td key={`inp-phys-${idx}`} style={{ padding: '3px', border: '1px solid #cbd5e1' }}>
                             <input
                               type="text"
+                              disabled={isBaselineLocked}
                               value={val === '-' ? '' : val}
                               placeholder="-"
                               onChange={(e) => handlePhysicalMonthChange(idx, e.target.value)}
-                              style={{ width: '100%', padding: '3px', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center', fontSize: '0.75rem' }}
+                              style={{ width: '100%', padding: '3px', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center', fontSize: '0.75rem', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                             />
                           </td>
                         ))}
@@ -2869,9 +2871,10 @@ export default function AnnualPlanPage() {
                         <input
                           type="number"
                           step="any"
+                          disabled={isBaselineLocked}
                           value={formFinancialQ1}
                           onChange={(e) => setFormFinancialQ1(parseFloat(e.target.value) || 0)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                       <div>
@@ -2879,9 +2882,10 @@ export default function AnnualPlanPage() {
                         <input
                           type="number"
                           step="any"
+                          disabled={isBaselineLocked}
                           value={formFinancialQ2}
                           onChange={(e) => setFormFinancialQ2(parseFloat(e.target.value) || 0)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                       <div>
@@ -2889,9 +2893,10 @@ export default function AnnualPlanPage() {
                         <input
                           type="number"
                           step="any"
+                          disabled={isBaselineLocked}
                           value={formFinancialQ3}
                           onChange={(e) => setFormFinancialQ3(parseFloat(e.target.value) || 0)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                       <div>
@@ -2899,9 +2904,10 @@ export default function AnnualPlanPage() {
                         <input
                           type="number"
                           step="any"
+                          disabled={isBaselineLocked}
                           value={formFinancialQ4}
                           onChange={(e) => setFormFinancialQ4(parseFloat(e.target.value) || 0)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                     </div>
@@ -2916,36 +2922,40 @@ export default function AnnualPlanPage() {
                         <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Q1</span>
                         <input
                           type="text"
+                          disabled={isBaselineLocked}
                           value={formTargetQ1}
                           onChange={(e) => setFormTargetQ1(e.target.value)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                       <div>
                         <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Q2</span>
                         <input
                           type="text"
+                          disabled={isBaselineLocked}
                           value={formTargetQ2}
                           onChange={(e) => setFormTargetQ2(e.target.value)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                       <div>
                         <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Q3</span>
                         <input
                           type="text"
+                          disabled={isBaselineLocked}
                           value={formTargetQ3}
                           onChange={(e) => setFormTargetQ3(e.target.value)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                       <div>
                         <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Q4</span>
                         <input
                           type="text"
+                          disabled={isBaselineLocked}
                           value={formTargetQ4}
                           onChange={(e) => setFormTargetQ4(e.target.value)}
-                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center' }}
+                          style={{ width: '100%', padding: '3px', fontSize: '0.75rem', border: '1px solid #d1d5db', borderRadius: '4px', textAlign: 'center', background: isBaselineLocked ? '#f1f5f9' : '#fff' }}
                         />
                       </div>
                     </div>

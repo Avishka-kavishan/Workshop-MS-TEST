@@ -139,7 +139,7 @@ export default function AnnualPlanPage() {
   const [submitSuccessMsg, setSubmitSuccessMsg] = useState('');
   const [branchInfo, setBranchInfo] = useState<{ id: string; name: string } | null>(null);
 
-  const isPrivileged = user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin';
+  const isPrivileged = user?.organizationId === 'org-moe-planning';
 
   // Directly editable fields in the sheet
   const [mainResp, setMainResp] = useState('');
@@ -189,7 +189,7 @@ export default function AnnualPlanPage() {
   const loadPlanData = async (targetBranchId?: string, targetAmendmentNum?: number) => {
     try {
       setLoading(true);
-      const isPrivileged = user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin';
+      const isPrivileged = user?.organizationId === 'org-moe-planning';
       const bId = targetBranchId || (isPrivileged && selectedBranchId ? selectedBranchId : user?.organizationId);
       const amendNum = targetAmendmentNum !== undefined ? targetAmendmentNum : selectedAmendmentNumber;
       const url = bId 
@@ -245,7 +245,7 @@ export default function AnnualPlanPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    const isPrivileged = user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin';
+    const isPrivileged = user?.organizationId === 'org-moe-planning';
     const bId = (isPrivileged && selectedBranchId) ? selectedBranchId : user?.organizationId;
     loadPlanData(bId, selectedAmendmentNumber);
   }, [status, user?.organizationId, selectedYear, selectedAmendmentNumber]);
@@ -1009,7 +1009,7 @@ export default function AnnualPlanPage() {
             </div>
 
             {/* Planning Branch / Admin Tools */}
-            {(user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin') && (
+            {(user?.organizationId === 'org-moe-planning') && (
               <>
                 <button
                   onClick={handleOpenCallModal}
@@ -1055,7 +1055,7 @@ export default function AnnualPlanPage() {
             )}
 
             {/* Planning Branch Approval Actions */}
-            {(user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin') ? (
+            {(user?.organizationId === 'org-moe-planning') ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
 
 
@@ -1243,7 +1243,7 @@ export default function AnnualPlanPage() {
         </div>
 
         {/* ── Google Sheets-Style Branch Sheet Tab Bar (Planning Branch & Admin Master Mode) ── */}
-        {(user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin') && (
+        {(user?.organizationId === 'org-moe-planning') && (
           <div className="no-print" style={{
             background: '#ffffff',
             border: '1px solid #cbd5e1',
@@ -1377,7 +1377,7 @@ export default function AnnualPlanPage() {
         }}>
           <div>
             <span style={{ fontSize: '0.8125rem', color: '#6b7280', fontWeight: 600 }}>
-              {(user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin')
+              {(user?.organizationId === 'org-moe-planning')
                 ? 'Active Branch Sheet: '
                 : 'Active User Branch: '}
             </span>
@@ -1477,7 +1477,7 @@ export default function AnnualPlanPage() {
                 )}
 
                 {/* Planning Branch: Send Amendment to this branch button directly in banner */}
-                {(user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin') && selectedAmendmentNumber > 0 && plan?.status !== 'Submitted' && (
+                {(user?.organizationId === 'org-moe-planning') && selectedAmendmentNumber > 0 && plan?.status !== 'Submitted' && (
                   <>
                     <button
                       type="button"
@@ -1535,7 +1535,7 @@ export default function AnnualPlanPage() {
                 )}
 
                 {/* Planning Branch Approval buttons directly inside the banner */}
-                {(user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin') && plan?.status === 'Submitted' && (
+                {(user?.organizationId === 'org-moe-planning') && plan?.status === 'Submitted' && (
                   <>
                     <button
                       type="button"
@@ -1579,7 +1579,7 @@ export default function AnnualPlanPage() {
                 )}
 
                 {/* Branch Officer Submit button */}
-                {!(user?.organizationId === 'org-moe-planning' || user?.roleId === 'role-admin') && plan?.status !== 'Submitted' && plan?.status !== 'Approved' && (
+                {!(user?.organizationId === 'org-moe-planning') && plan?.status !== 'Submitted' && plan?.status !== 'Approved' && (
                   <button
                     onClick={() => setIsSubmitModalOpen(true)}
                     style={{

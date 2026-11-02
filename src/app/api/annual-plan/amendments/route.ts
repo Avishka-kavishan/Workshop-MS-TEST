@@ -16,9 +16,7 @@ export async function GET(request: NextRequest) {
 
     const data = await getDb();
     const isPlanningOrAdmin =
-      user?.organizationId === 'org-moe-planning' ||
-            user?.roleId === 'role-admin' ||
-      user?.roleId === 'admin';
+      user?.organizationId === 'org-moe-planning';
 
     let allAmendments = (data.aipAmendments || []).filter((a) => a.year === year);
 

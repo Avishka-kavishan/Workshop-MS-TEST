@@ -2282,7 +2282,7 @@
       "organizationId": "org-moe-ict",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-11-02T03:54:00.419Z",
+      "lastLogin": "2026-11-02T04:01:22.752Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -2295,7 +2295,7 @@
       "organizationId": "org-moe-planning",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-11-02T03:54:07.601Z",
+      "lastLogin": "2026-11-02T04:01:45.718Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -5334,6 +5334,40 @@
       "status": "Draft",
       "createdAt": "2026-11-02T03:31:56.596Z",
       "updatedAt": "2026-11-02T03:31:56.596Z"
+    },
+    {
+      "id": "plan-org-moe-quality-2027-amend-1",
+      "branchId": "org-moe-quality",
+      "branchName": "MOE Quality Assurance Branch",
+      "year": "2027",
+      "amendmentNumber": 1,
+      "amendmentId": "amend-2027-1-16f158",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 1)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-11-02T04:01:59.845Z",
+      "updatedAt": "2026-11-02T04:01:59.845Z"
+    },
+    {
+      "id": "plan-org-moe-curriculum-2027-amend-2",
+      "branchId": "org-moe-curriculum",
+      "branchName": "MOE Curriculum Development Branch",
+      "year": "2027",
+      "amendmentNumber": 2,
+      "amendmentId": "amend-2027-2-2872b8",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 2)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-11-02T04:02:22.947Z",
+      "updatedAt": "2026-11-02T04:02:22.947Z"
     }
   ],
   "aipActivities": [

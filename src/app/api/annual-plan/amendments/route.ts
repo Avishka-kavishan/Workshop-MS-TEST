@@ -174,3 +174,93 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = session.user as any;
+    const isPlanningOrAdmin =
+      user.organizationId === 'org-moe-planning' ||
+      user.organizationId === 'org-moe-data' ||
+      user.roleId === 'role-admin' ||
+      user.roleId === 'admin';
+
+    if (!isPlanningOrAdmin) {
+      return NextResponse.json(
+        { error: 'Only MOE Planning Branch or Administrators can remove amendments.' },
+        { status: 403 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const year = searchParams.get('year') || '2027';
+    const amendmentNumber = Number(searchParams.get('amendmentNumber'));
+    const amendmentId = searchParams.get('id');
+
+    if (!amendmentNumber || amendmentNumber <= 0) {
+      return NextResponse.json(
+        { error: 'A valid amendment number is required (cannot delete original plan).' },
+        { status: 400 }
+      );
+    }
+
+    let deletedTitle = `Amendment 0${amendmentNumber}`;
+
+    await updateDb((data) => {
+      if (data.aipAmendments) {
+        const amend = data.aipAmendments.find(
+          (a) =>
+            a.year === String(year) &&
+            (Number(a.amendmentNumber) === amendmentNumber || (amendmentId && a.id === amendmentId))
+        );
+        if (amend) {
+          deletedTitle = amend.title || deletedTitle;
+        }
+
+        data.aipAmendments = data.aipAmendments.filter(
+          (a) =>
+            !(
+              a.year === String(year) &&
+              (Number(a.amendmentNumber) === amendmentNumber || (amendmentId && a.id === amendmentId))
+            )
+        );
+      }
+
+      // Remove plans for this amendment
+      if (data.aipPlans) {
+        data.aipPlans = data.aipPlans.filter(
+          (p) =>
+            !(
+              p.year === String(year) &&
+              Number(p.amendmentNumber || 0) === amendmentNumber
+            )
+        );
+      }
+
+      // Remove activities under this amendment
+      if (data.aipActivities) {
+        data.aipActivities = data.aipActivities.filter(
+          (act) =>
+            !(
+              act.year === String(year) &&
+              Number(act.amendmentNumber || 0) === amendmentNumber
+            )
+        );
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `${deletedTitle} (${year}) has been removed successfully.`,
+    });
+  } catch (error: any) {
+    console.error('Error in DELETE /api/annual-plan/amendments:', error);
+    return NextResponse.json(
+      { error: 'Failed to remove amendment', details: error.message },
+      { status: 500 }
+    );
+  }
+}

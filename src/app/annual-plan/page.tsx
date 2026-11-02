@@ -2869,7 +2869,7 @@ export default function AnnualPlanPage() {
             }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>
-                  {editingActivity ? (isBaselineLocked ? `📊 Enter Progress Updates (Activity ${editingActivity.activityCode})` : `✏️ Edit Activity (Code: ${editingActivity.activityCode})`) : '➕ Add Activity (Official MOE Format)'}
+                  {editingActivity ? (isBaselineLocked ? `📊 Enter Progress Updates (Activity ${editingActivity.activityCode})` : `✏️ Edit Activity (Code: ${editingActivity.activityCode})`) : '➕ Add Activity'}
                 </h3>
                 <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
                   {selectedYear} Annual Implementation Plan • {branchInfo?.name || 'MOE Branch'}

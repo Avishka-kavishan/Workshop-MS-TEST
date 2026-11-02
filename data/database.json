@@ -2282,7 +2282,7 @@
       "organizationId": "org-moe-ict",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-10-30T10:06:02.388Z",
+      "lastLogin": "2026-11-02T03:33:05.212Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -2295,7 +2295,7 @@
       "organizationId": "org-moe-planning",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-10-30T10:06:55.592Z",
+      "lastLogin": "2026-11-02T03:30:33.896Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -5249,6 +5249,91 @@
       "status": "Draft",
       "createdAt": "2026-10-30T10:17:15.352Z",
       "updatedAt": "2026-10-30T10:17:15.352Z"
+    },
+    {
+      "id": "plan-org-moe-ict-2027-amend-3",
+      "branchId": "org-moe-ict",
+      "branchName": "MOE ICT Branch",
+      "year": "2027",
+      "amendmentNumber": 3,
+      "amendmentId": "amend-2027-3-04a6d9",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 3)",
+      "mainResponsibility": "Mrs. Udara T. Dikkumbura, Add.Sec.(Information Technology and Digital Education)",
+      "mainContactNo": "714929279",
+      "overallResponsibility": "Mrs. S. Dakshina Kasthuriarachchi (Director of Education)",
+      "overallContactNo": "714325568",
+      "status": "Draft",
+      "createdAt": "2026-11-02T03:30:22.583Z",
+      "updatedAt": "2026-11-02T03:30:22.583Z"
+    },
+    {
+      "id": "plan-org-moe-hr-2027-amend-1",
+      "branchId": "org-moe-hr",
+      "branchName": "MOE Human Resources Branch",
+      "year": "2027",
+      "amendmentNumber": 1,
+      "amendmentId": "amend-2027-1-16f158",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 1)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-11-02T03:31:46.541Z",
+      "updatedAt": "2026-11-02T03:31:46.541Z"
+    },
+    {
+      "id": "plan-org-moe-finance-2027-amend-1",
+      "branchId": "org-moe-finance",
+      "branchName": "MOE Finance Branch",
+      "year": "2027",
+      "amendmentNumber": 1,
+      "amendmentId": "amend-2027-1-16f158",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 1)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-11-02T03:31:51.665Z",
+      "updatedAt": "2026-11-02T03:31:51.665Z"
+    },
+    {
+      "id": "plan-org-moe-data-2027-amend-1",
+      "branchId": "org-moe-data",
+      "branchName": "MOE Data Management Branch",
+      "year": "2027",
+      "amendmentNumber": 1,
+      "amendmentId": "amend-2027-1-16f158",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 1)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-11-02T03:31:53.773Z",
+      "updatedAt": "2026-11-02T03:31:53.773Z"
+    },
+    {
+      "id": "plan-org-moe-curriculum-2027-amend-1",
+      "branchId": "org-moe-curriculum",
+      "branchName": "MOE Curriculum Development Branch",
+      "year": "2027",
+      "amendmentNumber": 1,
+      "amendmentId": "amend-2027-1-16f158",
+      "phaseTitle": "3. Implementation Phase",
+      "targetTitle": "Overall Physical and Financial Targets 2027 (Amendment 1)",
+      "mainResponsibility": "",
+      "mainContactNo": "",
+      "overallResponsibility": "",
+      "overallContactNo": "",
+      "status": "Draft",
+      "createdAt": "2026-11-02T03:31:56.596Z",
+      "updatedAt": "2026-11-02T03:31:56.596Z"
     }
   ],
   "aipActivities": [
@@ -5304,12 +5389,13 @@
       "responsibleOfficer": "",
       "remarks": "",
       "physicalProgress": "test",
-      "physicalProgressPct": "",
-      "financialProgressPct": "",
+      "physicalProgressPct": "56",
+      "financialProgressPct": "45",
       "createdBy": "user-planning-officer",
       "creatorName": "MOE Planning Branch",
       "createdAt": "2026-10-30T10:05:17.508Z",
-      "updatedAt": "2026-10-30T10:06:32.394Z"
+      "updatedAt": "2026-11-02T03:29:31.560Z",
+      "financialProgress": 7
     }
   ],
   "aipAmendments": [

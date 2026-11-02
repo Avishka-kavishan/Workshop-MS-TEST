@@ -2282,7 +2282,7 @@
       "organizationId": "org-moe-ict",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-11-02T03:33:05.212Z",
+      "lastLogin": "2026-11-02T03:54:00.419Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {
@@ -2295,7 +2295,7 @@
       "organizationId": "org-moe-planning",
       "roleId": "role-moe-officer",
       "isActive": true,
-      "lastLogin": "2026-11-02T03:30:33.896Z",
+      "lastLogin": "2026-11-02T03:54:07.601Z",
       "createdAt": "2026-09-28T06:03:41.165Z"
     },
     {

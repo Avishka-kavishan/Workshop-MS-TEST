@@ -1280,9 +1280,7 @@ export default function AnnualPlanPage() {
                   {moeBranches.length} Branches
                 </span>
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                💡 Click a sheet tab to view, pre-populate targets, or monitor progress across MOE branches
-              </div>
+
             </div>
 
             {/* Scrollable sheet tabs row */}
@@ -1388,11 +1386,7 @@ export default function AnnualPlanPage() {
               {branchInfo?.name || user?.organizationName || 'MOE ICT Branch'}
             </strong>
           </div>
-          {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') && (
-            <div style={{ fontSize: '0.8125rem', color: '#4b5563' }}>
-              👑 Planning Master Mode — Switch between branch sheets using the tabs above or the Submissions Tracker
-            </div>
-          )}
+
         </div>
 
 {/* ─── Version & Amendment Status Context Banner ─── */}

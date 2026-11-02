@@ -1057,63 +1057,7 @@ export default function AnnualPlanPage() {
             {/* Planning Branch Approval Actions */}
             {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {/* Send Amendment Button directly on this Branch's sheet */}
-                {selectedAmendmentNumber > 0 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleDispatchAmendmentToBranch}
-                      disabled={isDispatching}
-                      style={{
-                        background: plan?.isDispatchedToBranch ? '#ffffff' : '#0284c7',
-                        color: plan?.isDispatchedToBranch ? '#0369a1' : '#ffffff',
-                        border: plan?.isDispatchedToBranch ? '1.5px solid #0284c7' : 'none',
-                        padding: '0.55rem 1.1rem',
-                        borderRadius: '8px',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        cursor: isDispatching ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        boxShadow: plan?.isDispatchedToBranch ? 'none' : '0 2px 6px rgba(2, 132, 199, 0.3)',
-                      }}
-                      title={`Send prepared Amendment 0${selectedAmendmentNumber} to ${branchInfo?.name || 'this branch'} so they can fill actual progress`}
-                    >
-                      <span>{plan?.isDispatchedToBranch ? '📨' : '📤'}</span>
-                      <span>
-                        {isDispatching 
-                          ? 'Sending...' 
-                          : plan?.isDispatchedToBranch 
-                          ? `Re-send to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}` 
-                          : `Send Amendment to ${branchInfo?.name?.replace(/^MOE\s+/i, '') || 'Branch'}`}
-                      </span>
-                    </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteAmendment()}
-                      disabled={isDeletingAmendment}
-                      style={{
-                        background: '#ffffff',
-                        color: '#b91c1c',
-                        border: '1px solid #f87171',
-                        padding: '0.55rem 0.95rem',
-                        borderRadius: '8px',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        cursor: isDeletingAmendment ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                      }}
-                      title={`Permanently remove Amendment 0${selectedAmendmentNumber} and all its activities`}
-                    >
-                      <span>🗑️</span>
-                      <span>{isDeletingAmendment ? 'Removing...' : 'Remove Amendment'}</span>
-                    </button>
-                  </>
-                )}
 
                 {plan?.status === 'Submitted' ? (
                   <>

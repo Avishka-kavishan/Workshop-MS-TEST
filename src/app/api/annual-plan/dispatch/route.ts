@@ -16,8 +16,7 @@ export async function POST(request: NextRequest) {
     const user = session.user as any;
     const isPlanningOrAdmin =
       user.organizationId === 'org-moe-planning' ||
-      user.organizationId === 'org-moe-data' ||
-      user.roleId === 'role-admin' ||
+            user.roleId === 'role-admin' ||
       user.roleId === 'admin';
 
     if (!isPlanningOrAdmin) {

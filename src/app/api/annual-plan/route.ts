@@ -27,8 +27,7 @@ export async function GET(request: NextRequest) {
     // Identify branch: Privileged accounts (Planning Branch / Admin) can switch between any branch
     const isPrivileged =
       user?.organizationId === 'org-moe-planning' ||
-      user?.organizationId === 'org-moe-data' ||
-      user?.roleId === 'role-admin' ||
+            user?.roleId === 'role-admin' ||
       user?.roleId === 'admin';
 
     let branchId = (isPrivileged && reqBranchId) ? reqBranchId : (user?.organizationId || reqBranchId || 'org-moe-ict');

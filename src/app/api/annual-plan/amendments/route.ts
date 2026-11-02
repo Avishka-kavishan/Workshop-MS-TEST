@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
     const data = await getDb();
     const isPlanningOrAdmin =
       user?.organizationId === 'org-moe-planning' ||
-      user?.organizationId === 'org-moe-data' ||
-      user?.roleId === 'role-admin' ||
+            user?.roleId === 'role-admin' ||
       user?.roleId === 'admin';
 
     let allAmendments = (data.aipAmendments || []).filter((a) => a.year === year);
@@ -104,8 +103,7 @@ export async function POST(request: NextRequest) {
     const user = session.user as any;
     const isPlanningOrAdmin =
       user.organizationId === 'org-moe-planning' ||
-      user.organizationId === 'org-moe-data' ||
-      user.roleId === 'role-admin';
+            user.roleId === 'role-admin';
 
     if (!isPlanningOrAdmin) {
       return NextResponse.json(
@@ -184,8 +182,7 @@ export async function DELETE(request: NextRequest) {
     const user = session.user as any;
     const isPlanningOrAdmin =
       user.organizationId === 'org-moe-planning' ||
-      user.organizationId === 'org-moe-data' ||
-      user.roleId === 'role-admin' ||
+            user.roleId === 'role-admin' ||
       user.roleId === 'admin';
 
     if (!isPlanningOrAdmin) {

@@ -1388,11 +1388,11 @@ export default function AnnualPlanPage() {
               {branchInfo?.name || user?.organizationName || 'MOE ICT Branch'}
             </strong>
           </div>
-          <div style={{ fontSize: '0.8125rem', color: '#4b5563' }}>
-            {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin')
-              ? '👑 Planning Master Mode — Switch between branch sheets using the tabs above or the Submissions Tracker'
-              : '🔒 Branch automatically identified from authenticated account'}
-          </div>
+          {(user?.organizationId === 'org-moe-planning' || user?.organizationId === 'org-moe-data' || user?.roleId === 'role-admin') && (
+            <div style={{ fontSize: '0.8125rem', color: '#4b5563' }}>
+              👑 Planning Master Mode — Switch between branch sheets using the tabs above or the Submissions Tracker
+            </div>
+          )}
         </div>
 
 {/* ─── Version & Amendment Status Context Banner ─── */}

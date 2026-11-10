@@ -140,7 +140,12 @@ export default function AppShell({ children }: AppShellProps) {
       )}
 
       {/* ───── Hamburger Menu Drawer ───── */}
-      <aside className={`app-sidebar ${mobileNavOpen ? 'mobile-open menu-open' : ''}`}>
+      <aside
+        className={`app-sidebar ${mobileNavOpen ? 'mobile-open menu-open' : ''}`}
+        style={{
+          transform: mobileNavOpen ? 'translateX(0)' : 'translateX(-100%)',
+        }}
+      >
 
         {/* Brand Header */}
         <div style={{

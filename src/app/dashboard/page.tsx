@@ -90,19 +90,10 @@ export default function DashboardPage() {
     .reduce((sum, w) => sum + (w.traineeCount || 0), 0);
   const pendingTrainees = Math.max(0, totalTrainees - completedTrainees);
 
-  // 3. Resource Persons Breakdown (Completed vs Pending)
+  // 3. Resource Persons (Total Count only)
   const totalResourcePersons = resourcePersons.length > 0
     ? resourcePersons.length
     : workshops.reduce((sum, w) => sum + (w.resourcePersonCount || 0), 0);
-  const completedResourcePersons = resourcePersons.length > 0
-    ? resourcePersons.filter((rp) => {
-        const ws = workshops.find((w) => w.id === rp.workshopId);
-        return ws && computeWorkshopStatus(ws).status === 'Completed';
-      }).length
-    : workshops
-        .filter((w) => computeWorkshopStatus(w).status === 'Completed')
-        .reduce((sum, w) => sum + (w.resourcePersonCount || 0), 0);
-  const pendingResourcePersons = Math.max(0, totalResourcePersons - completedResourcePersons);
 
   return (
     <AppShell>
@@ -228,26 +219,36 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Card 3: Resource Persons */}
-          <div className="kpi-split-card">
+          {/* Card 3: Resource Persons (Total count only) */}
+          <div className="kpi-split-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div className="kpi-split-header">
               <span className="kpi-split-title">Resource Persons.</span>
               <span className="kpi-split-total">{loading ? '...' : totalResourcePersons}</span>
             </div>
-            <div className="kpi-split-body">
-              <div className="kpi-split-col">
-                <div className="kpi-split-sublabel">Completed</div>
-                <div className="kpi-split-subval" style={{ color: 'var(--teal)' }}>
-                  {loading ? '...' : completedResourcePersons}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.45rem 0.25rem',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                <span style={{ fontSize: '1.25rem' }}>👥</span>
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Total Registered Pool
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                    Instructors & facilitators
+                  </div>
                 </div>
               </div>
-              <div className="kpi-split-divider" />
-              <div className="kpi-split-col">
-                <div className="kpi-split-sublabel">Pending</div>
-                <div className="kpi-split-subval" style={{ color: 'var(--accent)' }}>
-                  {loading ? '...' : pendingResourcePersons}
-                </div>
-              </div>
+              <Link
+                href="/resource-persons"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem', fontWeight: 600, whiteSpace: 'nowrap' }}
+              >
+                View Directory →
+              </Link>
             </div>
           </div>
 

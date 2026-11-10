@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import AppShell from '@/components/layout/AppShell';
@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [places, setPlaces] = useState<any[]>([]);
   const [resourcePersons, setResourcePersons] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
   const user = session?.user as any;
@@ -94,6 +95,39 @@ export default function DashboardPage() {
   const totalResourcePersons = resourcePersons.length > 0
     ? resourcePersons.length
     : workshops.reduce((sum, w) => sum + (w.resourcePersonCount || 0), 0);
+
+  // 4. Universal Search filtering across all workshop fields
+  const filteredWorkshops = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return workshops;
+
+    return workshops.filter((ws) => {
+      const statusObj = computeWorkshopStatus(ws);
+      const num = (ws.workshopNumber || '').toLowerCase();
+      const title = (ws.title || '').toLowerCase();
+      const status = (statusObj.status || '').toLowerCase();
+      const statusName = (ws.statusName || '').toLowerCase();
+      const subject = (ws.subject || '').toLowerCase();
+      const place = (ws.placeName || ws.targetOrgName || '').toLowerCase();
+      const branch = (ws.branch || ws.organizingOrgName || '').toLowerCase();
+      const year = String(ws.year || '').toLowerCase();
+      const dates = `${ws.startDate || ''} ${ws.endDate || ''}`.toLowerCase();
+      const aim = (ws.aim || ws.objective || '').toLowerCase();
+
+      return (
+        num.includes(q) ||
+        title.includes(q) ||
+        status.includes(q) ||
+        statusName.includes(q) ||
+        subject.includes(q) ||
+        place.includes(q) ||
+        branch.includes(q) ||
+        year.includes(q) ||
+        dates.includes(q) ||
+        aim.includes(q)
+      );
+    });
+  }, [workshops, searchQuery]);
 
   return (
     <AppShell>
@@ -274,6 +308,89 @@ export default function DashboardPage() {
                 </Link>
               </div>
 
+              {/* ── Universal Search Bar ── */}
+              <div style={{
+                padding: '0.85rem 1.25rem',
+                background: 'var(--gray-100)',
+                borderTop: '1px solid var(--border-light)',
+                borderBottom: '1px solid var(--border-light)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+              }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
+                  <span style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '0.95rem',
+                    color: 'var(--text-tertiary)',
+                    pointerEvents: 'none',
+                  }}>
+                    🔍
+                  </span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Universal Search: ID, title, status, subject, host branch, year..."
+                    className="form-input"
+                    style={{
+                      width: '100%',
+                      paddingLeft: '2.4rem',
+                      paddingRight: searchQuery ? '2.4rem' : '0.85rem',
+                      fontSize: '0.84rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-medium)',
+                      background: 'var(--white)',
+                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.03)',
+                    }}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-tertiary)',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        padding: '2px 6px',
+                        borderRadius: '50%',
+                      }}
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Showing <strong>{filteredWorkshops.length}</strong> of {workshops.length} workshops
+                  </span>
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="btn btn-ghost btn-sm"
+                      style={{ fontSize: '0.74rem', padding: '0.2rem 0.5rem', color: 'var(--primary)', fontWeight: 600 }}
+                    >
+                      Clear Filter
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="table-container">
                 <table className="data-table">
                   <thead>
@@ -287,8 +404,8 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {workshops.length > 0 ? (
-                      workshops.slice(0, 10).map((ws) => {
+                    {filteredWorkshops.length > 0 ? (
+                      filteredWorkshops.map((ws) => {
                         const statusObj = computeWorkshopStatus(ws);
                         const status = statusObj.status;
                         const isCompleted = status === 'Completed';
@@ -416,8 +533,28 @@ export default function DashboardPage() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>
-                          {loading ? 'Loading workshops...' : 'No workshops scheduled yet.'}
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-tertiary)' }}>
+                          {searchQuery ? (
+                            <div>
+                              <div style={{ fontSize: '1.75rem', marginBottom: '0.35rem' }}>🔍</div>
+                              <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.92rem' }}>
+                                No workshops found matching &quot;{searchQuery}&quot;
+                              </div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem', marginBottom: '0.75rem' }}>
+                                Try searching by workshop ID, title, status, subject, or host branch.
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setSearchQuery('')}
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontWeight: 600 }}
+                              >
+                                Clear Universal Search
+                              </button>
+                            </div>
+                          ) : (
+                            <div>{loading ? 'Loading workshops...' : 'No workshops scheduled yet.'}</div>
+                          )}
                         </td>
                       </tr>
                     )}

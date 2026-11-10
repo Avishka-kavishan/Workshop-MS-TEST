@@ -103,20 +103,26 @@ export default function AppShell({ children }: AppShellProps) {
     }
   };
 
-  const navItems = [
-    { href: '/workshops/new',         icon: '➕', label: 'Schedule New Workshop', exact: true, isAction: true },
-    { href: '/resource-persons/new',  icon: '👤', label: 'Register Resource Person', exact: true, isAction: true },
-    { href: '/dashboard',             icon: '📊', label: 'Dashboard' },
-    { href: '/workshops',             icon: '📋', label: 'Workshops',             exact: false },
-    { href: '/annual-plan',           icon: '📅', label: 'Annual Implementation Plan', exact: false },
-    { href: '/resource-persons',      icon: '👥', label: 'Resource Persons',      exact: false },
-    { href: '/reports',               icon: '📈', label: 'Analytics & Reports' },
+  const primaryNavItems = [
+    { href: '/dashboard', label: 'Dashboard.' },
+    { href: '/budget-forecasting', label: 'Budget Forecasting' },
+    { href: '/annual-plan', label: 'Annual Implementation.' },
+    { href: '/reports', label: 'Monitoring.' },
+  ];
+
+  const shortcutNavItems = [
+    { href: '/workshops', icon: '📋', label: 'Workshops Directory' },
+    { href: '/resource-persons', icon: '👥', label: 'Resource Persons Directory' },
+    { href: '/workshops/new', icon: '➕', label: 'Schedule New Workshop' },
+    { href: '/resource-persons/new', icon: '👤', label: 'Register Resource Person' },
   ];
 
   const isActive = (href: string, exact = false) => {
     if (exact) return pathname === href;
     if (href === '/workshops') return pathname.startsWith('/workshops') && pathname !== '/workshops/new';
     if (href === '/annual-plan') return pathname.startsWith('/annual-plan');
+    if (href === '/budget-forecasting') return pathname.startsWith('/budget-forecasting');
+    if (href === '/reports') return pathname.startsWith('/reports') || pathname.startsWith('/monitoring');
     if (href === '/resource-persons') return pathname.startsWith('/resource-persons') && pathname !== '/resource-persons/new';
     return pathname === href || pathname.startsWith(href + '/');
   };
@@ -124,22 +130,22 @@ export default function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-layout">
 
-      {/* Mobile Drawer Backdrop */}
+      {/* Hamburger Drawer Backdrop */}
       {mobileNavOpen && (
         <div
-          className="sidebar-mobile-backdrop"
+          className="sidebar-backdrop"
           onClick={() => setMobileNavOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* ───── Sidebar ───── */}
-      <aside className={`app-sidebar ${mobileNavOpen ? 'mobile-open' : ''}`}>
+      {/* ───── Hamburger Menu Drawer ───── */}
+      <aside className={`app-sidebar ${mobileNavOpen ? 'mobile-open menu-open' : ''}`}>
 
         {/* Brand Header */}
         <div style={{
-          padding: '1.25rem 1.25rem 1rem 1.25rem',
-          borderBottom: '1px solid rgba(255,255,255,0.12)',
+          padding: '1.25rem 1.25rem 1.1rem 1.25rem',
+          borderBottom: '1px solid rgba(255,255,255,0.18)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -148,27 +154,28 @@ export default function AppShell({ children }: AppShellProps) {
             <div style={{
               width: '40px',
               height: '40px',
-              background: 'rgba(255,255,255,0.15)',
+              background: 'rgba(255,255,255,0.16)',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '1.35rem',
-              border: '1px solid rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
             }}>
               🎓
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.875rem', color: '#fff', lineHeight: 1.25 }}>
-                Workshop Management
+              <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#fff', lineHeight: 1.25 }}>
+                Workshop Management.
               </div>
-              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.65)', marginTop: '2px', letterSpacing: '0.04em' }}>
-                MINISTRY OF EDUCATION
+              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.7)', marginTop: '2px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                Ministry of Education
               </div>
             </div>
           </div>
 
-          {/* Close button on mobile */}
+          {/* Close button */}
           <button
             type="button"
             className="sidebar-close-btn"
@@ -179,115 +186,135 @@ export default function AppShell({ children }: AppShellProps) {
           </button>
         </div>
 
-        {/* Current user info */}
-        {user && (
-          <div style={{
-            margin: '1rem 1rem 0.5rem',
-            padding: '0.875rem',
-            background: 'rgba(255,255,255,0.08)',
-            borderRadius: '6px',
-            border: '1px solid rgba(255,255,255,0.12)',
-          }}>
-            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.35rem' }}>
-              Signed In Branch
-            </div>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user.name}
-            </div>
-            {user.organizationName && user.organizationName !== user.name && (
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', marginTop: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user.organizationName}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Navigation */}
-        <nav style={{ flex: 1, padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
-          {navItems.map((item) => {
-            const active = isActive(item.href, item.exact);
-            if (item.isAction) {
+        {/* Navigation List matching sketch */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+          {/* Primary Nav Links */}
+          <nav style={{ display: 'flex', flexDirection: 'column' }}>
+            {primaryNavItems.map((item) => {
+              const active = isActive(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileNavOpen(false)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.625rem',
-                    padding: '0.65rem 1rem',
-                    borderRadius: '6px',
-                    color: '#fff',
-                    background: active
-                      ? 'rgba(255,255,255,0.22)'
-                      : 'rgba(255,255,255,0.1)',
-                    border: active
-                      ? '1px solid rgba(255, 190, 41, 0.8)'
-                      : '1px solid rgba(255,255,255,0.18)',
-                    borderLeft: active ? '3px solid #FFBE29' : '1px solid rgba(255,255,255,0.18)',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    transition: 'all 150ms ease',
-                    textDecoration: 'none',
-                    marginBottom: '0.45rem',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.12)',
-                  }}
-                  onMouseEnter={e => {
-                    if (!active) {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.18)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!active) {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
-                    }
-                  }}
+                  className={`hamburger-nav-item ${active ? 'active' : ''}`}
                 >
-                  <span style={{ fontSize: '1.05rem', color: '#FFBE29' }}>{item.icon}</span>
-                  <span>{item.label}</span>
+                  <span style={{ fontSize: '1rem', fontWeight: active ? 700 : 500 }}>
+                    {item.label}
+                  </span>
+                  {active && (
+                    <span style={{ color: '#FFBE29', fontSize: '1.2rem', lineHeight: 1 }}>•</span>
+                  )}
                 </Link>
               );
-            }
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileNavOpen(false)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.625rem',
-                  padding: '0.65rem 1rem',
-                  borderRadius: '6px',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.7)',
-                  background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  fontWeight: active ? 600 : 400,
-                  fontSize: '0.875rem',
-                  transition: 'all 150ms ease',
-                  textDecoration: 'none',
-                  borderLeft: active ? '3px solid #FFBE29' : '3px solid transparent',
-                }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#fff'; } }}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; } }}
-              >
-                <span style={{ fontSize: '1.05rem', opacity: active ? 1 : 0.85 }}>{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+            })}
+          </nav>
 
-        {/* Sidebar Footer & Logout */}
+          {/* Workshop Operations / Shortcuts */}
+          <div style={{ padding: '1.25rem 1.15rem 0.5rem', marginTop: '0.5rem' }}>
+            <div style={{
+              fontSize: '0.68rem',
+              color: 'rgba(255,255,255,0.5)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              fontWeight: 700,
+              marginBottom: '0.5rem',
+            }}>
+              Workshop Operations
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {shortcutNavItems.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileNavOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.6rem',
+                      padding: '0.55rem 0.75rem',
+                      borderRadius: '6px',
+                      color: active ? '#FFBE29' : 'rgba(255,255,255,0.85)',
+                      background: active ? 'rgba(255,255,255,0.14)' : 'transparent',
+                      fontSize: '0.84rem',
+                      fontWeight: active ? 600 : 400,
+                      textDecoration: 'none',
+                      transition: 'all 120ms ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                        e.currentTarget.style.color = '#fff';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = 'rgba(255,255,255,0.85)';
+                      }
+                    }}
+                  >
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom User Profile & Logout matching sketch */}
         <div style={{
-          padding: '0.75rem',
-          borderTop: '1px solid rgba(255,255,255,0.1)',
+          padding: '1rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.15)',
+          background: 'rgba(0,0,0,0.15)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.6rem',
+          gap: '0.75rem',
         }}>
+          {/* User Circle Avatar and Branch Name */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1rem',
+              color: '#fff',
+              flexShrink: 0,
+            }}>
+              👤
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                color: '#fff',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {user?.name || 'MOE Planning branch.'}
+              </div>
+              <div style={{
+                fontSize: '0.7rem',
+                color: 'rgba(255,255,255,0.6)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {user?.organizationName || 'Level 1 - Organizing Branch'}
+              </div>
+            </div>
+          </div>
+
+          {/* Logout Button */}
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: '/login' })}
@@ -295,26 +322,27 @@ export default function AppShell({ children }: AppShellProps) {
               width: '100%',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.625rem',
-              padding: '0.65rem 1rem',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.6rem 1rem',
               borderRadius: '6px',
-              color: 'rgba(255,255,255,0.85)',
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              fontWeight: 500,
-              fontSize: '0.875rem',
+              color: 'rgba(255,255,255,0.9)',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              fontWeight: 600,
+              fontSize: '0.86rem',
               cursor: 'pointer',
               transition: 'all 150ms ease',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(220, 38, 38, 0.25)';
-              e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.5)';
+              e.currentTarget.style.background = 'rgba(220, 38, 38, 0.4)';
+              e.currentTarget.style.borderColor = 'rgba(220, 38, 38, 0.6)';
               e.currentTarget.style.color = '#fff';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-              e.currentTarget.style.color = 'rgba(255,255,255,0.85)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.9)';
             }}
           >
             <svg
@@ -331,7 +359,7 @@ export default function AppShell({ children }: AppShellProps) {
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-            <span>Logout</span>
+            <span>logout</span>
           </button>
         </div>
       </aside>
@@ -341,13 +369,14 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* Top Header Bar */}
         <header className="app-header">
-          {/* Left: Mobile Hamburger & Page Context */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0 }}>
+          {/* Left: Hamburger Button & Page Breadcrumb Context */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
             <button
               type="button"
-              className="mobile-hamburger-btn"
-              onClick={() => setMobileNavOpen(true)}
+              className="hamburger-menu-btn mobile-hamburger-btn"
+              onClick={() => setMobileNavOpen((prev) => !prev)}
               aria-label="Open Navigation Menu"
+              title="Toggle Menu"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -356,20 +385,23 @@ export default function AppShell({ children }: AppShellProps) {
               </svg>
             </button>
 
-            <div className="header-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.82rem', color: 'var(--text-tertiary)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-              <span className="header-breadcrumb-root">Workshop Management System</span>
+            <div className="header-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem', color: 'var(--text-tertiary)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+              <span className="header-breadcrumb-root" style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Workshop Management System
+              </span>
               <span className="header-breadcrumb-root" style={{ color: 'var(--border-medium)' }}>/</span>
-              <span style={{ color: 'var(--primary)', fontWeight: 600, textTransform: 'capitalize' }}>
-                {pathname === '/dashboard' ? 'Dashboard'
-                  : pathname === '/workshops' ? 'Workshops'
-                  : pathname === '/workshops/new' ? 'Schedule New Workshop'
-                  : pathname === '/resource-persons/new' ? 'Register Resource Person'
-                  : pathname.startsWith('/resource-persons') ? 'Resource Persons'
-                  : pathname === '/organizations' ? 'Organizations'
-                  : pathname === '/reports' ? 'Reports'
-                  : pathname.startsWith('/annual-plan') ? 'Annual Implementation Plan'
-                  : pathname.startsWith('/workshops/') ? 'Workshop Details'
-                  : 'Overview'}
+              <span style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                {pathname === '/dashboard' ? 'Dashboard.'
+                  : pathname === '/budget-forecasting' ? 'Budget Forecasting.'
+                  : pathname.startsWith('/annual-plan') ? 'Annual Implementation.'
+                  : pathname === '/reports' || pathname === '/monitoring' ? 'Monitoring.'
+                  : pathname === '/workshops' ? 'Workshops.'
+                  : pathname === '/workshops/new' ? 'Schedule New Workshop.'
+                  : pathname === '/resource-persons/new' ? 'Register Resource Person.'
+                  : pathname.startsWith('/resource-persons') ? 'Resource Persons.'
+                  : pathname === '/organizations' ? 'Organizations.'
+                  : pathname.startsWith('/workshops/') ? 'Workshop Details.'
+                  : 'Overview.'}
               </span>
             </div>
           </div>

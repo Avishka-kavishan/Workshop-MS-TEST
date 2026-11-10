@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const [workshops, setWorkshops] = useState<any[]>([]);
   const [places, setPlaces] = useState<any[]>([]);
+  const [resourcePersons, setResourcePersons] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,10 +19,11 @@ export default function DashboardPage() {
 
   const loadDashboard = async () => {
     try {
-      const [wsRes, orgRes, notifRes] = await Promise.all([
+      const [wsRes, orgRes, notifRes, rpRes] = await Promise.all([
         fetch('/api/workshops'),
         fetch('/api/organizations'),
         fetch('/api/notifications'),
+        fetch('/api/resource-persons'),
       ]);
 
       if (wsRes.ok) {
@@ -37,6 +39,11 @@ export default function DashboardPage() {
       if (notifRes.ok) {
         const notifJson = await notifRes.json();
         setNotifications(notifJson.notifications || []);
+      }
+
+      if (rpRes.ok) {
+        const rpJson = await rpRes.json();
+        setResourcePersons(rpJson.resourcePersons || []);
       }
     } catch (err) {
       console.error('Failed to load dashboard data', err);
@@ -57,7 +64,6 @@ export default function DashboardPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) {
-        // Refresh workshops data
         const wsRes = await fetch('/api/workshops');
         if (wsRes.ok) {
           const wsJson = await wsRes.json();
@@ -69,48 +75,56 @@ export default function DashboardPage() {
     }
   };
 
+  // 1. Total Workshops Breakdown (Completed vs Pending)
   const totalWorkshops = workshops.length;
-  const toConductCount = workshops.filter((w) => w.isToConduct).length;
-  const scheduledByYouCount = workshops.filter((w) => w.isScheduledByYou).length;
+  const completedWorkshops = workshops.filter((w) => {
+    const st = computeWorkshopStatus(w).status;
+    return st === 'Completed';
+  }).length;
+  const pendingWorkshops = Math.max(0, totalWorkshops - completedWorkshops);
+
+  // 2. Total Participants / Trainees Breakdown (Completed vs Pending)
   const totalTrainees = workshops.reduce((sum, w) => sum + (w.traineeCount || 0), 0);
+  const completedTrainees = workshops
+    .filter((w) => computeWorkshopStatus(w).status === 'Completed')
+    .reduce((sum, w) => sum + (w.traineeCount || 0), 0);
+  const pendingTrainees = Math.max(0, totalTrainees - completedTrainees);
+
+  // 3. Resource Persons Breakdown (Completed vs Pending)
+  const totalResourcePersons = resourcePersons.length > 0
+    ? resourcePersons.length
+    : workshops.reduce((sum, w) => sum + (w.resourcePersonCount || 0), 0);
+  const completedResourcePersons = resourcePersons.length > 0
+    ? resourcePersons.filter((rp) => {
+        const ws = workshops.find((w) => w.id === rp.workshopId);
+        return ws && computeWorkshopStatus(ws).status === 'Completed';
+      }).length
+    : workshops
+        .filter((w) => computeWorkshopStatus(w).status === 'Completed')
+        .reduce((sum, w) => sum + (w.resourcePersonCount || 0), 0);
+  const pendingResourcePersons = Math.max(0, totalResourcePersons - completedResourcePersons);
 
   return (
     <AppShell>
       <div className="page-container dashboard-container">
-        {/* Welcome Banner */}
-        <div
-          style={{
-            background: 'var(--white)',
-            border: '1px solid var(--border-light)',
-            borderLeft: '5px solid var(--primary)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.5rem 1.75rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
+        
+        {/* ── Welcome Banner (matching wireframe) ── */}
+        <div className="welcome-banner">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
-              <h1 className="page-title" style={{ fontSize: '1.5rem', marginBottom: 0 }}>
-                Welcome, {user?.name || 'Authorized Branch'}
-              </h1>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              Branch / Unit: <strong>{user?.name || user?.organizationName}</strong>
+            <h1 className="welcome-title">
+              Welcome , {user?.name || 'MOE Planning Branch'}.
+            </h1>
+            <p className="welcome-subtitle">
+              Branch / Unit : <strong>{user?.name || user?.organizationName || 'MOE Planning Branch'}</strong>.
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <Link href="/workshops/new" className="btn btn-primary">
-              ➕ Schedule a new workshop
+          <div className="welcome-actions">
+            <Link href="/workshops/new" className="btn btn-primary" style={{ fontWeight: 600 }}>
+              + Schedule a new workshop
             </Link>
-            <Link href="/workshops" className="btn btn-secondary">
-              📋 All Workshops
+            <Link href="/resource-persons/new" className="btn btn-secondary" style={{ fontWeight: 600 }}>
+              + add resource persons.
             </Link>
           </div>
         </div>
@@ -119,7 +133,7 @@ export default function DashboardPage() {
         {notifications.length > 0 && (
           <div
             style={{
-              padding: '1rem 1.25rem',
+              padding: '0.9rem 1.25rem',
               borderRadius: 'var(--radius-lg)',
               background: 'var(--accent-10)',
               border: '1px solid var(--accent)',
@@ -165,63 +179,96 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ── 2-Column Dashboard Layout (Main content on Left, Calendar on Right) ── */}
-        <div className="dashboard-layout">
+        {/* ── 3 Summary KPI Cards (matching wireframe) ── */}
+        <div className="kpi-split-grid">
           
-          {/* ──── Left Main Column ──── */}
-          <div className="dashboard-main-col">
-            
-            {/* KPI Stats Grid */}
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-icon">
-                  📚
+          {/* Card 1: Total Workshops */}
+          <div className="kpi-split-card">
+            <div className="kpi-split-header">
+              <span className="kpi-split-title">Total workshops.</span>
+              <span className="kpi-split-total">{loading ? '...' : totalWorkshops}</span>
+            </div>
+            <div className="kpi-split-body">
+              <div className="kpi-split-col">
+                <div className="kpi-split-sublabel">Completed</div>
+                <div className="kpi-split-subval" style={{ color: 'var(--teal)' }}>
+                  {loading ? '...' : completedWorkshops}
                 </div>
-                <div className="stat-value">{loading ? '...' : totalWorkshops}</div>
-                <div className="stat-label">Total Connected Workshops</div>
               </div>
-
-              <div className="stat-card teal">
-                <div className="stat-icon teal">
-                  📍
+              <div className="kpi-split-divider" />
+              <div className="kpi-split-col">
+                <div className="kpi-split-sublabel">Pending</div>
+                <div className="kpi-split-subval" style={{ color: 'var(--accent)' }}>
+                  {loading ? '...' : pendingWorkshops}
                 </div>
-                <div className="stat-value" style={{ color: 'var(--teal)' }}>
-                  {loading ? '...' : toConductCount}
-                </div>
-                <div className="stat-label">Workshops to Conduct (Place)</div>
-              </div>
-
-              <div className="stat-card accent">
-                <div className="stat-icon accent">
-                  📤
-                </div>
-                <div className="stat-value" style={{ color: 'var(--accent)' }}>
-                  {loading ? '...' : scheduledByYouCount}
-                </div>
-                <div className="stat-label">Workshops You Scheduled</div>
-              </div>
-
-              <div className="stat-card gold">
-                <div className="stat-icon gold">
-                  👥
-                </div>
-                <div className="stat-value" style={{ color: 'var(--gold-dark)' }}>
-                  {loading ? '...' : totalTrainees}
-                </div>
-                <div className="stat-label">Trainees / Participants Registered</div>
               </div>
             </div>
+          </div>
 
-            {/* Recent Workshops List Table */}
-            <div className="card">
-              <div className="card-header">
+          {/* Card 2: Total Participants / Trainees */}
+          <div className="kpi-split-card">
+            <div className="kpi-split-header">
+              <span className="kpi-split-title">Total participants/ trainees</span>
+              <span className="kpi-split-total">{loading ? '...' : totalTrainees}</span>
+            </div>
+            <div className="kpi-split-body">
+              <div className="kpi-split-col">
+                <div className="kpi-split-sublabel">Completed</div>
+                <div className="kpi-split-subval" style={{ color: 'var(--teal)' }}>
+                  {loading ? '...' : completedTrainees}
+                </div>
+              </div>
+              <div className="kpi-split-divider" />
+              <div className="kpi-split-col">
+                <div className="kpi-split-sublabel">Pending</div>
+                <div className="kpi-split-subval" style={{ color: 'var(--accent)' }}>
+                  {loading ? '...' : pendingTrainees}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Resource Persons */}
+          <div className="kpi-split-card">
+            <div className="kpi-split-header">
+              <span className="kpi-split-title">Resource Persons.</span>
+              <span className="kpi-split-total">{loading ? '...' : totalResourcePersons}</span>
+            </div>
+            <div className="kpi-split-body">
+              <div className="kpi-split-col">
+                <div className="kpi-split-sublabel">Completed</div>
+                <div className="kpi-split-subval" style={{ color: 'var(--teal)' }}>
+                  {loading ? '...' : completedResourcePersons}
+                </div>
+              </div>
+              <div className="kpi-split-divider" />
+              <div className="kpi-split-col">
+                <div className="kpi-split-sublabel">Pending</div>
+                <div className="kpi-split-subval" style={{ color: 'var(--accent)' }}>
+                  {loading ? '...' : pendingResourcePersons}
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── 2-Column Dashboard Layout (Scheduled workshops on Left, Calendar on Right) ── */}
+        <div className="dashboard-layout">
+          
+          {/* ──── Left Column: Scheduled Workshops ──── */}
+          <div className="dashboard-main-col">
+            <div className="card" style={{ border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)' }}>
+              <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h2 className="card-title">Scheduled Workshops</h2>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Workshops dispatched across organizing branches and host places
+                  <h2 className="card-title" style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                    Scheduled workshops.
+                  </h2>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '3px', marginBottom: 0 }}>
+                    Workshops dispatched across organizing branches and target venues
                   </p>
                 </div>
-                <Link href="/workshops" className="btn btn-secondary btn-sm">
+                <Link href="/workshops" className="btn btn-secondary btn-sm" style={{ fontWeight: 600 }}>
                   View All Workshops →
                 </Link>
               </div>
@@ -230,14 +277,12 @@ export default function DashboardPage() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Workshop ID</th>
-                      <th>Title</th>
-                      <th>Status</th>
-                      <th>Subject</th>
-                      <th>Host Branch</th>
-                      <th>Duration</th>
-                      <th>Trainees</th>
-                      <th>Actions</th>
+                      <th style={{ fontWeight: 700 }}>Workshop ID</th>
+                      <th style={{ fontWeight: 700 }}>Title</th>
+                      <th style={{ fontWeight: 700 }}>Status</th>
+                      <th style={{ fontWeight: 700 }}>Subject</th>
+                      <th style={{ fontWeight: 700 }}>Host branch.</th>
+                      <th style={{ fontWeight: 700, textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -254,7 +299,9 @@ export default function DashboardPage() {
                           <tr key={ws.id}>
                             <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--primary)' }}>
                               {ws.workshopNumber}
-                              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>Year {ws.year}</div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
+                                Year {ws.year}
+                              </div>
                             </td>
 
                             <td>
@@ -358,35 +405,17 @@ export default function DashboardPage() {
                               </span>
                             </td>
 
-                            <td style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                              ⏳ {ws.daysHeld} Days
-                            </td>
-
-                            <td style={{ fontSize: '0.85rem' }}>
-                              👥 <strong>{ws.traineeCount}</strong> registered
-                            </td>
-
-                            <td>
-                              <div style={{ display: 'flex', gap: '0.35rem' }}>
-                                <Link href={`/workshops/${ws.id}`} className="btn btn-secondary btn-sm">
-                                  Manage →
-                                </Link>
-                                <a
-                                  href={`/api/workshops/${ws.id}/export`}
-                                  className="btn btn-ghost btn-sm"
-                                  title="Export to Excel"
-                                  style={{ color: 'var(--teal)', fontWeight: 600 }}
-                                >
-                                  📊 Excel
-                                </a>
-                              </div>
+                            <td style={{ textAlign: 'right' }}>
+                              <Link href={`/workshops/${ws.id}`} className="btn btn-secondary btn-sm" style={{ fontWeight: 600 }}>
+                                Manage →
+                              </Link>
                             </td>
                           </tr>
                         );
                       })
                     ) : (
                       <tr>
-                        <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>
                           {loading ? 'Loading workshops...' : 'No workshops scheduled yet.'}
                         </td>
                       </tr>
@@ -395,10 +424,9 @@ export default function DashboardPage() {
                 </table>
               </div>
             </div>
-
           </div>
 
-          {/* ──── Right Sidebar Column: Interactive Calendar ──── */}
+          {/* ──── Right Column: Interactive Calendar ──── */}
           <div className="dashboard-side-col">
             <DashboardCalendar
               workshops={workshops}
